@@ -1,0 +1,19 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev":"bun  src/index.js ",
+    "build":"tsc",
+    "start":"node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
