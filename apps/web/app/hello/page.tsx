@@ -22,10 +22,11 @@ export default function Hello() {
       try {
         const res = await axios.post("http://localhost:3002/", {
           topic: "array",
-          difficulty: "medium",
+          difficulty: "hard",
           language: "java",
           questionType: "multiple correct",
         });
+        console.log(res.data.data)
         setQuestions(res.data.data);
       } catch (err) {
         console.error("Questions not fetched", err);
