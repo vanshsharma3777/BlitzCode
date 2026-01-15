@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev":"bun  src/index.js ",
-    "build":"tsc",
-    "start":"node dist/index.js"
+    "dev": "bun  src/index.js ",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -15,5 +15,13 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@google/generative-ai": "^0.24.1",
+    "@types/cors": "^2.8.19",
+    "@upstash/redis": "^1.36.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3"
   }
 }
