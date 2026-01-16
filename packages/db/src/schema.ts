@@ -8,6 +8,7 @@ import {
   primaryKey,
   uuid,
   integer,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import postgres from "postgres"
 import { drizzle } from "drizzle-orm/postgres-js"
@@ -115,11 +116,12 @@ export const questions = pgTable("question", {
   topic: text("topic").notNull(),
   description: text("description").notNull(),
   explanation: text("explanation").notNull(),
-  correctOptions : text("\correct_option"),
+  correctOptions: text("correct_options").array().notNull(),
   difficulty: difficultyEnum("difficulty").notNull(),
   language: text("language").notNull(),
+  code: text("code").notNull(),
   questionType: questionTypeEnum("question_type").notNull(),
-  options: text("options").array().notNull(),
+  options: jsonb("options").notNull(),
   timeLimit: integer("time_limit").default(30).notNull(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), 
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
