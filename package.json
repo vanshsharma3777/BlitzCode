@@ -1,6 +1,9 @@
 {
   "name": "BiltzCode",
   "private": true,
+  "overrides": {
+    "drizzle-orm": "0.45.1"
+  },
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
@@ -13,6 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push"
   },
+  
   "devDependencies": {
     "drizzle-kit": "^0.31.8",
     "prettier": "^3.7.4",
@@ -34,4 +38,5 @@
     "next-auth": "4",
     "postgres": "^3.4.8"
   }
+  
 }

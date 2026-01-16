@@ -9,6 +9,7 @@ export default async function Username(){
   if(!session?.user){
     redirect('/api/auth/signin')
   }
+  console.log(session)
   return(
     <div>
       <CreateProfile email={session.user.email!}></CreateProfile>
