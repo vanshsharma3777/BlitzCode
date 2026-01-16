@@ -20,6 +20,7 @@ export const db = drizzle(pool)
 export const difficultyEnum = pgEnum("difficulty", ["easy", "medium", "hard"]);
 export const questionTypeEnum = pgEnum("question_type", ["single", "multiple", "bugfix"]);
 export const gameTypeEnum = pgEnum("game_type", ["quiz", "bugfixer", "multiplayer"]);
+export const questionStatus = pgEnum("question_status", ["correct", "incorrect", "notAttempted"]);
 
 export const users = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -27,12 +28,14 @@ export const users = pgTable("user", {
   email: text("email").notNull().unique(), 
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
-  
+
   username: text("username").unique(),
   points: integer("points").default(0).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date()),
 })
+
+
 
 export const accounts = pgTable(
   "account",
@@ -116,22 +119,24 @@ export const questions = pgTable("question", {
   difficulty: difficultyEnum("difficulty").notNull(),
   language: text("language").notNull(),
   questionType: questionTypeEnum("question_type").notNull(),
+  options: text("options").array().notNull(),
   timeLimit: integer("time_limit").default(30).notNull(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), 
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const games = pgTable("game", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(),
-  timeSpent: integer("time_spent").notNull(),
-  difficulty: difficultyEnum("difficulty").notNull(),
+export const attempts = pgTable("attempt" , {
+  id:uuid('id').defaultRandom().primaryKey(),
+  status:questionStatus("question_status").notNull(),
+  userId: uuid('userId').notNull().references(()=> users.id , { onDelete:"cascade"}),
+  totalCorrectId : uuid('total_correct').notNull().references(()=> totalCorrect.id ),
+  totalWrongId : uuid('total_wrong').notNull().references(()=> totalWrong.id ),
+  score : integer("score").notNull(),
+  totalTime : integer("total_time").notNull(),
   gameType: gameTypeEnum("game_type").notNull(),
   completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
-});
+
+})
 
 export const totalCorrect = pgTable("total_correct", {
   id: uuid("id").defaultRandom().primaryKey(), 
@@ -170,7 +175,7 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Question = typeof questions.$inferSelect;
 export type NewQuestion = typeof questions.$inferInsert;
-export type Game = typeof games.$inferSelect;
-export type NewGame = typeof games.$inferInsert;
 export type QuestionAttempted = typeof questionsAttempted.$inferSelect;
 export type NewQuestionAttempted = typeof questionsAttempted.$inferInsert;
+export type Attempt = typeof attempts.$inferSelect
+export type NewAttempt = typeof attempts.$inferInsert
