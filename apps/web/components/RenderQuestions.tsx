@@ -38,9 +38,9 @@ export default function RenderQuestion() {
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                setLoader(true)
+               // setLoader(true)
                 
-                const response = await axios.post('http://localhost:3002/create-questions' , {
+                const response = await axios.post('http://localhost:3002/get-questions' , {
                     topic ,
                     difficulty,
                     language ,

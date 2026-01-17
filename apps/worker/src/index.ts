@@ -137,13 +137,15 @@ app.post('/get-questions', async (req, res) => {
         questionType,
       }))
 
-      console.log(sendData)
+      console.log("sendData from if part" , sendData)
       return res.json({
         source: "cache",
         data: normalizeToArray(sendData),
       });
     }else{
+      console.log("ran this")
       const response = await axios.post('http://localhost:3002/create-questions' , { topic, difficulty, language, questionType } )
+      console.log("else part" , response)
       if(!response){
         return res.status(404).json({
           success:false,
