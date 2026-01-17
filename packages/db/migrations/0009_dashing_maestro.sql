@@ -1,0 +1,1 @@
+ALTER TABLE "attempt" DROP CONSTRAINT "attempt_id_unique";

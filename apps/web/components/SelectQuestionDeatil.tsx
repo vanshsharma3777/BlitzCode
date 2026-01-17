@@ -23,22 +23,32 @@ export default function SelectQuestionsDetails() {
 
     const handleSubmit = async (e: React.FormEvent) => {
          try{
-            
+            setError('')
             setLoader(true)
             e.preventDefault()
             if (!language || !topic || !difficulty || !type) {
                 setError("Please fill all fields")
                 return
             }
-            const response = await axios.post('/api/questions' , {language , topic , type , difficulty});
-                console.log(response.data)
-            if(response.status===200){
-                console.log(response.data)
+            const questionType = type
+            const responseLLM = await axios.post('http://localhost:3002/create-questions' , {language , topic , questionType , difficulty});
+            if(responseLLM.status===200){
                 router.push('/questions-page')
             }
         }catch(error){
             console.log("error :" , error)
-        }finally{
+            if(axios.isAxiosError(error)){
+                if(error.response?.status===404){
+                    setError("Feilds not provided");
+                }else if(error.response?.status===403 && error.response.data.success === false){
+                    setError("Failed to create questions.")
+                }
+                else if(error.response?.status===403 && error.response.data.success === true){
+                    setError("Failed to parse questions.")
+                }
+            }
+        }
+        finally{
             setLoader(false)
         }
     }

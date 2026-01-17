@@ -130,9 +130,7 @@ export const questions = pgTable("question", {
 export const attempts = pgTable("attempt" , {
   id:uuid('id').defaultRandom().primaryKey(),
   status:questionStatus("question_status").notNull(),
-  userId: uuid('userId').notNull().references(()=> users.id , { onDelete:"cascade"}),
-  totalCorrectId : uuid('total_correct').notNull().references(()=> totalCorrect.id ),
-  totalWrongId : uuid('total_wrong').notNull().references(()=> totalWrong.id ),
+  userId: uuid('userId').notNull().references(()=> users.id , { onDelete:"cascade"}), 
   score : integer("score").notNull(),
   totalTime : integer("total_time").notNull(),
   gameType: gameTypeEnum("game_type").notNull(),
@@ -140,24 +138,17 @@ export const attempts = pgTable("attempt" , {
 
 })
 
-export const totalCorrect = pgTable("total_correct", {
-  id: uuid("id").defaultRandom().primaryKey(), 
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  timeTaken: real("time_taken").notNull(),
-  correct: integer("correct").notNull(),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+export const multiplayerGame = pgTable("multiplayer_game", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  timeTaken: integer("time_taken").notNull(),
+  score: integer("score").notNull(),
+  completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const totalWrong = pgTable("total_wrong", {
-  id: uuid("id").defaultRandom().primaryKey(), 
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  wrong: integer("wrong").notNull(),
-  timeTaken: real("time_taken").notNull(),
-  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+export const multiplayerAttempts = pgTable("multiplayer_attempts", {
+  multiplayerId: uuid("multiplayer_id").notNull().references(() => multiplayerGame.id, { onDelete: "cascade" }),
+  attemptId: uuid("attempt_id").notNull().references(() => attempts.id, { onDelete: "cascade" }), 
 });
 
 export const questionsAttempted = pgTable("question_attempted", {
@@ -179,5 +170,7 @@ export type Question = typeof questions.$inferSelect;
 export type NewQuestion = typeof questions.$inferInsert;
 export type QuestionAttempted = typeof questionsAttempted.$inferSelect;
 export type NewQuestionAttempted = typeof questionsAttempted.$inferInsert;
-export type Attempt = typeof attempts.$inferSelect
-export type NewAttempt = typeof attempts.$inferInsert
+export type Attempt = typeof attempts.$inferSelect;
+export type NewAttempt = typeof attempts.$inferInsert;
+export type MultiplayerGame = typeof multiplayerGame.$inferSelect;
+export type NewMultiplayerGame = typeof multiplayerGame.$inferInsert;

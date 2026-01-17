@@ -31,11 +31,7 @@ function normalizeToArray<T>(data: T | T[]): T[] {
 
 app.post("/create-questions", async (req, res) => {
   const { topic, difficulty, language, questionType } = req.body;
-  console.log(topic)
-  console.log(language)
-  console.log(difficulty)
-  console.log(questionType)
-  if(!topic || !difficulty || !questionType || !language){
+  if(!topic || !difficulty || !questionType || !language){ 
         return res.status(404).json({
             success:false,
             error:'Details not found',
@@ -65,12 +61,22 @@ app.post("/create-questions", async (req, res) => {
     text = await generateQuestionDeepSeek(input);
     source = "deepseek";
   }
-
+  if(!text){
+    return res.status(403).json({
+      error:"Failed to create questions / Server Error",
+      success:false
+    })
+  }
   const parsed = extractJsonFromAI(text);
   const questionsArray = normalizeToArray(parsed);
-
-  await redis.set(redisHashedKey, questionsArray, { ex: 3600 });
-
+  if(!questionsArray){
+    return res.status(403).json({
+      error:"Failed to parse data",
+      success:true
+    })
+  }
+  await redis.set(redisHashedKey, questionsArray);
+  console.log(questionsArray)
   return res.status(200).json({
     source,
     data: questionsArray,

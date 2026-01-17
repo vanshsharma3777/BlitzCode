@@ -8,7 +8,6 @@ import axios from "axios";
 
 export async function POST(request:NextRequest){
     const session = await getServerSession(authOptions)
-    console.log(session?.user)
     if(!session?.user){
         return NextResponse.json({
             success:false,
@@ -21,7 +20,6 @@ export async function POST(request:NextRequest){
         .from(users)
         .where(eq(users.email , email))
         .limit(1)
-    console.log("Exsisting user " , existingUser)
     try{
         if(existingUser.length==0){
         return NextResponse.json({
@@ -39,7 +37,6 @@ export async function POST(request:NextRequest){
     }
     const questionType = type
     const res = await axios.post("http://localhost:3002/create-questions" , { topic , difficulty , language , questionType})
-    console.log("response :" , res.data.data)
 
     if(res.status===200){
     for(let i =0 ; i< res.data.data.length ; i++){

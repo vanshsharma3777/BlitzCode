@@ -50,6 +50,48 @@
       "when": 1768593873388,
       "tag": "0006_violet_praxagora",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1768633644694,
+      "tag": "0007_daffy_kulan_gath",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1768633842414,
+      "tag": "0008_early_magneto",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1768634102779,
+      "tag": "0009_dashing_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768634367440,
+      "tag": "0010_huge_wildside",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768634439152,
+      "tag": "0011_ambitious_vin_gonzales",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1768634675977,
+      "tag": "0012_gigantic_bloodaxe",
+      "breakpoints": true
     }
   ]
 }
