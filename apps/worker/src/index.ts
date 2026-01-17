@@ -31,6 +31,10 @@ function normalizeToArray<T>(data: T | T[]): T[] {
 
 app.post("/create-questions", async (req, res) => {
   const { topic, difficulty, language, questionType } = req.body;
+  console.log(topic)
+  console.log(questionType)
+  console.log(language)
+  console.log(difficulty)
   if(!topic || !difficulty || !questionType || !language){ 
         return res.status(404).json({
             success:false,
@@ -38,12 +42,15 @@ app.post("/create-questions", async (req, res) => {
             
         }) 
     }
+  
+  
   const input = { topic, difficulty, language, questionType };
   const redisHashedKey = redisHashKey(input);
+    console.log("REDIS KEY:", redisHashedKey);
 
   const cachedData = await redis.get(redisHashedKey);
-  console.log(cachedData)
   if (cachedData !== null) {
+    console.log('source  redis')
     return res.json({
       source: "cache",
       data: normalizeToArray(cachedData),
@@ -76,7 +83,7 @@ app.post("/create-questions", async (req, res) => {
     })
   }
   await redis.set(redisHashedKey, questionsArray);
-  console.log(questionsArray)
+  console.log('source llm')
   return res.status(200).json({
     source,
     data: questionsArray,
