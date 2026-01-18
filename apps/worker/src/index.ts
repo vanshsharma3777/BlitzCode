@@ -72,13 +72,24 @@ app.post("/create-questions", async (req, res) => {
   }
   console.log("her")
   const parsed = extractJsonFromAI(text);
-  const questionsArray = normalizeToArray(parsed);
+  let questionsArray = normalizeToArray(parsed);
   if (!questionsArray) {
     return res.status(403).json({
       error: "Failed to parse data",
       success: true
     })
   }
+
+  questionsArray = questionsArray.map(q => ({
+  ...q,
+  questionId: crypto.randomUUID()
+}));
+
+  const qId = questionsArray.map((q)=>{
+    return q.questionId
+  })
+
+  console.log(questionsArray)
   await redis.set(redisHashedKey, questionsArray);
   console.log('source llm')
 
@@ -89,7 +100,7 @@ app.post("/create-questions", async (req, res) => {
 });
 
 type CachedQuestion = {
-  questionId:number,
+  questionId:string,
   topic: string;
   description: string
   correctOptions: string
@@ -123,9 +134,8 @@ app.post('/get-questions', async (req, res) => {
       console.log('source  redis ')
 
       const parsedData: CachedQuestion[] = typeof(cachedData) === 'string' ? JSON.parse(cachedData) : cachedData
-      
+      console.log("parsedData ," , parsedData)
       const sendData = parsedData.map((q) => ({
-         questionId:randomUUID(),
         topic,
         description: q.description,
         code: q.code,
@@ -136,6 +146,7 @@ app.post('/get-questions', async (req, res) => {
         difficulty,
         language,
         questionType,
+        questionId:q.questionId
       }))
 
       return res.json({
@@ -148,6 +159,7 @@ app.post('/get-questions', async (req, res) => {
       console.log("response data length",response.data.data.length)
       console.log("response data ",response.data.data)
       const sendData : CachedQuestion[] = response.data.data
+      console.log("sendData" , sendData)
       if(!response || response.data === undefined){
         return res.status(404).json({
           success:false,
@@ -156,7 +168,6 @@ app.post('/get-questions', async (req, res) => {
       }
       
       const questionsArray = sendData.map((q: CachedQuestion) => ({
-         questionId:randomUUID(),
          topic,
          description: q.description,
          code: q.code,
@@ -167,11 +178,12 @@ app.post('/get-questions', async (req, res) => {
          difficulty,
          language,
          questionType,
+         questionId:q.questionId
        }))
 
        return res.status(200).json({
         success:true,
-        data: questionsArray
+        data: questionsArray,
        })
     }
 

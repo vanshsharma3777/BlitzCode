@@ -17,6 +17,7 @@
     "@types/axios": "^0.14.4",
     "@upstash/redis": "^1.36.1",
     "axios": "^1.13.2",
+    "crypto": "^1.0.1",
     "next": "16.1.0",
     "next-auth": "4",
     "react": "^19.2.0",

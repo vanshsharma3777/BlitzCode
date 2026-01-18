@@ -6,17 +6,10 @@ import Loader from "./Loader";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Timer from "./Timer";
+import { diff } from "util";
+import { Question } from "../types/allTypes";
+import SubmitConfirmation from "./atoms/SubmitConfirmation";
 
-interface Question {
-    description: string;
-    questionId: string;
-    code?: string;
-    options: {
-        id: string;
-        text: string;
-    }[];
-    questionType: "single correct" | "multiple correct" | "bugfixer";
-}
 
 export default function RenderQuestion() {
     const session = useSession()
@@ -25,10 +18,11 @@ export default function RenderQuestion() {
     const [questionsLength, setQuestionsLength] = useState<number>(0)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [totalTime, setTotalTime] = useState(0)
+    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [ response , setResponse] = useState<Question[]>([])
     const [loader, setLoader] = useState<boolean>(false)
-    const [answers , setAnswers] = useState<Record<string , string>>({})
+    const [answers , setAnswers] = useState<Record<string , string | string[]>>({})
     const searchParams = useSearchParams()
-
     const topic= searchParams.get('topic')?.trim().toLowerCase()
     const questionType = searchParams.get('questionType')?.trim().toLowerCase()
     const difficulty = searchParams.get('difficulty')?.trim().toLowerCase()
@@ -42,6 +36,7 @@ export default function RenderQuestion() {
 
     const fetchQuestions = async () => {
         try {
+
             setLoader(true)
             const response = await axios.post('http://localhost:3002/get-questions', {
                 topic,
@@ -49,6 +44,7 @@ export default function RenderQuestion() {
                 language,
                 questionType,
             })
+            console.log(response.data.data)
             return response
         } catch (error) {
 
@@ -81,112 +77,163 @@ export default function RenderQuestion() {
         getResponse()
     }, [questionsLength])
 
-    console.log(answers )
-    const handleSubmit=()=>{
+    const handleSubmit=async()=>{
+        const solvedQuestions = data.map((q) => {
+            const ans = answers[q.questionId];
+
+        return {
+            questionId: q.questionId,
+            userAnswer: Array.isArray(ans) ? ans : ans ? [ans] : [],
+        };
+        });
+        
+        const attemptId = crypto.randomUUID()
         const payload = {
             totalTime ,
-            answers: Object.entries(answers).map(([questionId , optionId])=>({
-                questionId,
-                selectedOptionId: optionId
-            })) 
+            attemptId,
+            topic,
+            difficulty,
+            language,
+            questionType,
+            solvedQuestions 
         }
-
-        router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
+         router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
     }
     const ques = data[currentIndex]
     if (!ques) return null
     if (!data.length) return <Loader />
     if (session.status === "loading" || loader === true) return <Loader />
     if (session.status === "unauthenticated") return <Loader />
-     
+    const answeredCount = Object.values(answers).filter(a => 
+  Array.isArray(a) ? a.length > 0 : a !== undefined && a !== ""
+).length;
+   
     return (
-        <div>
-            <header className="mx-10 mt-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-700 
-                                bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-4 shadow-lg backdrop-blur">
-                    <div className="text-2xl font-semibold text-slate-100 tracking-wide">Question Context</div>
-                    <div className="flex flex-wrap gap-3 text-sm font-medium">
-                        <Timer onStop={setTotalTime}></Timer>
-                        <span className="rounded-lg border border-blue-500/30  bg-blue-500/10 px-4 py-1  text-blue-400">
-                            {topic ? topic.charAt(0).toUpperCase() + topic.slice(1) : "Topic"}
-                        </span>
-                        <span className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-1 text-purple-400">
-                            {language ? language.charAt(0).toUpperCase() + language?.slice(1) : "Language"}
-                        </span>
-                        <span className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-1 text-emerald-400">
-                            {questionType ? questionType.charAt(0).toUpperCase() + questionType.slice(1) : "Topic"}
-                        </span>
-                        <span className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-1 text-amber-400">
-                            {difficulty ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : "Topic"}
-                        </span>
-                    </div>
-                </div>
-            </header>
-            
-                    <main key={ques.questionId} className="select-none mx-10 mt-8 rounded-2xl border border-slate-700 bg-slate-900 px-8 py-6 shadow-xl">
-                    <div className="mb-4 text-sm font-medium text-slate-400">Question {currentIndex + 1}</div>
-                    <div  className="mb-6 text-lg font-semibold text-slate-100 leading-relaxed">{ques.description}</div>
-                    {!ques.code ?'' : <pre className="mb-6 rounded-xl border border-slate-700 bg-slate-950 p-4 text-sm text-slate-200 overflow-x-auto">
-                        Code Snippet :
-                        <div>
-                            {ques.code}
-                        </div>
-                    </pre> }
-                    <div className="space-y-3">
-                        {ques.options.map((opt)=>
-                            <button className="w-full text-left" key={opt.id}    onClick={() => {
-                                setAnswers(prev => {
-                                    const current = prev[ques.questionId]   
-                                    if (current === opt.id) {
-                                    const updated = { ...prev }
-                                    delete updated[ques.questionId]
-                                    return updated
-                                    }
-                                     return {
-                                    ...prev,
-                                    [ques.questionId]: opt.id
-                                        }
-                                    })
-                            }
-                                
-                            }><div
-                        className={`cursor-pointer rounded-xl border px-4 py-3 transition
-                        ${
-                            answers[ques.questionId] === opt.id ? "border-blue-500 bg-blue-500/20 text-blue-300" : "border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
-                        }`}
-                    >
-                        {opt.text}
-                    </div></button>
-                    )}
-                    </div>
-                    <div className="mt-8 flex justify-end">
-                        {currentIndex!==0 && (
-                            <div className="px-3"> 
-                                <button
-                                 onClick={() => {
-                                 setCurrentIndex(i => i- 1)
-                        }}
-                        
-                        className="rounded-xl bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-500 transition disabled:opacity-50">
-                            Back
-                        </button>
-                            </div>
-                        )}
-                        <button
-                        onClick={() => {
-                            setCurrentIndex(i => i + 1)
-                            if(currentIndex===(data.length-1)){
-                               setCurrentIndex(data.length-1) 
-                               handleSubmit()
-                            }
-                        }}
-                        
-                        className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-500 transition disabled:opacity-50">
-                            {currentIndex === data.length - 1 ? "Submit" : "Next"}
-                        </button>
-                    </div>
-                    </main>
-
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 py-6">
+      <header className="mx-4 md:mx-10 mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-700/50 
+                        bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-4 shadow-xl backdrop-blur-md">
+          <div className="text-2xl font-bold text-slate-100 tracking-tight">Question Context</div>
+          <div className="flex flex-wrap gap-3 text-sm font-semibold">
+            <Timer onStop={setTotalTime} />
+            <span className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+              {topic ? topic.charAt(0).toUpperCase() + topic.slice(1) : "Topic"}
+            </span>
+            <span className="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+              {language ? language.charAt(0).toUpperCase() + language?.slice(1) : "Language"}
+            </span>
+            <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+              {questionType ? questionType.charAt(0).toUpperCase() + questionType.slice(1) : "Type"}
+            </span>
+            <span className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+              {difficulty ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : "Level"}
+            </span>
+          </div>
         </div>
-    )
+      </header>
+
+      <main key={ques.questionId} className="select-none mx-4 md:mx-10 mt-8 rounded-[2rem] border border-slate-800 bg-slate-900/50 px-6 py-8 md:px-10 md:py-10 shadow-2xl backdrop-blur-sm">
+        <div className="mb-4 inline-block rounded-lg bg-slate-800/50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-700">
+          Question {currentIndex + 1} of {data.length}
+        </div>
+        
+        <div className="mb-8 text-xl font-semibold text-slate-100 leading-snug">
+          {ques.description}
+        </div>
+
+        {ques.code && (
+          <div className="group relative mb-8">
+            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur opacity-75 group-hover:opacity-100 transition duration-500"></div>
+            <pre className="relative rounded-xl border border-slate-700 bg-slate-950 p-5 text-sm font-mono leading-relaxed text-blue-300/90 italic overflow-x-auto shadow-inner">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-600 border-b border-slate-800 pb-1">Code Snippet</div>
+              <code>{ques.code}</code>
+            </pre>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {ques.options.map((opt) => {
+            const answer = answers[ques.questionId]
+            const isSelected = ques.questionType === "multiple"
+              ? Array.isArray(answer) && answer.includes(opt.id)
+              : answer === opt.id
+            
+            return (
+              <button 
+                className="w-full text-left outline-none" 
+                key={opt.id} 
+                onClick={() => {
+                  setAnswers(prev => {
+                    const current = prev[ques.questionId]
+                    if (ques.questionType === 'multiple') {
+                      const currentArray = Array.isArray(current) ? current : []
+                      if (currentArray.includes(opt.id)) {
+                        return { ...prev, [ques.questionId]: currentArray.filter(id => id !== opt.id) }
+                      }
+                      return { ...prev, [ques.questionId]: [...currentArray, opt.id] }
+                    }
+                    if (current === opt.id) {
+                      const updated = { ...prev }
+                      delete updated[ques.questionId]
+                      return updated
+                    }
+                    return { ...prev, [ques.questionId]: opt.id }
+                  })
+                }}
+              >
+                <div className={`cursor-pointer rounded-2xl border-2 px-6 py-4 transition-all duration-200 active:scale-[0.98]
+                  ${isSelected 
+                    ? "border-blue-500 bg-blue-500/10 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
+                    : "border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-600 hover:bg-slate-800 hover:text-white hover:shadow-lg"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors duration-300 ${
+                      isSelected ? "border-blue-400 bg-blue-500 text-white" : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
+                    }`}>
+                      {isSelected && <span className="text-[10px] font-bold">✓</span>}
+                    </div>
+                    <span className="text-base font-medium">{opt.text}</span>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="mt-12 flex items-center justify-end gap-4 border-t border-slate-800 pt-8">
+          {currentIndex !== 0 && (
+            <button
+              onClick={() => setCurrentIndex(i => i - 1)}
+              className="rounded-xl border border-slate-700 bg-slate-800 px-8 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-700 hover:border-slate-500 active:scale-95 shadow-lg"
+            >
+              Back
+            </button>
+          )}
+          <button
+            onClick={() => {
+              if (currentIndex === (data.length - 1)) {
+                setCurrentIndex(data.length - 1)
+                setIsModalOpen(true);
+              } else {
+                setCurrentIndex(i => i + 1);
+              }
+            }}
+            className="group relative flex items-center gap-2 rounded-xl bg-blue-600 px-10 py-2.5 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] active:scale-95 shadow-xl"
+          >
+            {currentIndex === data.length - 1 ? "Submit Exam" : "Next Question"}
+            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+      </main>
+
+      <SubmitConfirmation
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onConfirm={handleSubmit} 
+        totalQuestions={data.length}
+        answeredCount={answeredCount}
+      />
+    </div>
+  )
 }
