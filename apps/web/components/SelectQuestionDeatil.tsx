@@ -90,7 +90,7 @@ export default function SelectQuestionsDetails() {
     </select>
     {error && <div className="text-sm text-red-400">{error}</div>}
         {loader ?
-         <button type="submit" disabled={loader} className="w-full rounded-lg bg-blue-500 py-2.5 cursor-not-allowed font-semibold text-white hover:bg-blue-600 transition active:scale-[0.98]">Submitting Details...</button>
+         <button type="submit" disabled={loader} className="w-full rounded-lg bg-blue-500 py-2.5 cursor-not-allowed font-semibold text-white hover:bg-blue-600 transition active:scale-[0.98]">Generating Questions...</button>
         :   <button type="submit" disabled={loader} className="w-full rounded-lg bg-blue-500 py-2.5 font-semibold text-white hover:bg-blue-600 transition active:scale-[0.98]">Start Practice</button> }
 
     

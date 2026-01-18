@@ -1,6 +1,5 @@
 import express from "express";
 import { Redis } from "@upstash/redis";
-import { prompt } from "../prompt";
 import { redisHashKey } from "../getHashKey";
 import { generateQuestionDeepSeek } from "../deepseek";
 import { generateQuestionGemini } from "../gemini";
@@ -8,7 +7,6 @@ import { randomUUID } from "crypto";
 import { extractJsonFromAI } from "../jsonConverter";
 import cors from 'cors'
 import axios from "axios";
-import { send } from "process";
 
 const app = express();
 app.use(express.json());
@@ -39,7 +37,6 @@ app.post("/create-questions", async (req, res) => {
     return res.status(404).json({
       success: false,
       error: 'Details not found',
-
     })
   }
 
