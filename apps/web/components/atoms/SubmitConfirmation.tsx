@@ -18,18 +18,13 @@ export default function SubmitConfirmation({ isOpen, onClose, onConfirm, totalQu
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-slate-950/90 backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
-
-      {/* Modal Card */}
       <div className="relative w-full max-w-md transform overflow-hidden rounded-[2.5rem] border border-slate-800 bg-slate-900 p-1 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] transition-all">
         <div className="rounded-[2.3rem] bg-slate-950 p-8 text-center">
-          
-          {/* Status Icon with Glow */}
-          <div className={`mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-4 shadow-2xl transition-all duration-500 ${
+                    <div className={`mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border-4 shadow-2xl transition-all duration-500 ${
             isIncomplete 
             ? "border-amber-500/20 bg-amber-500/10 text-amber-500 shadow-amber-500/20 animate-pulse" 
             : "border-blue-500/20 bg-blue-500/10 text-blue-500 shadow-blue-500/20"
@@ -44,9 +39,7 @@ export default function SubmitConfirmation({ isOpen, onClose, onConfirm, totalQu
           <h3 className="mb-2 text-3xl font-black tracking-tight text-white">
             {isIncomplete ? "Wait a minute!" : "All set!"}
           </h3>
-          
-          {/* Progress Mini-Bar inside Modal */}
-          <div className="mt-4 mb-6 flex items-center justify-center gap-2">
+                    <div className="mt-4 mb-6 flex items-center justify-center gap-2">
             <div className="h-1.5 w-32 rounded-full bg-slate-800 overflow-hidden">
                <div 
                  className={`h-full transition-all duration-700 ${isIncomplete ? 'bg-amber-500' : 'bg-blue-500'}`}

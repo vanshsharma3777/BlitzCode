@@ -62,9 +62,7 @@ export default function SelectQuestionsDetails() {
     }
     return (
     <div className="min-h-screen bg-[#020617] flex items-center justify-center px-4 relative overflow-hidden">
-      
-      {/* Decorative Background Glows */}
-      <div className="absolute top-1/4 -left-20 w-80 h-80 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-1/4 -left-20 w-80 h-80 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       <form 
@@ -72,9 +70,7 @@ export default function SelectQuestionsDetails() {
         className="w-full max-w-lg relative group rounded-[2.5rem] border border-slate-800 bg-slate-900/40 p-1 shadow-2xl backdrop-blur-xl transition-all hover:border-slate-700"
       >
         <div className="rounded-[2.3rem] bg-slate-900/90 p-8 md:p-10 space-y-8">
-          
-          {/* Header Section */}
-          <div className="text-center space-y-2">
+                    <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -89,7 +85,6 @@ export default function SelectQuestionsDetails() {
           </div>
 
           <div className="space-y-6">
-            {/* Row 1: Language & Topic */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Language</label>
@@ -122,8 +117,6 @@ export default function SelectQuestionsDetails() {
                 />
               </div>
             </div>
-
-            {/* Row 2: Difficulty & Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Difficulty</label>
@@ -160,8 +153,6 @@ export default function SelectQuestionsDetails() {
               <span className="text-sm">⚠️</span> {error}
             </div>
           )}
-
-          {/* Action Button */}
           <button 
             type="submit" 
             disabled={loader}

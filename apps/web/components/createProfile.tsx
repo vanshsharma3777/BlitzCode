@@ -50,18 +50,12 @@ export default function CreateProfile({ email }: { email: string }) {
   }
   return (
     <div className="min-h-screen bg-[#020617] flex items-center justify-center px-4 relative overflow-hidden">
-      
-      {/* Decorative background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
-
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="w-full max-w-md relative group">
-        {/* Animated Border Gradient Effect */}
         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-        
+
         <div className="relative rounded-[2rem] bg-slate-900 border border-slate-800 p-8 md:p-10 shadow-2xl space-y-8 backdrop-blur-sm">
-          
-          {/* Header */}
-          <div className="text-center space-y-2">
+                    <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 mb-4 shadow-inner">
                <span className="text-3xl">🛡️</span>
             </div>
@@ -74,7 +68,6 @@ export default function CreateProfile({ email }: { email: string }) {
           </div>
 
           <div className="space-y-5">
-            {/* Email Field (Read Only) */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Verified Email</label>
               <div className="relative">
@@ -87,8 +80,6 @@ export default function CreateProfile({ email }: { email: string }) {
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500/50 text-xs">✓ Verified</div>
               </div>
             </div>
-
-            {/* Username Field */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Username</label>
               <input 
@@ -99,8 +90,6 @@ export default function CreateProfile({ email }: { email: string }) {
               />
             </div>
           </div>
-
-          {/* Feedback Messages */}
           {error && (
             <div className="flex items-center gap-2 rounded-xl bg-red-500/5 border border-red-500/20 p-4 text-xs font-bold text-red-400 animate-shake">
               <span>⚠️</span> {error}
@@ -112,8 +101,6 @@ export default function CreateProfile({ email }: { email: string }) {
               <span>✅</span> Profile setup complete! Redirecting...
             </div>
           )}
-
-          {/* Submit Button */}
           <button
             onClick={handleSubmit}
             disabled={loading}
@@ -129,7 +116,6 @@ export default function CreateProfile({ email }: { email: string }) {
                 "Create Profile"
               )}
             </span>
-            {/* Glossy overlay effect on hover */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           </button>
 
