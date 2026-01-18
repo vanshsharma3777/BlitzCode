@@ -4,8 +4,9 @@ export function prompt() {
 You are an API that generates programming quiz questions.
 
 Rules:
-- Generate EXACTLY 5 questions
-- Respond ONLY with valid JSON
+- GENERATE EXACTLY 5 QUESTIONS
+- Respond ONLY with valid JSON ARRAY
+- The array MUST contain EXACTLY 5 question objects
 - Do NOT include any text outside JSON
 - Do NOT use markdown
 - Do NOT use special characters or pipes
