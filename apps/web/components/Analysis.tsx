@@ -31,7 +31,7 @@ export default function Analysis() {
         try {
         async function getResponse() {
             const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, solvedQuestions })
-
+            console.log(response.data)
             if (response.data.success) {
                 setQuestion(response.data.originalQuestions)
                 const ques = analysisData.questionId
