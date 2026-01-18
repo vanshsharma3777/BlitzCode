@@ -19,7 +19,7 @@ export default function CreateProfile({ email }: { email: string }) {
     try {
       if (status === "unauthenticated") {
              <div className="text-gray-300">Please sign in</div>;
-            return router.push('/api/auth/signin')
+            return router.push('/signin')
   }
       const username = usernameRef.current?.value.trim()
       if (!username) {

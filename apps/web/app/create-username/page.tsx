@@ -7,7 +7,7 @@ export default async function Username(){
 
   const session =await getServerSession(authOptions);
   if(!session?.user){
-    redirect('/api/auth/signin')
+    redirect('/signin')
   }
   console.log(session)
   return(

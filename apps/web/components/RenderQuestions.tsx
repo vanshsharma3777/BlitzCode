@@ -15,7 +15,6 @@ export default function RenderQuestion() {
     const session = useSession()
     const router = useRouter()
     const [data, setData] = useState<Question[]>([])
-    const [questionsLength, setQuestionsLength] = useState<number>(0)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [totalTime, setTotalTime] = useState(0)
     const [isModalOpen, setIsModalOpen] = useState(false); 
@@ -30,7 +29,7 @@ export default function RenderQuestion() {
 
     useEffect(() => {
         if (session.status === "unauthenticated") {
-            router.replace("/api/auth/signin")
+            router.replace("/signin")
         }
     }, [session.status, router])
 
@@ -44,7 +43,6 @@ export default function RenderQuestion() {
                 language,
                 questionType,
             })
-            console.log(response.data.data)
             return response
         } catch (error) {
 
@@ -57,8 +55,29 @@ export default function RenderQuestion() {
         async function getResponse() {
             const res = await fetchQuestions()
             setData(res?.data.data)
-            if (questionsLength <= 3) {
-                const res = await axios.post('http://localhost:3002/get-questions', {
+            console.log("heuhuj")
+            console.log(res?.data.data.length)
+            setData(prev => {
+                    const existingIds = new Set(prev?.map(q => q.description))
+
+                    const newOnes = res?.data.data.filter(
+                        (q: Question) => !existingIds.has(q.description)
+                    );
+                    return [...prev, ...newOnes]
+                })
+            
+        }
+        getResponse()
+    }, [])
+
+    useEffect(()=>{
+      setTimeout(() => {
+            async function fetchMoreQuestions(){
+              console.log("data.lenth" , data.length)
+              console.log("currentndex" , currentIndex)
+                if (data.length <= currentIndex) {
+                  console.log('ran' , data.length)
+                const res = await axios.post('http://localhost:3002/create-questions', {
                 topic,
                 difficulty,
                 language,
@@ -73,9 +92,10 @@ export default function RenderQuestion() {
                     return [...prev, ...newOnes]
                 })
             }
-        }
-        getResponse()
-    }, [questionsLength])
+              }
+              fetchMoreQuestions()
+            }, 5000 , );
+    },[currentIndex])
 
     const handleSubmit=async()=>{
         const solvedQuestions = data.map((q) => {

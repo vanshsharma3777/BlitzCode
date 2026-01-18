@@ -1,8 +1,9 @@
+import Navigate from "../components/Navigate";
 
 
 export default async function Home(){
  return(
-  <div>helo</div>
+    <Navigate></Navigate>
  )
 
 }

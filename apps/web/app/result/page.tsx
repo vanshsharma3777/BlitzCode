@@ -6,7 +6,7 @@ import Analysis from "../../components/Analysis"
 export default async function Result(){
     const session = await getServerSession(authOptions)
     if(!session?.user){
-        redirect('/api/auth/signin')
+        redirect('/signin')
     }
     
     return (

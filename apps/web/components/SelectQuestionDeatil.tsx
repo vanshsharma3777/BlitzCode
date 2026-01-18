@@ -20,7 +20,7 @@ export default function SelectQuestionsDetails() {
         return <Loader ></Loader>
 
     if (session.status === 'unauthenticated')
-        router.replace('/api/auth/signin')
+        router.replace('/signin')
 
     const handleSubmit = async (e: React.FormEvent) => {
          try{
@@ -90,6 +90,7 @@ export default function SelectQuestionsDetails() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Language</label>
                 <select 
                   value={language} 
+                  disabled={loader}
                   onChange={e => setLanguage(e.target.value.trim().toLowerCase())} 
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer appearance-none"
                 >
@@ -111,6 +112,7 @@ export default function SelectQuestionsDetails() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Topic</label>
                 <input 
                   value={topic} 
+                  disabled={loader}
                   onChange={e => setTopic(e.target.value)} 
                   placeholder="Array, DP, etc." 
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-700" 
@@ -122,6 +124,7 @@ export default function SelectQuestionsDetails() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Difficulty</label>
                 <select 
                   value={difficulty} 
+                  disabled={loader}
                   onChange={e => setDifficulty(e.target.value.trim().toLowerCase())} 
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer appearance-none"
                 >
@@ -135,7 +138,8 @@ export default function SelectQuestionsDetails() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Question Type</label>
                 <select 
-                  value={type} 
+                  value={type}
+                  disabled={loader} 
                   onChange={e => setType(e.target.value.trim().toLowerCase())} 
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer appearance-none"
                 >

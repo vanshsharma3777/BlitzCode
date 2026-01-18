@@ -18,6 +18,9 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "database",
     }, secret: process.env.AUTH_SECRET!,
+    pages:{
+        signIn:'/signin'
+    },
     callbacks: {
         async session({ session, user }) {
             return session;

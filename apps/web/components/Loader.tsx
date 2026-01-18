@@ -23,10 +23,14 @@ export default function Loader() {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-10">
+      <div className="absolute flex  bottom-10">
         <p className="text-[10px] font-medium text-slate-600 tracking-widest uppercase">
-          Blitzcode AI Engine v2.0
+          Blitzcode  
         </p>
+        <p className="px-1 text-[10px] font-medium text-slate-600 tracking-widest uppercase">
+          made with ❤️ by vansh
+        </p>
+        
       </div>
     </div>
   );

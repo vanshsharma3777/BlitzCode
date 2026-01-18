@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import { extractJsonFromAI } from "../jsonConverter";
 import cors from 'cors'
 import axios from "axios";
+import { generateQuestionMistral } from "../mistral";
 
 const app = express();
 app.use(express.json());
@@ -41,29 +42,24 @@ app.post("/create-questions", async (req, res) => {
   }
 
   const input = { topic, difficulty, language, questionType };
-  const redisHashedKey = redisHashKey(input);
-  console.log("REDIS KEY:", redisHashedKey);
-
-  const cachedData = await redis.get(redisHashedKey);
-  if (cachedData !== null) {
-    console.log('source  redis ,', cachedData)
-    return res.json({
-      source: "cache",
-      data: normalizeToArray(cachedData),
-    });
-  }
-
+  const redisHashedKey = redisHashKey(input); 
   let text: string;
-  let source: "gemini" | "deepseek";
+  let source: "gemini" | "deepseek" | 'mistral';
 
   try {
-    text = await generateQuestionGemini(input);
-    source = "gemini";
-  } catch {
-    console.warn("Gemini failed → falling back to DeepSeek");
+  text = await generateQuestionGemini(input);
+  source = "gemini";
+} catch {
+  console.warn("Gemini failed → trying DeepSeek");
+  try {
     text = await generateQuestionDeepSeek(input);
     source = "deepseek";
+  } catch {
+    console.warn("DeepSeek failed → falling back to Mistral");
+    text = await generateQuestionMistral(input);
+    source = "mistral";
   }
+}
   if (!text) {
     return res.status(403).json({
       error: "Failed to create questions / Server Error",
@@ -88,6 +84,7 @@ app.post("/create-questions", async (req, res) => {
   const qId = questionsArray.map((q)=>{
     return q.questionId
   })
+  const cachedData = await redis.get(redisHashedKey);
 
   console.log(questionsArray)
   await redis.set(redisHashedKey, questionsArray);
@@ -130,9 +127,7 @@ app.post('/get-questions', async (req, res) => {
 
     const cachedData = await redis.get(redisHashedKey);
     if (cachedData!== null) {
-
       console.log('source  redis ')
-
       const parsedData: CachedQuestion[] = typeof(cachedData) === 'string' ? JSON.parse(cachedData) : cachedData
       console.log("parsedData ," , parsedData)
       const sendData = parsedData.map((q) => ({
