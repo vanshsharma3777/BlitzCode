@@ -1,0 +1,22 @@
+{
+  "name": "@repo/workers",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=3005 bun src/index.ts",
+    "start": "bun src/index.ts"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.0.9"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@upstash/redis": "^1.36.1",
+    "dotenv": "^17.2.3"
+  }
+}

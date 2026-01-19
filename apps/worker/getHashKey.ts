@@ -5,6 +5,7 @@ interface  Input  {
       difficulty:"easy" | 'medium' | 'hard',
       language:"cpp" | "java" | "javascript" | "c" | "python" | 'rust' | 'go' | 'typescript' ,
       questionType: "single correct" | "multiple correct" | "bugfixer",
+      questionLength: number
     };
 export function redisHashKey(input :Input){
   return (

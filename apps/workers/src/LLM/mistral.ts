@@ -17,9 +17,9 @@ interface MistralError {
 
 interface Input {
   topic: string;
-  difficulty: "easy" | "medium" | "hard";
-  language: "cpp" | "java" | "javascript" | "c" | "python" | "rust" | "go" | "typescript";
-  questionType: "single correct" | "multiple correct" | "bugfixer";
+  difficulty: string
+  language:string
+  questionType: string
   questionLength:number
 }
 
@@ -58,5 +58,6 @@ export async function generateQuestionMistral({ topic, difficulty, language, que
 if (!content) {
   throw new Error("Mistral returned an empty or invalid response structure");
 }
+console.log("MISTRALL" , JSON.stringify(content))
 return JSON.stringify(content);
 }

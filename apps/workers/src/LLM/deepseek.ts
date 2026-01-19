@@ -8,13 +8,14 @@ interface OpenRouterResponse  {
   }[];
 }
 
-interface Input  {
-      topic:string,
-      difficulty:"easy" | 'medium' | 'hard',
-      language:"cpp" | "java" | "javascript" | "c" | "python" | 'rust' | 'go' | 'typescript' ,
-      questionType: "single correct" | "multiple correct" | "bugfixer",
-      questionLength:number
-    };
+interface Input {
+  topic: string;
+  difficulty: string
+  language:string
+  questionType: string
+  questionLength:number
+}
+
 
 export async function generateQuestionDeepSeek({topic , difficulty , language , questionType  , questionLength}:Input){
     const systemPrompt = prompt() 

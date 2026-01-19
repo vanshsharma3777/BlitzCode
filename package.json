@@ -10,6 +10,7 @@
     "dev:web": "turbo run dev --filter=web",
     "dev:websocket": "turbo run dev --filter=websocket",
     "dev:worker": "turbo run dev --filter=worker",
+    "dev:workers": "turbo run dev --filter=workers",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",

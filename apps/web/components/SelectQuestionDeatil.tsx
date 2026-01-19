@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Loader from "./Loader"
 import axios from "axios"
-import { diff } from "util"
 
 export default function SelectQuestionsDetails() {
     const router = useRouter()
     const [language, setLanguage] = useState('')
     const [topic, setTopic] = useState('')
     const [difficulty, setDifficulty] = useState('')
+    const [questionLength, setQuestionLength] = useState<number>(5)
     const [type, setType] = useState('')
     const [error, setError] = useState('')
     const [loader , setLoader] = useState(false)
@@ -23,6 +23,7 @@ export default function SelectQuestionsDetails() {
         router.replace('/signin')
 
     const handleSubmit = async (e: React.FormEvent) => {
+      console.log(topic.trim().toLowerCase())
          try{
             setError('')
             setLoader(true)
@@ -33,13 +34,8 @@ export default function SelectQuestionsDetails() {
             }
             const questionType = type
             setTopic(topic.trim().toLowerCase())
-            const response = await axios.post('http://localhost:3002/create-questions' , {
-                    topic ,
-                    difficulty,
-                    language ,
-                    questionType ,
-                })
-            router.push(`/questions-set?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}`)
+                
+           router.push(`/questions-set?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
                 setTimeout(() => {
                     setLoader(false)
                 }, 2000);
@@ -47,6 +43,7 @@ export default function SelectQuestionsDetails() {
             console.log("error :" , error)
             if(axios.isAxiosError(error)){
                 if(error.response?.status===404){
+                  console.log(error.response.data)
                     setError("Feilds not provided");
                 }else if(error.response?.status===403 && error.response.data.success === false){
                     setError("Failed to create questions.")
@@ -144,12 +141,28 @@ export default function SelectQuestionsDetails() {
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer appearance-none"
                 >
                   <option value="">Select Type</option>
-                  <option value="single">Single Correct</option>
-                  <option value="multiple">Multiple Correct</option>
-                  <option value="bugfix">Bugfixer</option>
+                  <option value="single correct">Single Correct</option>
+                  <option value="multiple correct">Multiple Correct</option>
+                  <option value="bugfixer">Bugfixer</option>
                 </select>
               </div>
+
+              
             </div>
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Number of questions</label>
+                <select 
+                  value={questionLength}
+                  disabled={loader} 
+                  onChange={e => setQuestionLength(Number(e.target.value))} 
+                  className="w-full rounded-xl bg-slate-950 border border-slate-800 px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer appearance-none"
+                >
+                  <option value="">Select Number</option>
+                  <option value={5}>05</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                </select>
+              </div>
           </div>
 
           {error && (

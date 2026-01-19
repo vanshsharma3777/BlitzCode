@@ -12,123 +12,91 @@ import SubmitConfirmation from "./atoms/SubmitConfirmation";
 
 
 export default function RenderQuestion() {
-    const session = useSession()
-    const router = useRouter()
-    const [data, setData] = useState<Question[]>([])
-    const [currentIndex, setCurrentIndex] = useState(0)
-    const [totalTime, setTotalTime] = useState(0)
-    const [isModalOpen, setIsModalOpen] = useState(false); 
-    const [ response , setResponse] = useState<Question[]>([])
-    const [loader, setLoader] = useState<boolean>(false)
-    const [answers , setAnswers] = useState<Record<string , string | string[]>>({})
-    const searchParams = useSearchParams()
-    const topic= searchParams.get('topic')?.trim().toLowerCase()
-    const questionType = searchParams.get('questionType')?.trim().toLowerCase()
-    const difficulty = searchParams.get('difficulty')?.trim().toLowerCase()
-    const language = searchParams.get('language')?.trim().toLowerCase()
-
-    useEffect(() => {
-        if (session.status === "unauthenticated") {
-            router.replace("/signin")
-        }
-    }, [session.status, router])
-
-    const fetchQuestions = async () => {
-        try {
-
-            setLoader(true)
-            const response = await axios.post('http://localhost:3002/get-questions', {
-                topic,
-                difficulty,
-                language,
-                questionType,
-            })
-            return response
-        } catch (error) {
-
-        } finally {
-            setLoader(false)
-        }
+  const session = useSession()
+  const router = useRouter()
+  const [data, setData] = useState<Question[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [totalTime, setTotalTime] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [response, setResponse] = useState<Question[]>([])
+  const [loader, setLoader] = useState<boolean>(false)
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
+  const searchParams = useSearchParams()
+  const topic = searchParams.get('topic')?.trim().toLowerCase() || ''
+  const questionType = searchParams.get('questionType')?.trim().toLowerCase()
+  const difficulty = searchParams.get('difficulty')?.trim().toLowerCase()
+  const questionLength = searchParams.get('questionLength')?.trim().toLowerCase()
+  const language = searchParams.get('language')?.trim().toLowerCase()
+  useEffect(() => {
+    if (session.status === "unauthenticated") {
+      router.replace("/signin")
     }
-    useEffect(() => {
-        let p = 0
-        async function getResponse() {
-            const res = await fetchQuestions()
-            setData(res?.data.data)
-            console.log("heuhuj")
-            console.log(res?.data.data.length)
-            setData(prev => {
-                    const existingIds = new Set(prev?.map(q => q.description))
+  }, [session.status, router])
 
-                    const newOnes = res?.data.data.filter(
-                        (q: Question) => !existingIds.has(q.description)
-                    );
-                    return [...prev, ...newOnes]
-                })
-            
-        }
-        getResponse()
-    }, [])
-
-    useEffect(()=>{
-      setTimeout(() => {
-            async function fetchMoreQuestions(){
-              console.log("data.lenth" , data.length)
-              console.log("currentndex" , currentIndex)
-                if (data.length <= currentIndex) {
-                  console.log('ran' , data.length)
-                const res = await axios.post('http://localhost:3002/create-questions', {
-                topic,
-                difficulty,
-                language,
-                questionType,
-            })  
-                setData(prev => {
-                    const existingIds = new Set(prev?.map(q => q.description))
-
-                    const newOnes = res?.data.data.filter(
-                        (q: Question) => !existingIds.has(q.description)
-                    );
-                    return [...prev, ...newOnes]
-                })
-            }
-              }
-              fetchMoreQuestions()
-            }, 5000 , );
-    },[currentIndex])
-
-    const handleSubmit=async()=>{
-        const solvedQuestions = data.map((q) => {
-            const ans = answers[q.questionId];
-
-        return {
-            questionId: q.questionId,
-            userAnswer: Array.isArray(ans) ? ans : ans ? [ans] : [],
-        };
-        });
-        
-        const attemptId = crypto.randomUUID()
-        const payload = {
-            totalTime ,
-            attemptId,
-            topic,
-            difficulty,
-            language,
-            questionType,
-            solvedQuestions 
-        }
-         router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
+  const fetchQuestions = async () => {
+    try {
+      setLoader(true)
+      const response = await axios.post('/api/get-questions', {
+        topic:topic.trim().toLowerCase(),
+        difficulty,
+        language,
+        questionType,
+        questionLength,
+      }, { withCredentials: true })
+      console.log("question came form worker")
+      console.log(response.data)
+      return response
+    } catch (error) {
+      console.log("catch running")
+    } finally {
+      setLoader(false)
     }
-    const ques = data[currentIndex]
-    if (!ques) return null
-    if (!data.length) return <Loader />
-    if (session.status === "loading" || loader === true) return <Loader />
-    if (session.status === "unauthenticated") return <Loader />
-    const answeredCount = Object.values(answers).filter(a => 
-  Array.isArray(a) ? a.length > 0 : a !== undefined && a !== ""
-).length;
-   
-    return (
+  }
+  useEffect(() => {
+    if (session.status !== "authenticated") return
+    async function getResponse() {
+      const res = await fetchQuestions()
+      if (!res?.data?.data) return
+      setData(res?.data.data)
+      console.log(res.data.data.length)
+    }
+    getResponse()
+  }, [session.status])
+  const handleSubmit = async () => {
+    const solvedQuestions = data.map((q) => {
+      const ans = answers[q.questionId];
+
+      return {
+        questionId: q.questionId,
+        userAnswer: Array.isArray(ans) ? ans : ans ? [ans] : [],
+      };
+    });
+
+    const attemptId = crypto.randomUUID()
+    const payload = {
+      totalTime,
+      attemptId,
+      topic,
+      difficulty,
+      language,
+      questionType,
+      questionLength,
+      solvedQuestions
+    }
+    router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
+  }
+
+
+  const ques = data[currentIndex]
+  if (!ques) return null
+  if (!data.length) return <Loader />
+  if (session.status === "loading" || loader === true) return <Loader />
+  if (session.status === "unauthenticated") return <Loader />
+  const answeredCount = Object.values(answers).filter(a =>
+    Array.isArray(a) ? a.length > 0 : a !== undefined && a !== ""
+  ).length;
+
+  return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 py-6">
       <header className="mx-4 md:mx-10 mt-6">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-700/50 
@@ -156,7 +124,7 @@ export default function RenderQuestion() {
         <div className="mb-4 inline-block rounded-lg bg-slate-800/50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-700">
           Question {currentIndex + 1} of {data.length}
         </div>
-        
+
         <div className="mb-8 text-xl font-semibold text-slate-100 leading-snug">
           {ques.description}
         </div>
@@ -177,11 +145,11 @@ export default function RenderQuestion() {
             const isSelected = ques.questionType === "multiple"
               ? Array.isArray(answer) && answer.includes(opt.id)
               : answer === opt.id
-            
+
             return (
-              <button 
-                className="w-full text-left outline-none" 
-                key={opt.id} 
+              <button
+                className="w-full text-left outline-none"
+                key={opt.id}
                 onClick={() => {
                   setAnswers(prev => {
                     const current = prev[ques.questionId]
@@ -202,15 +170,14 @@ export default function RenderQuestion() {
                 }}
               >
                 <div className={`cursor-pointer rounded-2xl border-2 px-6 py-4 transition-all duration-200 active:scale-[0.98]
-                  ${isSelected 
-                    ? "border-blue-500 bg-blue-500/10 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
+                  ${isSelected
+                    ? "border-blue-500 bg-blue-500/10 text-blue-100 shadow-[0_0_20px_rgba(59,130,246,0.15)]"
                     : "border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-600 hover:bg-slate-800 hover:text-white hover:shadow-lg"
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors duration-300 ${
-                      isSelected ? "border-blue-400 bg-blue-500 text-white" : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
-                    }`}>
+                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors duration-300 ${isSelected ? "border-blue-400 bg-blue-500 text-white" : "border-slate-700 bg-slate-900 group-hover:border-slate-500"
+                      }`}>
                       {isSelected && <span className="text-[10px] font-bold">✓</span>}
                     </div>
                     <span className="text-base font-medium">{opt.text}</span>
@@ -248,9 +215,9 @@ export default function RenderQuestion() {
       </main>
 
       <SubmitConfirmation
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onConfirm={handleSubmit} 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleSubmit}
         totalQuestions={data.length}
         answeredCount={answeredCount}
       />

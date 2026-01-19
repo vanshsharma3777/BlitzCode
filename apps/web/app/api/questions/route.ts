@@ -28,7 +28,7 @@ export async function POST(request:NextRequest){
         } ,{status:401})
     }
     
-    const { topic , difficulty , type , language } = await request.json();
+    const { topic , difficulty , type , language , questionLength } = await request.json();
     if(!topic || !difficulty || !type || !language){
         return NextResponse.json({
             success:false,
@@ -36,7 +36,7 @@ export async function POST(request:NextRequest){
         },{status:404}) 
     }
     const questionType = type
-    const res = await axios.post("http://localhost:3002/create-questions" , { topic , difficulty , language , questionType})
+    const res = await axios.post("http://localhost:3002/create-questions" , { topic , difficulty , language , questionType , questionLength})
 
     if(res.status===200){
     for(let i =0 ; i< res.data.data.length ; i++){

@@ -15,6 +15,7 @@ interface Data {
   topic: string;
   language: string;
   questionType: string;
+  questionLength:number
   difficulty: string;
 }
 
@@ -35,18 +36,26 @@ export async function POST(request:NextRequest){
             },{status:401})
         }
         
-        const { attemptId , topic , difficulty , language , questionType , solvedQuestions}:Data = await request.json();
-        if(!topic ||!language || !difficulty || !questionType || !attemptId || !solvedQuestions){
+        const { attemptId , topic , difficulty , language , questionType , questionLength ,solvedQuestions}:Data = await request.json();
+        console.log(attemptId)
+        console.log(topic)
+        console.log(difficulty)
+        console.log(language)
+        console.log(questionType)
+        console.log(solvedQuestions)
+        console.log(questionLength)
+        if(!topic ||!language || !difficulty || !questionType || !attemptId || !solvedQuestions || questionLength===undefined){
         return NextResponse.json({
             success:false,
-            error:"Username not provided",
+            error:"Data cannot be submitted",
         },{status:404})
         }
         const input = { 
             topic : topic as string, 
             difficulty : difficulty as 'easy' | 'medium' | 'hard', 
             language : language as "cpp" | "java" | "javascript" | "c" | "python" | "rust" | "go" | "typescript",
-            questionType : questionType as "single correct" | "multiple correct" | "bugfixer"
+            questionType : questionType as "single correct" | "multiple correct" | "bugfixer",
+            questionLength: questionLength 
          };
         try{
             const quizKey =  redisHashKey(input) 
@@ -61,6 +70,6 @@ export async function POST(request:NextRequest){
              return NextResponse.json({
                 error:error,
                 success:false
-             },{status:403})
+             },{status:405})
         }
 }

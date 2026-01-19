@@ -43,6 +43,14 @@ export interface AnalysisData {
   solvedQuestions: SolvedQuestion[];
 }
 
+export interface LLMInput {
+  topic: string;
+  difficulty: string;
+  language: string;
+  questionType: string;
+  questionLength: number;
+}
+
 export interface Theme {
     text: string;
     stroke: string;

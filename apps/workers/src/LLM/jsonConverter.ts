@@ -1,4 +1,4 @@
-export function extractJsonFromAI(text: string): any {
+export function extractJsonFromAI(text: string) : any {
   if (typeof text !== "string") {
     throw new Error("AI response is not a string");
   }

@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react"
 import Loader from "./Loader"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, JSX } from "react"
 import React from "react"
 import axios from "axios"
 import AnalysisHeader from "./atoms/AnalysisHeader"
@@ -12,7 +12,7 @@ import { getScoreColor } from "../lib/functions/getColor"
 import ContextDetails from "./atoms/ContextDetails"
 import { Options, Question, SolvedQuestion } from "../types/allTypes"
 
-export default function Analysis() {
+export default function Analysis(): JSX.Element | null {
     const session = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -22,15 +22,14 @@ export default function Analysis() {
     const [correct, setCorrect] = useState<number>(0);
 
     if (!rawData) return <div className="text-white p-10">No analysis data found.</div>
-
-    if (!rawData) return null
     const analysisData = JSON.parse(decodeURIComponent(rawData))
     useEffect(() => {
+            if (session.status === 'unauthenticated') return router.replace('/signin')
         if (!analysisData) return
-        const { totalTime, topic, difficulty, language, questionType, description, questionId , solvedQuestions, attemptId } = analysisData
+        const { totalTime, topic, difficulty, language, questionType, description, questionId , questionLength , solvedQuestions, attemptId } = analysisData
         try {
         async function getResponse() {
-            const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, solvedQuestions })
+            const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, questionLength ,solvedQuestions })
             console.log(response.data)
             if (response.data.success) {
                 setQuestion(response.data.originalQuestions)
@@ -62,11 +61,10 @@ export default function Analysis() {
 
     setCorrect(count);
     }
-
+    if (session.status === 'unauthenticated') return null
     const theme = getScoreColor((correct / question.length) * 100);
     const currentQuestion = question[currentIndex];
     if (session.status === 'loading') return <Loader />
-    if (session.status === 'unauthenticated') return router.replace('/signin')
     return (
         <div className="min-h-screen bg-slate-950 text-slate-200 px-4 py-6 md:py-10 font-sans selection:bg-blue-500/30">
             <div className="max-w-4xl mx-auto">

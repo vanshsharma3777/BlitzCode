@@ -16,6 +16,8 @@
     "dev": {
       "cache": false,
       "persistent": true
-    }
+    },"pipeline": {
+    
+  }
   }
 }
