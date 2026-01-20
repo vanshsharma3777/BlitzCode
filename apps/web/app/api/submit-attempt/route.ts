@@ -83,7 +83,6 @@ export async function POST(request: NextRequest) {
  let count =0
         
         solvedQuestions.forEach((attempt) => {
-              //  console.log(attempt.questionId)
             const original = parsedQuestions.find( (q) =>
                   q.questionId === attempt.questionId,
                 count++
@@ -103,6 +102,9 @@ export async function POST(request: NextRequest) {
             if (a.length !== b.length) return false;
             return a.every(val => b.includes(val));
         }
+
+        console.log("solvedQuestions " , solvedQuestions)
+        console.log("parsedQuestions" , parsedQuestions)
         return NextResponse.json({
             correct,
             incorrect: parsedQuestions.length - correct,

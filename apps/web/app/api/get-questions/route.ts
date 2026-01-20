@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
-        const finalQuestions: string = await extractJsonFromAI(JSON.stringify(questions))
 
         const parsedQuestions = questions.flatMap((group: any) =>
             Array.isArray(group)
@@ -92,12 +91,25 @@ export async function POST(request: NextRequest) {
         ).slice(0, questionLength);
 
         console.log("Parsed questions:", parsedQuestions);
+
+        function shuffle<T>(arr:any ) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
+
+        console.log(randomFive)
+        console.log(parsedQuestions)
         return NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,
             requestedLength: questionLength,
             availableQuestions,
-            data: parsedQuestions
+            data: randomFive
         })
     } catch (error) {
         console.error("get-questions error:", error);

@@ -102,7 +102,6 @@ async function startWorker() {
                 questions.map((q: string) => JSON.stringify(q))
             );
             console.log("Question stored")
-            console.log(questions)
 
             await redis.xack(STREAM_KEY, GROUP_NAME, messageId);
 
