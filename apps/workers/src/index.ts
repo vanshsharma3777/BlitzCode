@@ -5,14 +5,14 @@ import { generateQuestion } from './router';
 const STREAM_KEY = "questions_generation";
 const GROUP_NAME = "ai-workers";
 const CONSUMER_NAME = `worker-${process.pid}`;
-const MIN_POOL_SIZE = 5;
+const MIN_POOL_SIZE = 20;
 
 async function ensureGroup() {
     try {
         await redis.xgroup(STREAM_KEY, {
             type: "CREATE",
             group: GROUP_NAME,
-            id: "0",             options: {
+            id: "0", options: {
                 MKSTREAM: true
             }
         });
@@ -37,13 +37,12 @@ async function startWorker() {
                 STREAM_KEY,
                 ">",
                 {
-                    count: 1,
+                    count: 2,
                 }
             );
-
             if (!result) continue
 
-            type StreamMessage = [string, string[]];  
+            type StreamMessage = [string, string[]];
             type StreamResponse = [string, StreamMessage[]][];
 
             const streamResult = result as StreamResponse;
@@ -88,17 +87,22 @@ async function startWorker() {
             console.log(`🧠 Generating ${needed} questions for ${poolKey}`);
 
             const raw: string = await generateQuestion({ topic, difficulty, language, questionType, questionLength: Number(needed), })
-            const questions = extractJsonFromAI(raw)
-            console.log(questions)
+            let questions = extractJsonFromAI(raw)
             if (questions.length === 0) {
                 throw new Error("No valid questions generated");
             }
+             questions = questions.map((q: any) => ({
+                ...q,
+                questionId: crypto.randomUUID(),
+            }));
+
             console.log("Question generated Now storing")
             await redis.sadd(
                 poolKey,
                 questions.map((q: string) => JSON.stringify(q))
             );
             console.log("Question stored")
+            console.log(questions)
 
             await redis.xack(STREAM_KEY, GROUP_NAME, messageId);
 

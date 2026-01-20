@@ -20,47 +20,37 @@ export default function Analysis(): JSX.Element | null {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [question, setQuestion] = useState<Question[]>([])
     const [correct, setCorrect] = useState<number>(0);
+    const [incorrect, setIncorrect] = useState<number>(0);
 
     if (!rawData) return <div className="text-white p-10">No analysis data found.</div>
     const analysisData = JSON.parse(decodeURIComponent(rawData))
     useEffect(() => {
-            if (session.status === 'unauthenticated') return router.replace('/signin')
+        if (session.status === 'unauthenticated') return router.replace('/signin')
         if (!analysisData) return
-        const { totalTime, topic, difficulty, language, questionType, description, questionId , questionLength , solvedQuestions, attemptId } = analysisData
+        const { totalTime, topic, difficulty, language, questionType, description, questionId, questionLength, solvedQuestions, attemptId } = analysisData
+        console.log('solvedQues', solvedQuestions)
         try {
-        async function getResponse() {
-            const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, questionLength ,solvedQuestions })
-            console.log(response.data)
-            if (response.data.success) {
-                setQuestion(response.data.originalQuestions)
-                const ques = analysisData.questionId
+            async function getResponse() {
+                const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions })
+                console.log(response)
+                if (response.data) {
+                    setQuestion(response.data.originalQuestions)
+                    setIncorrect(response.data.incorrect)
+                    setCorrect(response.data.correct)
+                    console.log("ques", question)
+                    console.log(response.data)
+                }
             }
+            getResponse()
+        } catch (error) {
+            console.log(error)
         }
-        getResponse()
-    } catch (error) {
-        console.log(error)
-    }
-    }, [])
-
+    }, [session.status])
+    console.log("question", question)
     useEffect(() => {
         if (!analysisData || question.length === 0) return;
-                calculateCorrect();
     }, [analysisData, question]);
 
-        function calculateCorrect() {
-            let count = 0;
-            analysisData.solvedQuestions.forEach((opt: Options) => {
-            const q = question.find(
-                q => q.correctOptions.includes(opt.selectedOptionId)
-            );
-
-            if (q) {
-             count++;
-            }
-                });
-
-    setCorrect(count);
-    }
     if (session.status === 'unauthenticated') return null
     const theme = getScoreColor((correct / question.length) * 100);
     const currentQuestion = question[currentIndex];
@@ -80,24 +70,27 @@ export default function Analysis(): JSX.Element | null {
                                 </span>
                                 <h2 className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Analysis Report</h2>
                             </div>
-                            <div className="flex items-center gap-2 bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800">
-                                <button
-                                    onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
-                                    disabled={currentIndex === 0}
-                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-20 transition-all active:scale-90 border border-slate-700"
-                                >
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
-                                </button>
-                                <span className="text-xs font-mono font-bold text-slate-400 px-3 tracking-tighter">
-                                    {currentIndex + 1} <span className="text-slate-700">/</span> {question.length}
-                                </span>
-                                <button
-                                    onClick={() => setCurrentIndex(prev => Math.min(question.length - 1, prev + 1))}
-                                    disabled={currentIndex === question.length - 1}
-                                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-20 transition-all active:scale-90 border border-slate-700"
-                                >
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
-                                </button>
+                            
+                            <div className="flex items-center ">
+                                <div className="flex items-center gap-2 bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800">
+                                    <button
+                                        onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
+                                        disabled={currentIndex === 0}
+                                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-20 transition-all active:scale-90 border border-slate-700"
+                                    >
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" /></svg>
+                                    </button>
+                                    <span className="text-xs font-mono font-bold text-slate-400 px-3 tracking-tighter">
+                                        {currentIndex + 1} <span className="text-slate-700">/</span> {question.length}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentIndex(prev => Math.min(question.length - 1, prev + 1))}
+                                        disabled={currentIndex === question.length - 1}
+                                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-20 transition-all active:scale-90 border border-slate-700"
+                                    >
+                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" /></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -148,7 +141,7 @@ export default function Analysis(): JSX.Element | null {
                                     <div
                                         key={option.id}
                                         className={`flex items-center p-4 rounded-2xl border transition-all duration-300 ${borderClass}`}
-                                    >   
+                                    >
                                         <div className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center mr-4 shrink-0 transition-colors ${iconBg}`}>
                                             {icon}
                                         </div>

@@ -33,39 +33,40 @@ export default function RenderQuestion() {
     }
   }, [session.status, router])
 
-  const fetchQuestions = async () => {
-    try {
-      setLoader(true)
-      const response = await axios.post('/api/get-questions', {
-        topic:topic.trim().toLowerCase(),
-        difficulty,
-        language,
-        questionType,
-        questionLength,
-      }, { withCredentials: true })
-      console.log("question came form worker")
-      console.log(response.data)
-      return response
-    } catch (error) {
-      console.log("catch running")
-    } finally {
-      setLoader(false)
-    }
-  }
   useEffect(() => {
-    if (session.status !== "authenticated") return
+    if (session.status !== "authenticated") return;
+
+    setLoader(true);
+
     async function getResponse() {
-      const res = await fetchQuestions()
-      if (!res?.data?.data) return
-      setData(res?.data.data)
-      console.log(res.data.data.length)
+      try {
+        console.log("reached")
+        const res = await axios.post('/api/get-questions', {
+          topic,
+          difficulty,
+          language,
+          questionType,
+          questionLength,
+        }, { withCredentials: true });
+        if (res.data?.data?.length) {
+          setData(res.data.data);
+          setCurrentIndex(0);
+        }
+
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoader(false);
+      }
     }
-    getResponse()
-  }, [session.status])
+    getResponse();
+    console.log(data)
+  }, []);
   const handleSubmit = async () => {
     const solvedQuestions = data.map((q) => {
-      const ans = answers[q.questionId];
 
+      const ans = answers[q.questionId];
+      console.log("ans " , ans)
       return {
         questionId: q.questionId,
         userAnswer: Array.isArray(ans) ? ans : ans ? [ans] : [],
@@ -83,15 +84,18 @@ export default function RenderQuestion() {
       questionLength,
       solvedQuestions
     }
+    console.log(solvedQuestions)
+    console.log(data)
     router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
   }
-
+  if (session.status === "loading") return <Loader />
+  if (session.status === "unauthenticated") return <Loader />
+  if (loader) return <Loader />
 
   const ques = data[currentIndex]
-  if (!ques) return null
-  if (!data.length) return <Loader />
-  if (session.status === "loading" || loader === true) return <Loader />
-  if (session.status === "unauthenticated") return <Loader />
+  if (!ques) return <Loader />
+
+
   const answeredCount = Object.values(answers).filter(a =>
     Array.isArray(a) ? a.length > 0 : a !== undefined && a !== ""
   ).length;
@@ -122,7 +126,7 @@ export default function RenderQuestion() {
 
       <main key={ques.questionId} className="select-none mx-4 md:mx-10 mt-8 rounded-[2rem] border border-slate-800 bg-slate-900/50 px-6 py-8 md:px-10 md:py-10 shadow-2xl backdrop-blur-sm">
         <div className="mb-4 inline-block rounded-lg bg-slate-800/50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-700">
-          Question {currentIndex + 1} of {data.length}
+          Question {currentIndex + 1} of {questionLength}
         </div>
 
         <div className="mb-8 text-xl font-semibold text-slate-100 leading-snug">
@@ -142,7 +146,8 @@ export default function RenderQuestion() {
         <div className="space-y-3">
           {ques.options.map((opt) => {
             const answer = answers[ques.questionId]
-            const isSelected = ques.questionType === "multiple"
+            console.log(answer)
+            const isSelected = ques.questionType === "multiple correct"
               ? Array.isArray(answer) && answer.includes(opt.id)
               : answer === opt.id
 
@@ -153,7 +158,7 @@ export default function RenderQuestion() {
                 onClick={() => {
                   setAnswers(prev => {
                     const current = prev[ques.questionId]
-                    if (ques.questionType === 'multiple') {
+                    if (ques.questionType === 'multiple correct') {
                       const currentArray = Array.isArray(current) ? current : []
                       if (currentArray.includes(opt.id)) {
                         return { ...prev, [ques.questionId]: currentArray.filter(id => id !== opt.id) }

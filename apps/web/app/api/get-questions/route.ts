@@ -30,7 +30,9 @@ export async function POST(request: NextRequest) {
             }, { status: 401 })
         }
 
-        const { topic, difficulty, questionType, language, questionLength } = await request.json();
+        let { topic, difficulty, questionType, language, questionLength } = await request.json();
+        questionLength = parseInt(questionLength);
+
         console.log(topic)
         console.log(difficulty)
         console.log(language)
@@ -47,13 +49,14 @@ export async function POST(request: NextRequest) {
         console.log(poolKey)
         const availableQuestions = await redis.scard(poolKey)
         console.log("availableQuestions", availableQuestions)
+        const requestQuestions = Math.min(availableQuestions, questionLength)
         const rawQuestions = availableQuestions > 0
-            ? await redis.srandmember(poolKey, Math.min(availableQuestions, questionLength))
+            ? await redis.srandmember(poolKey, -requestQuestions)
             : []
+        console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
         const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
-        const MIN_POOL_SIZE = 5;
-
+        const MIN_POOL_SIZE = 20;
         if (availableQuestions < MIN_POOL_SIZE) {
             console.log("runninbj")
             await redis.xadd(
@@ -68,22 +71,33 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
-        const finalQuestions : string = await extractJsonFromAI(JSON.stringify(questions))
+        const finalQuestions: string = await extractJsonFromAI(JSON.stringify(questions))
 
-const parsedQuestions = questions.map(group =>
-  group.map((q:any) => {
-    if (typeof q === "string") {
-      return JSON.parse(q);
-    }
-    return q; 
-  })
-);
-  console.log(parsedQuestions)      
+        const parsedQuestions = questions.flatMap((group: any) =>
+            Array.isArray(group)
+                ? group.map((q: any) => {
+                    const parsed = typeof q === "string" ? JSON.parse(q) : q;
+                    return {
+                        ...parsed,
+                        questionId: parsed.questionId || crypto.randomUUID()
+                    };
+                })
+                : (() => {
+                    const parsed = typeof group === "string" ? JSON.parse(group) : group;
+                    return {
+                        ...parsed,
+                        questionId: parsed.questionId || crypto.randomUUID()
+                    };
+                })()
+        ).slice(0, questionLength);
+
+        console.log("Parsed questions:", parsedQuestions);
         return NextResponse.json({
             success: true,
-            returnedQuestionsLength: questions.length,
+            returnedQuestionsLength: parsedQuestions.length,
+            requestedLength: questionLength,
             availableQuestions,
-            questions:parsedQuestions
+            data: parsedQuestions
         })
     } catch (error) {
         console.error("get-questions error:", error);
