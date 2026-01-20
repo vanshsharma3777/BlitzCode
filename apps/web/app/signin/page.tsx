@@ -37,7 +37,7 @@ export default function SignIn() {
             <div className="flex items-center justify-center gap-2 mt-2">
               <div className="h-[1px] w-4 bg-slate-800"></div>
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
-                Master the Syntax
+                Where Speed Meets Code
               </p>
               <div className="h-[1px] w-4 bg-slate-800"></div>
             </div>

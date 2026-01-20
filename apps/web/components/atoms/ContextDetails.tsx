@@ -5,7 +5,7 @@ import { AnalysisData } from "../../types/allTypes"
 
 export default function ContextDetails({ analysisData }: { analysisData: AnalysisData }) {
     const chips = [
-        { label: 'Topic', val: analysisData.topic, color: 'text-blue-400', border: 'border-blue-500/20', bg: 'bg-blue-500/5' },
+        { label: 'Topic', val: analysisData.topic, color: 'text-purple-400', border: 'border-purple-500/20', bg: 'bg-purple-500/5' },
         { label: 'Language', val: analysisData.language, color: 'text-indigo-400', border: 'border-indigo-500/20', bg: 'bg-indigo-500/5' },
         { label: 'Level', val: analysisData.difficulty, color: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/5' },
         { label: 'Type', val: analysisData.questionType, color: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/5' }

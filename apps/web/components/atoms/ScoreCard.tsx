@@ -25,7 +25,7 @@ export default function ScoreCard({ theme, correct, question, analysisData }: { 
                         <span className="text-[9px] uppercase tracking-[0.2em] text-slate-500 font-black">Accuracy</span>
                     </div>
                 </div>
-                <div className={`mt-4 px-4 py-1 rounded-full border border-slate-700/50 bg-slate-900/80 text-[10px] font-bold ${theme.text} shadow-xl`}>
+                <div className={`mt-4 px-4 py-1 rounded-full border text-xl border-slate-700/50 bg-slate-900/80 text-[10px] font-bold ${theme.text} shadow-xl`}>
                     {accuracy.toFixed(1)}% Score
                 </div>
             </div>
