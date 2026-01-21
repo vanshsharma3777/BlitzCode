@@ -4,7 +4,6 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
 import { redis } from "../../../lib/configs/redis";
-import { extractJsonFromAI } from '../../../../workers/src/LLM/jsonConverter';
 
 
 export async function POST(request: NextRequest) {
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
         console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
         const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
-        const MIN_POOL_SIZE = 20;
+        const MIN_POOL_SIZE = 16;
         if (availableQuestions < MIN_POOL_SIZE) {
             console.log("runninbj")
             await redis.xadd(
@@ -104,12 +103,14 @@ export async function POST(request: NextRequest) {
 
         console.log(randomFive)
         console.log(parsedQuestions)
-        return NextResponse.json({
+            console.log("now came in if block")
+             return await NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,
             requestedLength: questionLength,
             availableQuestions,
             data: randomFive
+
         })
     } catch (error) {
         console.error("get-questions error:", error);

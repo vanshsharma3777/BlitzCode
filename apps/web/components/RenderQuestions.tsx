@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react";
-import Loader from "./Loader";
+import GenerationLoader from './QuestionLoader'
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Timer from "./Timer";
@@ -34,34 +34,35 @@ export default function RenderQuestion() {
   }, [session.status, router])
 
   useEffect(() => {
-    if (session.status !== "authenticated") return;
+  if (session.status !== "authenticated") return;
 
-    setLoader(true);
+  async function getResponse(retry = 0) {
+    try {
+      setLoader(true);
 
-    async function getResponse() {
-      try {
-        console.log("reached")
-        const res = await axios.post('/api/get-questions', {
-          topic,
-          difficulty,
-          language,
-          questionType,
-          questionLength,
-        }, { withCredentials: true });
-        if (res.data?.data?.length) {
-          setData(res.data.data);
-          setCurrentIndex(0);
-        }
-
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoader(false);
+      const res = await axios.post("/api/get-questions",{
+          topic, difficulty, language, questionType, questionLength},
+          { withCredentials: true }
+      );
+      const questions = res.data?.data || [];
+      setTimeout(() => {
+        if (questions.length === 0 && retry < 2) {
+        console.log("No questions found, retrying...");
+        return getResponse(retry + 1);
       }
+      },8500);
+
+      setData(questions);
+      setCurrentIndex(0);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoader(false);
     }
-    getResponse();
-    console.log(data)
-  }, []);
+  }
+  getResponse();
+}, []);
+
   const handleSubmit = async () => {
     const solvedQuestions = data.map((q) => {
 
@@ -74,26 +75,14 @@ export default function RenderQuestion() {
     });
 
     const attemptId = crypto.randomUUID()
-    const payload = {
-      totalTime,
-      attemptId,
-      topic,
-      difficulty,
-      language,
-      questionType,
-      questionLength,
-      solvedQuestions
-    }
-    console.log(solvedQuestions)
-    console.log(data)
+    const payload = { totalTime, attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions}
     router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
   }
-  if (session.status === "loading") return <Loader />
-  if (session.status === "unauthenticated") return <Loader />
-  if (loader) return <Loader />
+  if (session.status === "loading") return  <GenerationLoader></GenerationLoader> 
+    if (loader) return <GenerationLoader />
 
   const ques = data[currentIndex]
-  if (!ques) return <Loader />
+  if (!ques) return <GenerationLoader />
 
 
   const answeredCount = Object.values(answers).filter(a =>

@@ -5,7 +5,7 @@ import { generateQuestion } from './router';
 const STREAM_KEY = "questions_generation";
 const GROUP_NAME = "ai-workers";
 const CONSUMER_NAME = `worker-${process.pid}`;
-const MIN_POOL_SIZE = 20;
+const MIN_POOL_SIZE = 16;
 
 async function ensureGroup() {
     try {

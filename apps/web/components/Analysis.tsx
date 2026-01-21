@@ -18,6 +18,7 @@ export default function Analysis(): JSX.Element | null {
     const searchParams = useSearchParams()
     const rawData = searchParams.get('data')
     const [currentIndex, setCurrentIndex] = useState(0)
+    
     const [question, setQuestion] = useState<Question[]>([])
     const [correct, setCorrect] = useState<number>(0);
     const [incorrect, setIncorrect] = useState<number>(0);
@@ -28,7 +29,6 @@ export default function Analysis(): JSX.Element | null {
         if (session.status === 'unauthenticated') return router.replace('/signin')
         if (!analysisData) return
         const { totalTime, topic, difficulty, language, questionType, description, questionId, questionLength, solvedQuestions, attemptId } = analysisData
-        console.log('solvedQues', solvedQuestions)
         try {
             async function getResponse() {
                 const response = await axios.post('/api/submit-attempt', { attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions })
@@ -59,7 +59,7 @@ export default function Analysis(): JSX.Element | null {
         <div className="min-h-screen bg-slate-950 text-slate-200 px-4 py-6 md:py-10 font-sans selection:bg-blue-500/30">
             <div className="max-w-4xl mx-auto">
                 <AnalysisHeader />
-                <ScoreCard analysisData={analysisData} question={question} theme={theme} correct={correct} />
+                <ScoreCard analysisData={analysisData}  question={question} theme={theme} correct={correct} />
                 <ContextDetails analysisData={analysisData} />
                 <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl backdrop-blur-sm">
                     <div className="p-6 md:p-10">
