@@ -2,7 +2,7 @@ import { AnalysisData, Question, Theme } from "../../types/allTypes";
 import Loader from "../Loader";
 
 export default function ScoreCard({ theme, correct, question, analysisData  }: { theme: Theme, correct: number, question: Question[], analysisData: AnalysisData }) {
-    const accuracy = (correct / question.length) * 100;
+    const accuracy = (correct / question.length) * 100; 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-5">
             <div className="bg-slate-900/50 border border-slate-800 rounded-[2rem] p-8 flex flex-col items-center justify-center group relative backdrop-blur-md overflow-hidden transition-all hover:border-slate-700">
@@ -16,7 +16,7 @@ export default function ScoreCard({ theme, correct, question, analysisData  }: {
                             strokeWidth="2.5"
                             strokeDasharray={`${accuracy}, 100`}
                             strokeLinecap="round"
-                        />
+                        /> 
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <div className="flex items-baseline gap-0.5">

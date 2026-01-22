@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
 import { getServerSession } from "next-auth";
 import { redis } from "../../../lib/configs/redis";
-import { concat } from "drizzle-orm/gel-core/expressions";
-import { extractJsonFromAI } from "../../../../workers/src/LLM/jsonConverter";
-import { parse } from "path";
+
 
 interface xyz {
     id: string,
