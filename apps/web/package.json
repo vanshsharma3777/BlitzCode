@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
     "@repo/db": "workspace:*",
+    "@repo/llm": "workspace:*",
     "@repo/ui": "*",
     "@types/axios": "^0.14.4",
     "@upstash/redis": "^1.36.1",

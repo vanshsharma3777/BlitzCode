@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
-import { diff } from "util";
 import axios from "axios";
 
 export async function POST(request:NextRequest){

@@ -1,5 +1,5 @@
 import { redis } from '../../web/lib/configs/redis'
-import { extractJsonFromAI } from '../../../packages/lib/LLM/jsonConverter';
+import { extractJsonFromAI } from '../../../packages/LLM/jsonConverter';
 import { generateQuestion } from './router';
 
 const STREAM_KEY = "questions_generation";

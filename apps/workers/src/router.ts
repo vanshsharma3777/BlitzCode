@@ -1,6 +1,6 @@
-import { generateQuestionDeepSeek } from "../../../packages/lib/LLM/deepseek";
-import { generateQuestionGemini } from "../../../packages/lib/LLM/gemini";
-import { generateQuestionMistral } from "../../../packages/lib/LLM/mistral";
+import { generateQuestionDeepSeek } from "../../../packages/LLM/deepseek";
+import { generateQuestionGemini } from "../../../packages/LLM/gemini";
+import { generateQuestionMistral } from "../../../packages/LLM/mistral";
 
 interface Input {
     topic: string;
