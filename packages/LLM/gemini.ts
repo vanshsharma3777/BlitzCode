@@ -12,8 +12,6 @@ interface Input {
 export async function generateQuestionGemini(
     { topic, difficulty, language, questionType, questionLength }: Input
 ): Promise<string> {
-    console.log("GEMEINI DATA SET")
-
     console.log(topic)
     console.log(questionType)
     console.log(questionLength)

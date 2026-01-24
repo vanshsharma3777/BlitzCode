@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
 import { redis } from "../../../lib/configs/redis";
-import {generateQuestionMistral} from '../../../../../packages/LLM/mistral'
+import {generateQuestion} from '../../../../../packages/LLM/router'
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
@@ -54,12 +54,10 @@ export async function POST(request: NextRequest) {
             : []
         console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
-        const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
+        const questions  = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
 
-        if(questions.length===0){
-            const quesFromAPI = await generateQuestionMistral({ topic, difficulty, language, questionType , questionLength })
-        }
-
+        
+        
         const MIN_POOL_SIZE = 16;
         if (availableQuestions < MIN_POOL_SIZE) {
             console.log("runninbj")
@@ -76,7 +74,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const parsedQuestions = questions.flatMap((group: any) =>
+        let parsedQuestions = questions.flatMap((group: any) =>
             Array.isArray(group)
                 ? group.map((q: any) => {
                     const parsed = typeof q === "string" ? JSON.parse(q) : q;
@@ -95,7 +93,13 @@ export async function POST(request: NextRequest) {
         ).slice(0, questionLength);
 
         console.log("Parsed questions:", parsedQuestions);
-        
+        if(parsedQuestions.length===0){
+            const input = { topic, difficulty, language, questionType , questionLength }
+        const quesFromAPI = await generateQuestion(input)
+            console.log("quesFromAPI" , JSON.parse(quesFromAPI))
+            parsedQuestions  = JSON.parse(quesFromAPI)
+            
+        }
         function shuffle<T>(arr:any ) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -115,7 +119,6 @@ export async function POST(request: NextRequest) {
             requestedLength: questionLength,
             availableQuestions,
             data: randomFive
-
         })
     } catch (error) {
         console.error("get-questions error:", error);

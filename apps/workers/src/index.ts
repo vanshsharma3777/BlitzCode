@@ -1,6 +1,6 @@
 import { redis } from '../../web/lib/configs/redis'
 import { extractJsonFromAI } from '../../../packages/LLM/jsonConverter';
-import { generateQuestion } from './router';
+import { generateQuestion } from '../../../packages/LLM/router';
 
 const STREAM_KEY = "questions_generation";
 const GROUP_NAME = "ai-workers";
@@ -108,6 +108,7 @@ async function startWorker() {
             console.log(`✅ Stored ${questions.length} questions`)
         } catch (error) {
             console.log("Failed to generate new Questions")
+            console.log('error' , error)
         }
     }
 }

@@ -1,6 +1,6 @@
-import { generateQuestionDeepSeek } from "../../../packages/LLM/deepseek";
-import { generateQuestionGemini } from "../../../packages/LLM/gemini";
-import { generateQuestionMistral } from "../../../packages/LLM/mistral";
+import { generateQuestionDeepSeek } from "./deepseek";
+import { generateQuestionGemini } from "./gemini";
+import { generateQuestionMistral } from "./mistral"
 
 interface Input {
     topic: string;
@@ -11,6 +11,7 @@ interface Input {
 }
 
 export async function generateQuestion(input:Input ): Promise< string>{ 
+    console.log("input is " , input)
     try{
         return await generateQuestionMistral(input)
     }catch(error){
