@@ -56,9 +56,8 @@ export async function POST(request: NextRequest) {
 
         const questions  = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
         
-        const MIN_POOL_SIZE = 16;
+        const MIN_POOL_SIZE = 10;
         if (availableQuestions < MIN_POOL_SIZE) {
-            console.log("runninbj")
             await redis.xadd(
                 "questions_generation",
                 '*',
@@ -71,7 +70,6 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
-
         let parsedQuestions = questions.flatMap((group: any) =>
             Array.isArray(group)
                 ? group.map((q: any) => {
@@ -90,7 +88,6 @@ export async function POST(request: NextRequest) {
                 })()
         ).slice(0, questionLength);
         if(parsedQuestions.length===0){
-            console.log("runinggggggggggggggggggggg")
             const input = { topic, difficulty, language, questionType , questionLength }
         const quesFromAPI = await generateQuestion(input)
             parsedQuestions  = JSON.parse(quesFromAPI)
@@ -103,7 +100,6 @@ export async function POST(request: NextRequest) {
             return arr;
         }
         const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-            console.log("random five" , randomFive)
              return await NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,

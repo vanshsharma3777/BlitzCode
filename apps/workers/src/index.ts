@@ -5,7 +5,7 @@ import { generateQuestion } from '../../../packages/LLM/router';
 const STREAM_KEY = "questions_generation";
 const GROUP_NAME = "ai-workers";
 const CONSUMER_NAME = `worker-${process.pid}`;
-const MIN_POOL_SIZE = 16;
+const MIN_POOL_SIZE = 10;
 
 async function ensureGroup() {
     try {
@@ -87,11 +87,12 @@ async function startWorker() {
             console.log(`🧠 Generating ${needed} questions for ${poolKey}`);
 
             const raw: string = await generateQuestion({ topic, difficulty, language, questionType, questionLength: Number(needed), })
+            console.log("raw", raw)
             let questions = extractJsonFromAI(raw)
             if (questions.length === 0) {
                 throw new Error("No valid questions generated");
             }
-             questions = questions.map((q: any) => ({
+            questions = questions.map((q: any) => ({
                 ...q,
                 questionId: crypto.randomUUID(),
             }));
@@ -108,7 +109,8 @@ async function startWorker() {
             console.log(`✅ Stored ${questions.length} questions`)
         } catch (error) {
             console.log("Failed to generate new Questions")
-            console.log('error' , error)
+
+            console.log('error', error)
         }
     }
 }

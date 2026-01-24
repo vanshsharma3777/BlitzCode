@@ -12,9 +12,6 @@ interface Input {
 export async function generateQuestionGemini(
     { topic, difficulty, language, questionType, questionLength }: Input
 ): Promise<string> {
-    console.log(topic)
-    console.log(questionType)
-    console.log(questionLength)
     if (!process.env.GEMINI_API_KEY) {
         throw new Error("GEMINI_API_KEY is missing");
     }
