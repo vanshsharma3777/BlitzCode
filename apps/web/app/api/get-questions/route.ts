@@ -55,8 +55,6 @@ export async function POST(request: NextRequest) {
         console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
         const questions  = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
-
-        
         
         const MIN_POOL_SIZE = 16;
         if (availableQuestions < MIN_POOL_SIZE) {
@@ -91,14 +89,11 @@ export async function POST(request: NextRequest) {
                     };
                 })()
         ).slice(0, questionLength);
-
-        console.log("Parsed questions:", parsedQuestions);
         if(parsedQuestions.length===0){
+            console.log("runinggggggggggggggggggggg")
             const input = { topic, difficulty, language, questionType , questionLength }
         const quesFromAPI = await generateQuestion(input)
-            console.log("quesFromAPI" , JSON.parse(quesFromAPI))
             parsedQuestions  = JSON.parse(quesFromAPI)
-            
         }
         function shuffle<T>(arr:any ) {
             for (let i = arr.length - 1; i > 0; i--) {
@@ -107,12 +102,8 @@ export async function POST(request: NextRequest) {
             }
             return arr;
         }
-
         const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-
-        console.log(randomFive)
-        console.log(parsedQuestions)
-            console.log("now came in if block")
+            console.log("random five" , randomFive)
              return await NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,

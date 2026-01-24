@@ -32,42 +32,42 @@ export default function RenderQuestion() {
       router.replace("/signin")
     }
   }, [session.status, router])
-
+  console.log('pss')
   useEffect(() => {
-  if (session.status !== "authenticated") return;
+    if (session.status !== "authenticated") return;
 
-  async function getResponse(retry = 0) {
-    try {
-      setLoader(true);
+    async function getResponse() {
+      try {
+        console.log("here")
+        setLoader(true);
 
-      const res = await axios.post("/api/get-questions",{
-          topic, difficulty, language, questionType, questionLength},
+        const res = await axios.post("/api/get-questions", {
+          topic, difficulty, language, questionType, questionLength
+        },
           { withCredentials: true }
-      );
-      const questions = res.data?.data || [];
-      setTimeout(() => {
-        if (questions.length === 0 && retry < 2) {
-        console.log("No questions found, retrying...");
-        return getResponse(retry + 1);
-      }
-      },8500);
+        );
+        console.log("resp ", res.data)
 
-      setData(questions);
-      setCurrentIndex(0);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoader(false);
+        const questions =
+          typeof res.data.data === "string"
+            ? JSON.parse(res.data.data)
+            : res.data.data
+        setData(questions);
+        setCurrentIndex(0);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoader(false);
+      }
     }
-  }
-  getResponse();
-}, []);
+    getResponse();
+  }, []);
 
   const handleSubmit = async () => {
     const solvedQuestions = data.map((q) => {
 
       const ans = answers[q.questionId];
-      console.log("ans " , ans)
+      console.log("ans ", ans)
       return {
         questionId: q.questionId,
         userAnswer: Array.isArray(ans) ? ans : ans ? [ans] : [],
@@ -75,11 +75,11 @@ export default function RenderQuestion() {
     });
 
     const attemptId = crypto.randomUUID()
-    const payload = { totalTime, attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions}
+    const payload = { totalTime, attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions }
     router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
   }
-  if (session.status === "loading") return  <GenerationLoader></GenerationLoader> 
-    if (loader) return <GenerationLoader />
+  if (session.status === "loading") return <GenerationLoader></GenerationLoader>
+  if (loader) return <GenerationLoader />
 
   const ques = data[currentIndex]
   if (!ques) return <GenerationLoader />
