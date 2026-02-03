@@ -50,6 +50,8 @@ export async function POST(request: NextRequest) {
                 error: "Data cannot be submitted",
             }, { status: 404 })
         }
+        
+        console.log("Attempt id from submit-attempt route :" , attemptId);
 
         const poolKey = `questions:${topic}:${difficulty}:${language}:${questionType}`
         const result = solvedQuestions.map((opt) => {

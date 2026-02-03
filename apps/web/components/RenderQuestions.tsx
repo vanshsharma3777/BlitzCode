@@ -18,7 +18,6 @@ export default function RenderQuestion() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [totalTime, setTotalTime] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [response, setResponse] = useState<Question[]>([])
   const [loader, setLoader] = useState<boolean>(false)
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
   const searchParams = useSearchParams()
@@ -74,7 +73,7 @@ export default function RenderQuestion() {
       };
     });
 
-    const attemptId = crypto.randomUUID()
+    const attemptId = crypto.randomUUID() 
     const payload = { totalTime, attemptId, topic, difficulty, language, questionType, questionLength, solvedQuestions }
     router.replace(`/result?data=${encodeURIComponent(JSON.stringify(payload))}`)
   }
@@ -82,6 +81,10 @@ export default function RenderQuestion() {
   if (loader) return <GenerationLoader />
 
   const ques = data[currentIndex]
+  if(!ques?.questionId){
+    console.log("question id of questions not present");
+    return ; 
+  }
   if (!ques) return <GenerationLoader />
 
 
