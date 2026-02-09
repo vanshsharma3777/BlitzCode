@@ -5,6 +5,13 @@ import { EXIT_GAME, INIT_GAME } from "./message.js";
 
 export interface CustomSocket extends WebSocket {
     emailId?: string;
+    payload?: {
+        topic: string,
+        language: string,
+        questionType: string,
+        questionLength: number,
+        difficulty: string
+    }
 }
 
 export class GameManager {
@@ -40,7 +47,7 @@ export class GameManager {
                 socket.send(JSON.stringify({
                     type: "AUTH OK",
                 }))
-            return
+                return
             }
 
             if (!socket.emailId) {
@@ -51,45 +58,47 @@ export class GameManager {
                 socket.close(1008, "Unauthenticated");
                 return;
             }
-
-            console.log("data", data.toString())
-
             if (msg.type === INIT_GAME) {
-                if (this.pendingUser && this.pendingUser !== socket) {
-                    console.log("Opponent found")
+                if (!msg.payload.topic || !msg.payload.questionLength || !msg.payload.questionType || !msg.payload.difficulty || !msg.payload.language) {
 
+                    socket.send(JSON.stringify({
+                        type: "Error",
+                        reason: "Error in getting the fields. Try again"
+                    }))
+                    return
+                }
+
+                socket.payload = msg?.payload
+
+                if (!this.pendingUser) {
+                    this.pendingUser = socket;
+                    console.log("User added as pending:", socket.emailId);
+                    return;
+                }
+                if (this.pendingUser === socket) {
+                    return;
+                }
+                const isMatch = JSON.stringify(this.pendingUser?.payload) === JSON.stringify(socket.payload)
+
+                if (!isMatch) {
+                    console.log("Payload mismatch. Finding new user.");
+                    return;
+                }
+                else {
                     const game = new Game(this.pendingUser, socket)
-                    game.got()
                     this.games.push(game)
                     this.socketToGame.set(this.pendingUser, game)
                     this.socketToGame.set(socket, game)
-
                     this.pendingUser = null;
 
+                    socket.send(JSON.stringify({ type: "GAME_START" }));
+                    game.player1.send(JSON.stringify({ type: "GAME_START" }));
                 }
-                else {
-                    this.pendingUser = socket;
-                    console.log("User added as pending");
-                }
-
             }
             if (msg.type === EXIT_GAME) {
                 console.log("User exit")
                 // more code to write...
             }
-            if (socket.emailId) {
-                if (!msg.payload.topic || !msg.payload.difficulty || !msg.payload.questionType || !msg.payload.language || !msg.payload.questionLength) {
-                    socket.send(JSON.stringify({
-                        type: "error",
-                        reason: "Invalid JSON format"
-                    }));
-                }
-                socket.send(JSON.stringify({
-                    type: "ACK",
-                    payload: msg
-                }));
-            }
-
         })
     }
 
