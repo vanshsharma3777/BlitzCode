@@ -31,13 +31,11 @@ export default function RenderQuestion() {
       router.replace("/signin")
     }
   }, [session.status, router])
-  console.log('pss')
   useEffect(() => {
     if (session.status !== "authenticated") return;
 
     async function getResponse() {
       try {
-        console.log("here")
         setLoader(true);
 
         const res = await axios.post("/api/get-questions", {

@@ -1,66 +1,87 @@
-import WebSocket from "ws";
-import { START_GAME } from "./message.js";
-
-interface Answer {
-    questionId: string,
-    correctOptions : string[];
-}
-
-export interface CustomSocket extends WebSocket {
-    emailId?: string;
-    payload? : {
-        topic : string,
-        language : string ,
-        questionType : string,
-        questionLength : number ,
-        difficulty: string
-    } 
-}
+import { sendQuestion } from "./Game Functions/sendQuestions.js"
+import type { CustomSocket } from "./gameManager.js"
+import { generateQuestion } from "./LLM/router.js"
 
 
-export class Game{
-    public player1 : WebSocket;
-    public player2 : WebSocket;
-    public answers : Answer[] | null;
 
-    constructor(player1 : CustomSocket , player2 : CustomSocket ){
-        this.player1 = player1
-        this.player2 = player2
-        this.answers = null
-        const p1Email = (player1).emailId;
-        const p2Email = (player2).emailId;
-        
-        const p1Payload =player1.payload
-        const p2Payload = player2.payload
-        this.player1.send(JSON.stringify({
-            type : START_GAME,
-            payload:{
-                youAre: "player1",
-                yourEmail : p1Email,
-                opponentEmail : p2Email,
-                payload: p1Payload
-            }
-        }))
 
-        this.player2.send(JSON.stringify({
-            type : START_GAME,
-            payload:{
-              youAre: "player2",
-                yourEmail : p2Email,
-                opponentEmail : p1Email,
-                payload: p2Payload
-            }
-        }))
+export class Game {
+    private players: CustomSocket[]
+    topic: string
+    difficulty: string
+    questionType: string
+    language: string
+    questionLength: number
+
+    questions: string | null
+
+    playerProgress = new Map<string, number>()
+    playerScores = new Map<string, number>()
+    playerStartTime = new Map<string, number>()
+    playerFinishTime = new Map<string, number>()
+    gameEndTime = 0
+    globalTimer: NodeJS.Timeout | null = null
+
+    constructor(
+        players: CustomSocket[], fields: {
+            topic: string
+            difficulty: string
+            questionType: string
+            language: string
+            questionLength: number
+        }) {
+        this.questions = null
+        this.players = players
+        this.topic = fields.topic
+        this.difficulty = fields.difficulty
+        this.questionType = fields.questionType
+        this.language = fields.language
+        this.questionLength = fields.questionLength
     }
-    
-        check(payload1: any, payload2: any){
-            console.log("check ran in game ")
-            if(payload1 === payload2){
-                console.log("true")
-            }else{
-                console.log("false")
-            }
-            console.log('eherghb')
-        }
 
+    async findQuestions() {
+        const input = {
+            topic: this.topic,
+            difficulty: this.difficulty,
+            language: this.language,
+            questionType: this.questionType,
+            questionLength: this.questionLength
+        }
+        this.questions = await generateQuestion(input)
+        if(!this.questions){
+            console.log("Questions not found")
+            this.players.forEach((player)=>{
+                player.send(JSON.stringify({
+                    type:"ERROR",
+                    payload:{
+                        error: "Server Error Questions not found"
+                    }
+                }))
+            })
+        }
+    }
+    async start() {
+        await this.findQuestions()
+        this.gameEndTime  = Date.now() + (5 * 60 * 1000)
+
+        this.players.forEach((player) => {
+            const email = player.emailId!
+            this.playerProgress.set(email, 0)
+            this.playerScores.set(email, 0)
+            this.playerStartTime.set(email, 0)
+            if(!this.questions){
+                console.log("Unable to send the questions (game.ts)")
+            }
+            const sendQues = sendQuestion(player , this.questions!, this.playerProgress, this.gameEndTime)
+
+        })
+        this.startGlobalTimer();
+    }
+    startGlobalTimer() {
+        // code to write
+
+    }
+    endGame() {
+        // code to write
+    }
 }

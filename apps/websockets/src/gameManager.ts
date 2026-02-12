@@ -31,8 +31,8 @@ export class GameManager {
         this.addHandler(socket);
     }
 
-    private addHandler(socket: CustomSocket) {
-        socket.on("message", (data) => {
+    private  addHandler(socket: CustomSocket) {
+        socket.on("message", async (data) => {
             const msg = JSON.parse(data.toString())
             if (msg.type === "AUTH") {
                 socket.emailId = msg?.meta?.emailId;
@@ -60,7 +60,6 @@ export class GameManager {
             }
             if (msg.type === INIT_GAME) {
                 if (!msg.payload.topic || !msg.payload.questionLength || !msg.payload.questionType || !msg.payload.difficulty || !msg.payload.language) {
-
                     socket.send(JSON.stringify({
                         type: "Error",
                         reason: "Error in getting the fields. Try again"
@@ -85,14 +84,25 @@ export class GameManager {
                     return;
                 }
                 else {
-                    const game = new Game(this.pendingUser, socket)
+                    const fields = {
+                        difficulty : socket.payload?.difficulty!,
+                        topic : socket.payload?.topic!,
+                        language : socket.payload?.language!,
+                        questionType : socket.payload?.questionType!,
+                        questionLength : socket.payload?.questionLength!,
+                    }
+                    const game = new Game([this.pendingUser , socket] , fields)
+                    try{
+                        await game.start()
+                    }catch(err){
+                        console.log("error in gameManager class in starting th game " , err)
+                    }
                     this.games.push(game)
                     this.socketToGame.set(this.pendingUser, game)
                     this.socketToGame.set(socket, game)
                     this.pendingUser = null;
 
                     socket.send(JSON.stringify({ type: "GAME_START" }));
-                    game.player1.send(JSON.stringify({ type: "GAME_START" }));
                 }
             }
             if (msg.type === EXIT_GAME) {
