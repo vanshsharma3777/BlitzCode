@@ -1,9 +1,6 @@
 import { sendQuestion } from "./Game Functions/sendQuestions.js"
-import type { CustomSocket } from "./gameManager.js"
+import type { CustomSocket } from "./types.js";
 import { generateQuestion } from "./LLM/router.js"
-
-
-
 
 export class Game {
     private players: CustomSocket[]
@@ -12,9 +9,7 @@ export class Game {
     questionType: string
     language: string
     questionLength: number
-
     questions: string | null
-
     playerProgress = new Map<string, number>()
     playerScores = new Map<string, number>()
     playerStartTime = new Map<string, number>()

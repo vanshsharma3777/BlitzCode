@@ -1,18 +1,8 @@
 import WebSocket from "ws";
 import { Game } from "./game.js";
 import { EXIT_GAME, INIT_GAME } from "./message.js";
+import type { CustomSocket } from "./types.js";
 
-
-export interface CustomSocket extends WebSocket {
-    emailId?: string;
-    payload?: {
-        topic: string,
-        language: string,
-        questionType: string,
-        questionLength: number,
-        difficulty: string
-    }
-}
 
 export class GameManager {
     private games: Game[];
