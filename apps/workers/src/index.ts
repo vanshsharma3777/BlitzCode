@@ -16,11 +16,11 @@ async function ensureGroup() {
                 MKSTREAM: true
             }
         });
-        console.log("✅ Consumer group created");
+        console.log("Consumer group created");
     } catch (error: any) {
         const errorStr = error?.message || error?.toString() || "";
         if (errorStr.includes("BUSYGROUP")) {
-            console.log("ℹ️ Consumer group already exists");
+            console.log(" Consumer group already exists");
         } else {
             throw error;
         }

@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { Game } from "./game.js";
-import { EXIT_GAME, INIT_GAME } from "./message.js";
+import { EXIT_GAME, INIT_GAME, NEXT_QUESTION, OVER_GAME } from "./message.js";
 import type { CustomSocket } from "./types.js";
 
 
@@ -21,7 +21,7 @@ export class GameManager {
         this.addHandler(socket);
     }
 
-    private  addHandler(socket: CustomSocket) {
+    private addHandler(socket: CustomSocket) {
         socket.on("message", async (data) => {
             const msg = JSON.parse(data.toString())
             if (msg.type === "AUTH") {
@@ -58,7 +58,7 @@ export class GameManager {
                 }
 
                 socket.payload = msg?.payload
-
+                console.log("herer1")
                 if (!this.pendingUser) {
                     this.pendingUser = socket;
                     console.log("User added as pending:", socket.emailId);
@@ -75,30 +75,50 @@ export class GameManager {
                 }
                 else {
                     const fields = {
-                        difficulty : socket.payload?.difficulty!,
-                        topic : socket.payload?.topic!,
-                        language : socket.payload?.language!,
-                        questionType : socket.payload?.questionType!,
-                        questionLength : socket.payload?.questionLength!,
+                        difficulty: socket.payload?.difficulty!,
+                        topic: socket.payload?.topic!,
+                        language: socket.payload?.language!,
+                        questionType: socket.payload?.questionType!,
+                        questionLength: socket.payload?.questionLength!,
                     }
-                    const game = new Game([this.pendingUser , socket] , fields)
-                    try{
+                    const game = new Game([this.pendingUser, socket], fields)
+                    try {
+                        socket.send(JSON.stringify({ type: "GAME_START" }))
                         await game.start()
-                    }catch(err){
-                        console.log("error in gameManager class in starting th game " , err)
-                    }
-                    this.games.push(game)
-                    this.socketToGame.set(this.pendingUser, game)
-                    this.socketToGame.set(socket, game)
-                    this.pendingUser = null;
+                        this.games.push(game)
+                        this.socketToGame.set(this.pendingUser, game)
+                        this.socketToGame.set(socket, game)
+                        this.pendingUser = null
+                        console.log("starting game")
 
-                    socket.send(JSON.stringify({ type: "GAME_START" }));
+
+                    } catch (err) {
+                        console.log("error in gameManager class in starting th game ", err)
+                    }
+
+
                 }
             }
-            if (msg.type === EXIT_GAME) {
-                console.log("User exit")
-                // more code to write...
+            const game = this.socketToGame.get(socket)
+
+            if (!game) {
+                socket.send(JSON.stringify({
+                    type: "ERROR",
+                    reason: "You are not in an active game"
+                }))
+                return
             }
+
+            if (msg.type === NEXT_QUESTION) {
+                console.log("clicked next question")
+                game.handleNextQuestion(socket)
+            }
+
+            if (msg.type === OVER_GAME) {
+                console.log("clicked over game")
+                game.endThisGame("manual")
+            }
+
         })
     }
 

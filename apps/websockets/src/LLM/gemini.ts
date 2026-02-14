@@ -35,6 +35,6 @@ Number of Questions: ${questionLength}
     });
 
     const result = await model.generateContent(prompts);
-
+    
     return result.response.text();
 }
