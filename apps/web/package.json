@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+
   "scripts": {
-    "dev": "next dev --port 3000",
+    "dev": "bun run dev:all",
+    "next": "next dev",
     "build": "next build",
+    "ws": "bun run ws:build && bun run ws:start",
+    "ws:build": "tsc -b websockets",
+    "ws:start": "bun websockets/dist/index.js",
     "start": "next start",
+    "dev:all": "concurrently \"bun run next\" \"bun run ws\"",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit"
   },
