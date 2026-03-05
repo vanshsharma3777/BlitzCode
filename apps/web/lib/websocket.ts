@@ -12,7 +12,7 @@ export const connectSocket = () => {
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log("Message:", data);
-  };
+  };  
 
   socket.onclose = () => {
     console.log("WS closed");
