@@ -43,13 +43,18 @@ export default function check(){
         }))
     }
     return (
-        <div>
-            <div>Web scocket connection trial</div>
-            <input onChange={(e)=>{
-                setEmail(e.target.value)
-            }} type="text" placeholder="Enter your emails"/>
-            <button onClick={startGame}>Send Email</button>
+        <div className="bg-white text-pri text-center py-32">
+  <h1 className="text-5xl font-bold">
+    Build Faster with BlitzCode
+  </h1>
 
-        </div>
+  <p className="text-sec mt-4">
+    Learn coding with modern tools and projects.
+  </p>
+
+  <button className="bg-bgsec  px-6 py-3 rounded-lg mt-6">
+    Start Learning
+  </button>
+</div>
     )
 }

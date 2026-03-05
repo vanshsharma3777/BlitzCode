@@ -3,19 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --bg-main: #ffffff;
-  --accent-color: #4f46e5;
-  --text: #111111;
-  --text-muted: #6B7280;
-  --borders: #e5e7eb;
-  --card-bg: #f9fafb;
-  --code-bg: #f3f4f6;
+  --bg-main: #0D0D0F;
+  --bg-sec:#111113;
+  --primary-text:#FFFFFF;
+  --secondary-text:#A1A1AA;
+  --card-bg: #161618;
+  --text-muted: #71717A;
+  --borders: #26262B;
+  --accent: #5E6AD2;
   
 }
 
 body {
   background-color: var(--bg-main);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--text);
+  color: var(--primary-text);
 }
 

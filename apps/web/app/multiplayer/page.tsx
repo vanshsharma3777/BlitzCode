@@ -33,7 +33,6 @@ export default function Multiplayer(){
     if(session.status === 'unauthenticated') return router.replace('/signin')
     return (
         <div>
-            
         </div>
     )
 }
