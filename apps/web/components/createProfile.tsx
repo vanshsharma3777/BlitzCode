@@ -49,10 +49,6 @@ export default function CreateProfile({ email }: { email: string }) {
       setloading(false)
       setBtnLoader(false)
     }
-
-    if(btnLoader){
-      <ButtonLoader></ButtonLoader>
-    }
   }
   return (
     <div className="min-h-screen text-pri flex justify-center items-center">

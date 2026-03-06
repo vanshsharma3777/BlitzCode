@@ -45,8 +45,8 @@ export default function HomePage() {
 
                 <div className="flex justify-center   items-center text-center mt-12">
                     <button onClick={()=>{
-                        router.push("/single-player")
-                    }} className="rounded-2xl bg-card h-[230px] w-[450px] flex flex-col items-center justify-center mr-3 border-2 border-border hover:border-neutral-700 ">
+                        router.push("/single-player/configuration")
+                    }} className="rounded-2xl bg-card h-[230px] w-[450px] flex flex-col items-center justify-center mr-3 border-2 border-border hover:border-accent transition-all duration-200 ease-in-out hover:scale-105">
                         <div className="h-16 w-16 bg-bg rounded-full flex  justify-center items-center ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -60,7 +60,7 @@ export default function HomePage() {
                     </button>
                     <button onClick={()=>{
                         router.push("/multiplayer")
-                    }} className="rounded-2xl bg-card h-[230px] w-[450px] flex flex-col items-center justify-center mr-3 border-2 border-border hover:border-neutral-700">
+                    }} className="rounded-2xl bg-card h-[230px] w-[450px] flex flex-col items-center justify-center ml-3 border-2 border-border hover:border-accent  transition-all duration-200 ease-in-out hover:scale-105">
                         <div className="h-16 w-16 bg-bg rounded-full flex  justify-center items-center ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></svg>
                         </div>
