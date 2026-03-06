@@ -11,9 +11,7 @@ export default function Loader() {
           <span className="text-accent">Code</span>
         </h1>
         <div className="w-8 h-8 border-2 border-neutral-700 border-t-accent rounded-full animate-spin"></div>
-
       </div>
-
     </div>
   );
 }
