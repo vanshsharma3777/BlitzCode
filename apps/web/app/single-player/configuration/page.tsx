@@ -24,7 +24,7 @@ export default function Configuration() {
         if (config.topic !== null && config.questionLength !== null && config.questionType !== null && config.difficulty !== null && config.language !== null) {
             setLoader(true)
 
-            router.push(`/questions-set?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+            router.push(`/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
 
             setTimeout(() => {
                 setLoader(false)
@@ -43,11 +43,11 @@ export default function Configuration() {
                     Configure your preference to the best of your comfort
                 </div>
 
-                <ConfigurationCard heading="Language" setConfig={setConfig} selected={config.language} />
-                <ConfigurationCard heading="Topic" setConfig={setConfig} selected={config.topic}/>
-                <ConfigurationCard heading="Question Type" setConfig={setConfig} selected={config.questionType}/>
-                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} selected={config.difficulty}/>
-                <ConfigurationCard heading="Question Length" setConfig={setConfig} selected={config.questionLength}/>
+                <ConfigurationCard heading="Language" setConfig={setConfig}  />
+                <ConfigurationCard heading="Topic" setConfig={setConfig} />
+                <ConfigurationCard heading="Question Type" setConfig={setConfig} />
+                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} />
+                <ConfigurationCard heading="Question Length" setConfig={setConfig} />
 
             </div>
         </div>
