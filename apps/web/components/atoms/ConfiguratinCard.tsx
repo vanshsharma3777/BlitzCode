@@ -5,9 +5,10 @@ import TopicsCard from "./TopicsCard";
 type Props = {
     heading: string;
     setConfig: React.Dispatch<React.SetStateAction<any>>
+    selected: string | null
 };
 
-export default function ConfigurationCard({ heading, setConfig }: Props) {
+export default function ConfigurationCard({ heading, setConfig , selected}: Props) {
     function handleField(value: string) {
 
         setConfig((prev: any) => {
@@ -30,7 +31,7 @@ export default function ConfigurationCard({ heading, setConfig }: Props) {
                             {heading}
                         </div>
                         <div className="grid grid-cols-3 ">
-                            <button onClick={(e) => handleField("c")} value={"c"}><TopicsCard field={"C"} /></button>
+                            <button onClick={(e) => handleField("c")} value={"c"} ><TopicsCard field={"C"} /></button>
                             <button onClick={(e) => handleField("python")} value={"python"}><TopicsCard field={"Python"} /></button>
                             <button onClick={(e) => handleField("typescript")} value={"typescript"}><TopicsCard field={"Typescript"} /></button>
                             <button onClick={(e) => handleField("java")} value={"java"}><TopicsCard field={"Java"} /></button>

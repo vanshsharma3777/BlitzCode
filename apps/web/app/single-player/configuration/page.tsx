@@ -14,7 +14,7 @@ export default function Configuration() {
         questionType: null as "single correct" | "multiple correct" | "bugfixer" | null,
         difficulty: null as "easy" | "medium" | "hard" | null,
         questionLength: null as "5" | "10" | "15" | null
-    })
+    }) 
     useEffect(() => {
         console.log(config.topic)
         console.log(config.questionLength)
@@ -43,11 +43,11 @@ export default function Configuration() {
                     Configure your preference to the best of your comfort
                 </div>
 
-                <ConfigurationCard heading="Language" setConfig={setConfig} />
-                <ConfigurationCard heading="Topic" setConfig={setConfig} />
-                <ConfigurationCard heading="Question Type" setConfig={setConfig} />
-                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} />
-                <ConfigurationCard heading="Question Length" setConfig={setConfig} />
+                <ConfigurationCard heading="Language" setConfig={setConfig} selected={config.language} />
+                <ConfigurationCard heading="Topic" setConfig={setConfig} selected={config.topic}/>
+                <ConfigurationCard heading="Question Type" setConfig={setConfig} selected={config.questionType}/>
+                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} selected={config.difficulty}/>
+                <ConfigurationCard heading="Question Length" setConfig={setConfig} selected={config.questionLength}/>
 
             </div>
         </div>
