@@ -5,25 +5,20 @@ import Loader from "./Loader";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default  function Navigate(navigateTo:string|null){
+export default  function Navigate(){
     const session = useSession();
     const router = useRouter()
     const [loader , setLoader] = useState(false)
      useEffect(() => {
     if (session.status === "unauthenticated") {
-      router.replace("/signin")
+      router.replace('/signin')
     }
     if(session.status === 'authenticated'){
-      router.replace('/dashboard')
+      router.replace('/home')
     }
   }, [session.status, router])
       if(session.status==='loading' || loader ) return <Loader></Loader>
       
-    useEffect(() => {
-  if (session?.status==='authenticated' && navigateTo !== null) {
-    router.push(navigateTo)
-  }
-}, [session, navigateTo])
   return (  
        null
     )

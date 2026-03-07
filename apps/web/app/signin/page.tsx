@@ -17,7 +17,7 @@ export default function SignIn() {
   }
   return (
     <div className='min-h-screen flex items-center justify-center'>
-      <div className='bg-card  flex flex-col justify-center w-[400px] p-8 rounded-2xl shadow-xl border-2 border-neutral-800 hover:border-neutral-700'>
+      <div className='bg-card  flex flex-col justify-center w-[400px] p-8 rounded-2xl shadow-xl border-2 border-neutral-800 hover:border-accent'>
         <div className='text-center'>
           <h1 className='text-4xl font-semibold  m-2.5 mb-0'>
           <span className=''>{'</>'}Biltz</span>

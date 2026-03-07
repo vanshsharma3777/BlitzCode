@@ -1,7 +1,38 @@
+'use client'
+
+import { useEffect, useState } from "react";
 import ConfigurationCard from "../../../components/atoms/ConfiguratinCard";
-import SubmitBUtton from "../../../components/SubmitButton";
+import { useRouter } from "next/navigation";
+import Loader from "../../../components/Loader";
 
 export default function Configuration() {
+    const router = useRouter()
+    const [loader, setLoader] = useState(false)
+    const [config, setConfig] = useState({
+        language: null,
+        topic: null,
+        questionType: null as "single correct" | "multiple correct" | "bugfixer" | null,
+        difficulty: null as "easy" | "medium" | "hard" | null,
+        questionLength: null as "5" | "10" | "15" | null
+    })
+    useEffect(() => {
+        console.log(config.topic)
+        console.log(config.questionLength)
+        console.log(config.questionType)
+        console.log(config.difficulty)
+        console.log(config.language)
+        if (config.topic !== null && config.questionLength !== null && config.questionType !== null && config.difficulty !== null && config.language !== null) {
+            setLoader(true)
+
+            router.push(`/questions-set?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+
+            setTimeout(() => {
+                setLoader(false)
+            }, 2000)
+        }
+    }, [config])
+
+    if (loader) return <Loader />
     return (
         <div className=" min-h-screen  text-pri ">
             <div className="flex flex-col items-center justify-center ">
@@ -12,12 +43,12 @@ export default function Configuration() {
                     Configure your preference to the best of your comfort
                 </div>
 
-                <ConfigurationCard  heading={"Language"}/>
-                <ConfigurationCard heading={"Topic"}  />
-                <ConfigurationCard heading={"Question Type"} />
-                <ConfigurationCard  heading={"Difficulty Level"}/>
-                <ConfigurationCard  heading={"Question Length"}/>
-                
+                <ConfigurationCard heading="Language" setConfig={setConfig} />
+                <ConfigurationCard heading="Topic" setConfig={setConfig} />
+                <ConfigurationCard heading="Question Type" setConfig={setConfig} />
+                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} />
+                <ConfigurationCard heading="Question Length" setConfig={setConfig} />
+
             </div>
         </div>
     )
