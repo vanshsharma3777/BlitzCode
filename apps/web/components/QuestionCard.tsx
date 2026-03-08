@@ -14,6 +14,7 @@ export default function QuestionCard() {
         setShow(true);
     }, []);
 
+    const questionLength = 10
     const options = [
         {
             key: "1",
@@ -74,7 +75,7 @@ export default function QuestionCard() {
                         </div>
                         <div className=" lg:hidden md:hidden h-10 w-10 rounded-full overflow-hidden border border-border">
                             <img
-                                src={session.data?.user.image || ""}
+                                src={session.data?.user.image || " "}
                                 alt="profile"
                                 className="h-full w-full object-cover"
                             />
@@ -84,8 +85,8 @@ export default function QuestionCard() {
             </div>
             <div className={`w-[85%] bg-card border border-border  rounded-xl py-8 transform transition-all duration-200 ease-out${show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"} text-pri  rounded-xl`}>
                 <div className="flex ">
-                    <div className="bg-bg  ml-5 px-3 py-3 rounded-xl flex items-center">
-                        Question No
+                    <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
+                        Question No 1
                     </div>
                     <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
                         Single Correct
@@ -102,7 +103,8 @@ export default function QuestionCard() {
                                     borderRadius: "12px",
                                     padding: "16px",
                                     fontSize: "16px",
-                                    marginBottom: "12px"
+                                    marginBottom: "12px",
+                                    fontStyle: "italic"
                                 }}
                             >
                                 {code}
@@ -122,8 +124,19 @@ export default function QuestionCard() {
                             </div>
                         </button>
                     ))}
-
+                    <div className="flex flex-wrap gap-x-3">
+                        {Array.from({ length: questionLength }).map((_, i) => (
+                            <button
+                                key={i}
+                                className={`bg-sec text-2xl h-20 w-20 mt-5 rounded-xl border border-neutral-700 transition-all duration-200 hover:scale-110 `} 
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
+
             </div>
         </div>
     )
