@@ -43,11 +43,11 @@ export default function Configuration(){
                        Configure your preference to the best of your comfort
                    </div>
    
-                   <ConfigurationCard heading="Language" setConfig={setConfig}  />
-                   <ConfigurationCard heading="Topic" setConfig={setConfig} />
-                   <ConfigurationCard heading="Question Type" setConfig={setConfig} />
-                   <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} />
-                   <ConfigurationCard heading="Question Length" setConfig={setConfig} />
+                   <ConfigurationCard heading="Language" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"} />
+                   <ConfigurationCard heading="Topic" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
+                   <ConfigurationCard heading="Question Type" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
+                   <ConfigurationCard heading="Difficulty Level" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
+                   <ConfigurationCard heading="Question Length" setConfig={setConfig}  widthMob={"full"} widthMd={"70%"} widthLg = {"53%"} />
    
                </div>
            </div>
