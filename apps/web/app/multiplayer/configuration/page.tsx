@@ -42,7 +42,6 @@ export default function Configuration(){
                    <div className="mt-4 mb-8">
                        Configure your preference to the best of your comfort
                    </div>
-   
                    <ConfigurationCard heading="Language" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"} />
                    <ConfigurationCard heading="Topic" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
                    <ConfigurationCard heading="Question Type" setConfig={setConfig}   widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
