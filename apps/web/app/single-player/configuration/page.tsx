@@ -36,7 +36,7 @@ export default function Configuration() {
     return (
         <div className=" min-h-screen  text-pri ">
             <div className="flex flex-col items-center justify-center ">
-                <div className="text-5xl font-medium mt-5">
+                <div className=" md:text-4xl text-3xl lg:text-5xl font-medium mt-5">
                     Set your Configuration
                 </div>
                 <div className="mt-4 mb-8">
