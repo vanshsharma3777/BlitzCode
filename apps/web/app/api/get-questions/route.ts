@@ -4,7 +4,27 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
 import { redis } from "../../../lib/configs/redis";
-import {generateQuestion} from '../../../../../packages/LLM/router'
+import { generateQuestion } from '../../../../../packages/LLM/router'
+import { extractJsonFromAI } from "../../../lib/jsonConverter";
+
+export interface Options {
+    id: string,
+    selectedOptionId: string
+    text: string
+}
+
+export interface QuestionToSend {
+    topic: string,
+    options: Options[],
+    questionId: string,
+    description: string
+    code: string
+    difficulty: string
+    questionType: string,
+    language: string,
+    totalTime: number,
+
+}
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions)
@@ -20,8 +40,9 @@ export async function POST(request: NextRequest) {
         .from(users)
         .where(eq(users.email, email))
         .limit(1)
-
+    console.log("email ", email)
     try {
+        console.log("came here in get ques backend")
         if (existingUser.length == 0) {
             return NextResponse.json({
                 error: "User not logged in",
@@ -50,14 +71,15 @@ export async function POST(request: NextRequest) {
         console.log("availableQuestions", availableQuestions)
         const requestQuestions = Math.min(availableQuestions, questionLength)
         const rawQuestions = availableQuestions > 0
-            ? await redis.srandmember(poolKey, -requestQuestions)
+            ? await redis.srandmember(poolKey, requestQuestions)
             : []
         console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
-        const questions  = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
-        
+        const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
+
         const MIN_POOL_SIZE = 10;
         if (availableQuestions < MIN_POOL_SIZE) {
+            console.log("genratrubf ques")
             await redis.xadd(
                 "questions_generation",
                 '*',
@@ -70,6 +92,8 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
+
+        console.log("question generated : ", questions)
         let parsedQuestions = questions.flatMap((group: any) =>
             Array.isArray(group)
                 ? group.map((q: any) => {
@@ -87,12 +111,18 @@ export async function POST(request: NextRequest) {
                     };
                 })()
         ).slice(0, questionLength);
-        if(parsedQuestions.length===0){
-            const input = { topic, difficulty, language, questionType , questionLength }
-        const quesFromAPI = await generateQuestion(input)
-            parsedQuestions  = JSON.parse(quesFromAPI)
+        if (parsedQuestions.length === 0) {
+            const input = { topic, difficulty, language, questionType, questionLength }
+            const quesFromAPI = await generateQuestion(input)
+            parsedQuestions = extractJsonFromAI(quesFromAPI)
+
+            if (!Array.isArray(parsedQuestions)) {
+                console.error("LLM returned invalid JSON")
+                parsedQuestions = []
+            }
+
         }
-        function shuffle<T>(arr:any ) {
+        function shuffle<T>(arr: any) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -100,12 +130,20 @@ export async function POST(request: NextRequest) {
             return arr;
         }
         const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-             return await NextResponse.json({
+
+        const finalQues = randomFive.map((q: any) => ({
+                code:q.code,
+                questionId: crypto.randomUUID(),
+                description:q.description,
+                topic:q.topic,
+                options:q.options
+            }));
+        return await NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,
             requestedLength: questionLength,
             availableQuestions,
-            data: randomFive
+            data: finalQues
         })
     } catch (error) {
         console.error("get-questions error:", error);

@@ -5,7 +5,7 @@ import { generateQuestion } from '../../../packages/LLM/router';
 const STREAM_KEY = "questions_generation";
 const GROUP_NAME = "ai-workers";
 const CONSUMER_NAME = `worker-${process.pid}`;
-const MIN_POOL_SIZE = 10;
+const MIN_POOL_SIZE = 8;
 
 async function ensureGroup() {
     try {
@@ -27,6 +27,7 @@ async function ensureGroup() {
     }
 }
 async function startWorker() {
+    console.log("came here")
     const ans = await ensureGroup()
     console.log("ans ", ans)
     while (true) {
@@ -92,10 +93,6 @@ async function startWorker() {
             if (questions.length === 0) {
                 throw new Error("No valid questions generated");
             }
-            questions = questions.map((q: any) => ({
-                ...q,
-                questionId: crypto.randomUUID(),
-            }));
 
             console.log("Question generated Now storing")
             await redis.sadd(
