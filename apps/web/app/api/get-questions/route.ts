@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
 
         const finalQues = randomFive.map((q: any) => ({
                 code:q.code,
-                questionId: crypto.randomUUID(),
                 description:q.description,
+                questionId : q.questionId,
                 topic:q.topic,
                 options:q.options
             }));
