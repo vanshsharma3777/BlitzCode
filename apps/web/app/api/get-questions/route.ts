@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
         }
 
         const poolKey = `questions:${topic}:${difficulty}:${language}:${questionType}`
-        console.log(poolKey)
         const availableQuestions = await redis.scard(poolKey)
         console.log("availableQuestions", availableQuestions)
         const requestQuestions = Math.min(availableQuestions, questionLength)
@@ -110,7 +109,7 @@ export async function POST(request: NextRequest) {
                         questionId: parsed.questionId || crypto.randomUUID()
                     };
                 })()
-        ).slice(0, questionLength);
+        )
         if (parsedQuestions.length === 0) {
             const input = { topic, difficulty, language, questionType, questionLength }
             const quesFromAPI = await generateQuestion(input)
@@ -122,6 +121,9 @@ export async function POST(request: NextRequest) {
             }
 
         }
+
+
+        console.log("parsedQuestions " , parsedQuestions)
         function shuffle<T>(arr: any) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -130,7 +132,7 @@ export async function POST(request: NextRequest) {
             return arr;
         }
         const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-
+        console.log("random fiev " , randomFive)
         const finalQues = randomFive.map((q: any) => ({
                 code:q.code,
                 description:q.description,
@@ -138,7 +140,7 @@ export async function POST(request: NextRequest) {
                 topic:q.topic,
                 options:q.options
             }));
-        return await NextResponse.json({
+        return  NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,
             requestedLength: questionLength,
