@@ -14,6 +14,7 @@ import { diff } from "util";
 import Loader from "./Loader";
 import { createTime } from "../lib/functions/createTime";
 import { Answer } from "../types/wsTypes";
+import { updateAnswers } from "../lib/functions/selectOptions";
 export default function QuestionCard() {
     const session = useSession()
     const router = useRouter()
@@ -126,24 +127,13 @@ export default function QuestionCard() {
         return `${minutes}:${secs.toString().padStart(2, "0")}`
     }
 
-    function selectOption(questionId: string, optionId: string) {
-        setAnswers(prev => {
-            const exists = prev.find(q => q.questionId === questionId)
-            if (exists) {
-                if (exists.userAnswer.includes(optionId)) {
-                    return prev.filter(q => q.questionId !== questionId)
-                }
-                return prev.map(q =>
-                    q.questionId === questionId
-                        ? { ...q, userAnswer: [optionId] }
-                        : q
-                )
-            }
-            return [...prev, { questionId, userAnswer: [optionId] }]
-        })
+    function selectOption(questionId: string, optionId: string, questionType: string) {
+        setAnswers(prev =>
+            updateAnswers(prev, questionId, optionId, questionType)
+        )
     }
 
-    function handleSubmit() {
+    async function handleSubmit() {
         const payload = {
             answers,
             topic,
@@ -153,7 +143,17 @@ export default function QuestionCard() {
             questionType
         }
         sessionStorage.setItem("matchData", JSON.stringify(payload))
-        router.replace('/result')
+        try {
+            const res = await axios.post('/api/submit-answers', {answers})
+            if(res.data) router.replace('/result')
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    console.log("err , " , err.response.data)
+                }
+            }
+        }
+        
     }
 
     if (loader) {
@@ -243,10 +243,10 @@ export default function QuestionCard() {
                             <button
                                 key={opt.id}
                                 onClick={() =>
-                                    selectOption(data[currentIndex]?.questionId!, opt.id)
+                                    selectOption(data[currentIndex]?.questionId!, opt.id, questionType!)
                                 }
                                 className={`border flex flex-col w-full rounded-xl py-3 pl-4 mb-2 transition-all duration-200 ease-in-out hover:scale-[1.01]
-      ${isSelected
+                                        ${isSelected
                                         ? "bg-accent border-accent"
                                         : "bg-bg border-border hover:border-accent"
                                     }`}

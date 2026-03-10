@@ -88,17 +88,17 @@ async function startWorker() {
             console.log(`🧠 Generating ${needed} questions for ${poolKey}`);
 
             const raw: string = await generateQuestion({ topic, difficulty, language, questionType, questionLength: Number(needed), })
-            console.log("raw", raw)
             let questions = extractJsonFromAI(raw)
             if (questions.length === 0) {
                 throw new Error("No valid questions generated");
             }
 
             console.log("Question generated Now storing")
-            await redis.sadd(
-                poolKey,
-                questions.map((q: string) => JSON.stringify(q))
-            );
+            for (const q of questions) {
+                const questionId = q.questionId;
+                await redis.set(`question:${questionId}`, JSON.stringify(q));
+                await redis.sadd(poolKey, questionId);
+            }
             console.log("Question stored")
 
             await redis.xack(STREAM_KEY, GROUP_NAME, messageId);

@@ -40,7 +40,7 @@ export default function HomePage() {
                         <span className=''>{"</>"}Biltz</span>
                         <span className='text-accent'>Code</span>
                     </h1>
-                    <div className="mt-3 text-sec text-xl">Test your coding skills with quizzes and problem statements</div>
+                    <div className="mt-3 text-sec text-xl">Test your coding skills with quizes and problem statements</div>
                 </div>
 
                 <div className="flex justify-center   items-center text-center mt-12">

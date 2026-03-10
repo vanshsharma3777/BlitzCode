@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
         .from(users)
         .where(eq(users.email, email))
         .limit(1)
-    console.log("email ", email)
     try {
         console.log("came here in get ques backend")
         if (existingUser.length == 0) {
@@ -53,11 +52,6 @@ export async function POST(request: NextRequest) {
         let { topic, difficulty, questionType, language, questionLength } = await request.json();
         questionLength = parseInt(questionLength);
 
-        console.log(topic)
-        console.log(difficulty)
-        console.log(language)
-        console.log(questionType)
-        console.log(questionLength)
         if (!topic || !difficulty || !questionType || !language || questionLength === undefined) {
             return NextResponse.json({
                 success: false,
@@ -67,12 +61,10 @@ export async function POST(request: NextRequest) {
 
         const poolKey = `questions:${topic}:${difficulty}:${language}:${questionType}`
         const availableQuestions = await redis.scard(poolKey)
-        console.log("availableQuestions", availableQuestions)
         const requestQuestions = Math.min(availableQuestions, questionLength)
         const rawQuestions = availableQuestions > 0
             ? await redis.srandmember(poolKey, requestQuestions)
             : []
-        console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
         const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
 
@@ -91,40 +83,47 @@ export async function POST(request: NextRequest) {
                 }
             )
         }
+        const questionIds = Array.isArray(rawQuestions)
+            ? rawQuestions
+            : rawQuestions
+                ? [rawQuestions]
+                : [];
 
-        console.log("question generated : ", questions)
-        let parsedQuestions = questions.flatMap((group: any) =>
-            Array.isArray(group)
-                ? group.map((q: any) => {
-                    const parsed = typeof q === "string" ? JSON.parse(q) : q;
-                    return {
-                        ...parsed,
-                        questionId: parsed.questionId || crypto.randomUUID()
-                    };
-                })
-                : (() => {
-                    const parsed = typeof group === "string" ? JSON.parse(group) : group;
-                    return {
-                        ...parsed,
-                        questionId: parsed.questionId || crypto.randomUUID()
-                    };
-                })()
-        )
-        if (parsedQuestions.length === 0) {
-            const input = { topic, difficulty, language, questionType, questionLength }
-            const quesFromAPI = await generateQuestion(input)
-            parsedQuestions = extractJsonFromAI(quesFromAPI)
+        let parsedQuestions: any[] = [];
 
-            if (!Array.isArray(parsedQuestions)) {
-                console.error("LLM returned invalid JSON")
-                parsedQuestions = []
+        if (questionIds.length > 0) {
+
+            const redisQuestions = await redis.mget(
+                questionIds.map((id: string) => `question:${id}`)
+            );
+
+            parsedQuestions = redisQuestions
+                .filter(Boolean)
+                .map((q: any) => (typeof q === "string" ? JSON.parse(q) : q));
+
+        }
+        if (parsedQuestions.length < questionLength) {
+
+            const needed = questionLength - parsedQuestions.length;
+
+            const input = {
+                topic,
+                difficulty,
+                language,
+                questionType,
+                questionLength: needed
+            };
+
+            const quesFromAPI = await generateQuestion(input);
+
+            const generated = extractJsonFromAI(quesFromAPI);
+
+            if (Array.isArray(generated)) {
+                parsedQuestions = [...parsedQuestions, ...generated];
             }
 
         }
-
-
-        console.log("parsedQuestions " , parsedQuestions)
-        function shuffle<T>(arr: any) {
+        function shuffle(arr: any) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -132,15 +131,14 @@ export async function POST(request: NextRequest) {
             return arr;
         }
         const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-        console.log("random fiev " , randomFive)
         const finalQues = randomFive.map((q: any) => ({
-                code:q.code,
-                description:q.description,
-                questionId : q.questionId,
-                topic:q.topic,
-                options:q.options
-            }));
-        return  NextResponse.json({
+            code: q.code,
+            description: q.description,
+            questionId: q.questionId,
+            topic: q.topic,
+            options: q.options
+        }));
+        return NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,
             requestedLength: questionLength,
