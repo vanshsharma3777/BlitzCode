@@ -8,13 +8,10 @@ import { useEffect, useState } from "react";
 import { FaChartLine } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi"
 import { MdOutlineTimer } from "react-icons/md";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { diff } from "util";
 import Loader from "./Loader";
 import { createTime } from "../lib/functions/createTime";
-import { Answer } from "../types/wsTypes";
 import { updateAnswers } from "../lib/functions/selectOptions";
+import QuestionDescription from "./atoms/QuestionDescription";
 export default function QuestionCard() {
     const session = useSession()
     const router = useRouter()
@@ -25,6 +22,7 @@ export default function QuestionCard() {
     const topic = searchParams.get("topic")
     const questionLength = searchParams.get("questionLength")
     const [show, setShow] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const [data, setData] = useState<Question[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [totalTime, setTotalTime] = useState(0)
@@ -80,9 +78,7 @@ export default function QuestionCard() {
     }, [data])
 
     async function getResponse() {
-        console.log("functn working")
         try {
-            setLoader(true);
             const res = await axios.post("/api/get-questions", {
                 topic, difficulty, language, questionType, questionLength
             },
@@ -134,32 +130,40 @@ export default function QuestionCard() {
     }
 
     async function handleSubmit() {
+        const unanswered = data?.filter(
+                (q) => !answers.some((a) => a.questionId === q.questionId)
+            )
+            if (unanswered && unanswered.length > 0) {
+                setError("Please answer all questions before submitting the quiz.")
+                return 
+            }
         const payload = {
-            answers,
             topic,
             language,
             difficulty,
             questionLength,
-            questionType
+            questionType,
+            answers,
+            totalTime,
+            allQuestions: data
         }
         sessionStorage.setItem("matchData", JSON.stringify(payload))
         try {
-            const res = await axios.post('/api/submit-answers', {answers})
-            if(res.data) router.replace('/result')
+            const res = await axios.post('/api/submit-answers', { answers })
+            if (res.data) router.replace('/result')
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 400) {
-                    console.log("err , " , err.response.data)
+                    console.log("err , ", err.response.data)
                 }
             }
         }
-        
+
     }
 
     if (loader) {
         return <Loader />
     }
-
     return (
         <div className={`min-h-screen flex flex-col justify-center gap-5  items-center  text-pri `}>
             <div className="w-[85%] ">
@@ -206,85 +210,29 @@ export default function QuestionCard() {
                     </div>
                 )}
             </div>
-            <div className={`w-[85%] bg-card border border-border  rounded-xl py-8 transform transition-all duration-200 ease-out${show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"} text-pri  rounded-xl`}>
-                <div className="flex ">
-                    <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
-                        QUESTION NO {currentIndex + 1}
-                    </div>
-                    <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
-                        {questionType?.toUpperCase()}
-                    </div>
-                    <button onClick={() => handleSubmit()} className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
-                        SUBMIT
+            {error && (
+                <div className="w-[85%] bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+                    <span>{error}</span>
+
+                    <button
+                        onClick={() => setError(null)}
+                        className="ml-4 text-red-700 font-bold"
+                    >
+                        ✕
                     </button>
                 </div>
-
-                <div className="ml-5 mt-5 pr-5 ">
-                    <p className="text-2xl font-medium mb-5">{data[currentIndex]?.description}</p>
-                    <div className="">
-                        {data[currentIndex]?.code?.trim() ? (
-                            <SyntaxHighlighter
-                                language="javascript" style={vscDarkPlus} customStyle={{
-                                    borderRadius: "12px",
-                                    padding: "16px",
-                                    fontSize: "20px",
-                                    marginBottom: "12px",
-                                }}
-                            >
-                                {data[currentIndex]?.code}
-                            </SyntaxHighlighter>
-                        ) : null}
-                    </div>
-                    {data[currentIndex]?.options?.map((opt) => {
-
-                        const isSelected = currentAnswer?.userAnswer.includes(opt.id)
-
-                        return (
-                            <button
-                                key={opt.id}
-                                onClick={() =>
-                                    selectOption(data[currentIndex]?.questionId!, opt.id, questionType!)
-                                }
-                                className={`border flex flex-col w-full rounded-xl py-3 pl-4 mb-2 transition-all duration-200 ease-in-out hover:scale-[1.01]
-                                        ${isSelected
-                                        ? "bg-accent border-accent"
-                                        : "bg-bg border-border hover:border-accent"
-                                    }`}
-                            >
-                                <div className="flex items-center">
-                                    <div className="pr-1">
-                                        <div className="bg-card flex items-center justify-center text-xl text-sec h-10 w-10 rounded-full">
-                                            {opt.id}
-                                        </div>
-                                    </div>
-
-                                    <div className="pl-1 flex justify-start">
-                                        {opt.text}
-                                    </div>
-                                </div>
-                            </button>
-                        )
-                    })}
-                    <div className="flex flex-wrap gap-x-3 ">
-                        {Array.from({ length: Number(questionLength) }).map((_, i) => (
-                            <button
-                                onClick={() => {
-                                    setCurrentIndex(i)
-                                }}
-                                key={i}
-                                className={`text-2xl h-20 w-20 mt-5 rounded-xl border transition-all duration-200 hover:scale-110
-                                ${currentIndex === i ? "bg-accent border-accent" : "bg-sec border-neutral-700"}
-                                `}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-
-                    </div>
-                </div>
-
-
-            </div>
+            )}
+            <QuestionDescription
+                show={show}
+                currentIndex={currentIndex}
+                questionType={questionType as 'single correct' | 'bugfixer' | 'multple correct'}
+                handleSubmit={handleSubmit}
+                data={data}
+                currentAnswer={currentAnswer}
+                selectOption={selectOption}
+                questionLength={Number(questionLength)}
+                setCurrentIndex={setCurrentIndex}
+            />
         </div>
     )
 }

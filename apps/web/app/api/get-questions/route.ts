@@ -119,25 +119,39 @@ export async function POST(request: NextRequest) {
             const generated = extractJsonFromAI(quesFromAPI);
 
             if (Array.isArray(generated)) {
+                const pipeline = redis.pipeline();
+
+                for (const q of generated) {
+
+                    const questionKey = `question:${q.questionId}`;
+                    pipeline.set(questionKey, JSON.stringify(q));
+                    pipeline.sadd(poolKey, q.questionId);
+                }
+
+                await pipeline.exec();
+
                 parsedQuestions = [...parsedQuestions, ...generated];
             }
 
         }
-        function shuffle(arr: any) {
+
+        function shuffle(arr: any[]) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
             return arr;
         }
-        const randomFive = shuffle([...parsedQuestions]).slice(0, questionLength);
-        const finalQues = randomFive.map((q: any) => ({
-            code: q.code,
-            description: q.description,
-            questionId: q.questionId,
-            topic: q.topic,
-            options: q.options
-        }));
+
+        const finalQues = shuffle(parsedQuestions)
+            .slice(0, questionLength)
+            .map((q: any) => ({
+                code: q.code,
+                description: q.description,
+                questionId: q.questionId,
+                topic: q.topic,
+                options: q.options
+            }));
         return NextResponse.json({
             success: true,
             returnedQuestionsLength: parsedQuestions.length,

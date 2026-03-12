@@ -26,16 +26,13 @@ export async function POST(request: NextRequest) {
         console.log('email :' , email)
         console.log('existing user :' , existingUser)
     try {
-        console.log('came here1 :')
         if (existingUser.length == 0) {
             return NextResponse.json({
                 error: "User not logged in",
                 success: false
             }, { status: 401 })
         }
-        console.log('came her 2')
         const { answers } = await request.json()
-        console.log("answers came for calculating " , answers)
         if (answers.length === 0) {
             return NextResponse.json({
                 success: true,
@@ -46,19 +43,27 @@ export async function POST(request: NextRequest) {
         const questionIds = answers.map((ques: SolvedQuestion) => ques.questionId)
         const questions:Question[] = await redis.mget((
             questionIds.map((id: SolvedQuestion) => `question:${id}`)
-        )) 
+        ))
+        if(questions){
+            console.log("your questionsid are :" , questionIds)
+            console.log("your questions are :" , questions)
+        } else{
+            console.log("questions not found")
+        }
         let scores;
         if(questions){
              scores =  calculateScores(answers , questions )
         }else{
-            console.log("calcultae function not called")
+            console.log("calculate function not called")
         }
 
         return NextResponse.json({
             success: true,
-            score: scores || 0,
-            questionIds , 
-            questions
+            data:{
+                score:scores || 0,
+                questionIds,
+                questions
+            } 
         })
     } catch (err) {
         return NextResponse.json({
