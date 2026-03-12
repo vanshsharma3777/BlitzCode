@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import ResultAnalysis from "../../components/resultAnalysis"
 
 export default function Result() {
 
@@ -29,7 +30,9 @@ export default function Result() {
           <p>Question ID: {item.questionId}</p>
           <p>Answer: {item.userAnswer.join(", ")}</p>
         </div>
+        
       ))}
+      <ResultAnalysis/>
 
     </div>
   )
