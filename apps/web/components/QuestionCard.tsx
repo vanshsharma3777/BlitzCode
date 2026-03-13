@@ -3,7 +3,7 @@
 import { Answers, Question, SolvedQuestion } from "../types/allTypes";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaChartLine } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi"
@@ -14,6 +14,8 @@ import { updateAnswers } from "../lib/functions/selectOptions";
 import QuestionDescription from "./atoms/QuestionDescription";
 export default function QuestionCard() {
     const session = useSession()
+    const params = useParams()
+    const mode = params.mode as string 
     const router = useRouter()
     const searchParams = useSearchParams()
     const questionType = searchParams.get("questionType")
@@ -26,6 +28,7 @@ export default function QuestionCard() {
     const [data, setData] = useState<Question[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [totalTime, setTotalTime] = useState(0)
+    const [timeToPlay, setTimeToPlay] = useState(0)
     const [loader, setLoader] = useState<boolean>(false)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
     const currentAnswer = answers.find(
@@ -61,7 +64,7 @@ export default function QuestionCard() {
             Number(questionLength),
             difficulty as "easy" | "medium" | "hard"
         )
-
+        setTimeToPlay(initialTime!)
         setTotalTime(initialTime!)
 
         const interval = setInterval(() => {
@@ -144,13 +147,17 @@ export default function QuestionCard() {
             questionLength,
             questionType,
             answers,
-            totalTime,
+            totalTime : timeToPlay,
+            leftTime : totalTime,
             allQuestions: data
         }
         sessionStorage.setItem("matchData", JSON.stringify(payload))
         try {
             const res = await axios.post('/api/submit-answers', { answers })
-            if (res.data) router.replace('/result')
+            if (res.data) {
+                if(mode === 'multiplayer') router.replace('/multiplayer/result')
+                else if(mode === 'singleplayer') router.replace('/singleplayer/result')
+            }
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 400) {

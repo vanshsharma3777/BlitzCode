@@ -1,21 +1,25 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HiOutlineTrophy } from "react-icons/hi2";
 import { HiOutlineBolt } from "react-icons/hi2";
 import { Question, SolvedQuestion } from "../types/allTypes";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { HiCheckCircle, HiXCircle } from "react-icons/hi"
 import axios, { Axios, isAxiosError } from "axios";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { time } from "console";
+import Loader from "./Loader";
 
 type MatchType = {
     matchType: string,
     answers: SolvedQuestion[]
     allAnswers: Question[]
-    questionType: string
+    questionType: string,
+    timeTaken: string,
+    totalTime: number
 }
 type Response = {
     success: boolean,
@@ -23,8 +27,11 @@ type Response = {
     questionIds: string[],
     questions: Question[]
 }
-export default function ResultAnalysis({ matchType, answers, allAnswers, questionType }: MatchType) {
+export default function ResultAnalysis({ matchType, answers, allAnswers, questionType, timeTaken, totalTime }: MatchType) {
+    const params = useParams()
+    const mode = params.mode as string
     const session = useSession()
+    console.log("time : ", timeTaken)
     const router = useRouter()
     const [loader, setLoader] = useState(false)
     const [currentIndex, setCurrentIndex] = useState<number>(0)
@@ -38,13 +45,15 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     }, [session.status, router])
 
     useEffect(() => {
+        setLoader(true)
         async function getResponse() {
             console.log("answers :", answers)
             try {
-                setLoader(true)
+
                 const res = await axios.post('/api/submit-answers', { answers })
                 if (res.data) {
                     setData(res.data.data)
+
                 }
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -66,20 +75,26 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     useEffect(() => {
         console.log("data :", data)
     }, [data])
+
+
     const question = data?.questions?.[currentIndex]
 
-    const userAnswer =
-        answers?.find((a) => a.questionId === question?.questionId)?.userAnswer ?? []
-
+    const userAnswer = useMemo(() => {
+        return (
+            answers?.find((a) => a.questionId === question?.questionId)?.userAnswer ?? []
+        );
+    }, [answers, question]);
     const correctAnswer = question?.correctOptions ?? []
+    if (loader ||  !data) return <Loader />
+
     return (
         <div className="flex justify-center mt-10">
             <div className="w-full  ">
-                {matchType === 'single player' ? (
+                {mode === 'singleplayer' ? (
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center" >
                         <div><HiOutlineTrophy className="text-yellow-500 text-7xl " /></div>
                         <div className="text-4xl font-semibold">Quiz Completed </div>
-                        <div className="text-sec mt-2">Great job! You scored 4 out of 5 </div>
+                        <div className="text-sec mt-2">Great job! You scored {data.score} out of {data.questionIds.length}</div>
                     </div>
                 ) : (
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center" >
@@ -92,19 +107,19 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                     <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl mr-2">
                         <div className="text-sec mt-4 text-sm">Your Score</div>
                         <div className="text-3xl m-1">{data?.score}</div>
-                        <div className="text-sec mb-4">{data?.score! / data?.questionIds.length!}% correct</div>
+                        <div className="text-sec mb-4">{((data?.score! / data?.questionIds.length!) * 100).toFixed(1)}% correct</div>
                     </div>
                     {matchType === 'multiple player' && (
                         <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ml-2 ">
-                            <div className="text-sec mt-4 text-sm">vansh sharma </div>
+                            <div className="text-sec mt-4 text-sm">{session.data?.user.name} </div>
                             <div className="text-3xl m-1">Won</div>
                             <div className="text-sec mb-4">5 out of 5</div>
                         </div>
                     )}
                     <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ml-2">
                         <div className="text-sec mt-4 text-sm">Time Taken</div>
-                        <div className="text-3xl m-1">01:45</div>
-                        <div className="text-sec mb-4">Out of 5:00</div>
+                        <div className="text-3xl m-1">{String(timeTaken)}</div>
+                        <div className="text-sec mb-4">{totalTime / 60} minutes</div>
                     </div>
                 </div>
                 <div className="border-2 border-yellow-500   bg-card rounded-xl py-4 mt-4">
@@ -112,12 +127,12 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                         <HiOutlineBolt className="text-yellow-500  text-5xl" />
                         <div className="flex justify-between w-full">
                             <div className="flex flex-col ml-5">
-                                <div className="text-xl font-semibold">XP Earned: +200</div>
-                                <div className="text-sec">4 Correct answers x 50 XP each</div>
+                                <div className="text-xl font-semibold">XP Earned: +{(data.score*50)}</div>
+                                <div className="text-sec">{data.score} Correct answer(s) x 50 XP each</div>
                             </div>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col " >
                                 <div>Total XP: 200</div>
-                                <div>helo</div>
+                                <div className="text-sec"> {1000 - (data.score*50)} XP to level 2</div>
                             </div>
                         </div>
                     </div>

@@ -45,7 +45,7 @@ export default function HomePage() {
 
                 <div className="flex justify-center   items-center text-center mt-12">
                     <button onClick={()=>{
-                        router.push("/single-player/configuration")
+                        router.push("/singleplayer/configuration")
                     }} className="rounded-2xl bg-card h-[230px] w-[450px] flex flex-col items-center justify-center mr-3 border-2 border-border hover:border-accent transition-all duration-200 ease-in-out hover:scale-105">
                         <div className="h-16 w-16 bg-bg rounded-full flex  justify-center items-center ">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"

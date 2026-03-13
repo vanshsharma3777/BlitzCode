@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import ConfigurationCard from "../../../components/atoms/ConfiguratinCard";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Loader from "../../../components/Loader";
 
 export default function Configuration() {
     const router = useRouter()
+    const params = useParams();
+        const mode = params.mode as string;
+
+    console.log(mode);
     const [loader, setLoader] = useState(false)
     const [config, setConfig] = useState({
         language: null,
@@ -14,7 +18,7 @@ export default function Configuration() {
         questionType: null as "single correct" | "multiple correct" | "bugfixer" | null,
         difficulty: null as "easy" | "medium" | "hard" | null,
         questionLength: null as "5" | "10" | "15" | null
-    }) 
+    })
     useEffect(() => {
         console.log(config.topic)
         console.log(config.questionLength)
@@ -23,8 +27,9 @@ export default function Configuration() {
         console.log(config.language)
         if (config.topic !== null && config.questionLength !== null && config.questionType !== null && config.difficulty !== null && config.language !== null) {
             setLoader(true)
-
-            router.push(`/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+            if(mode=== 'multiplayer') router.push(`/multiplayer/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+                
+            else if(mode === 'singleplayer') router.push(`/singleplayer/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
 
             setTimeout(() => {
                 setLoader(false)
@@ -43,11 +48,11 @@ export default function Configuration() {
                     Configure your preference to the best of your comfort
                 </div>
 
-                <ConfigurationCard heading="Language" setConfig={setConfig}  widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
-                <ConfigurationCard heading="Topic" setConfig={setConfig}  widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
-                <ConfigurationCard heading="Question Type" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
-                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
-                <ConfigurationCard heading="Question Length" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg = {"53%"}/>
+                <ConfigurationCard heading="Language" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg={"53%"} />
+                <ConfigurationCard heading="Topic" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg={"53%"} />
+                <ConfigurationCard heading="Question Type" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg={"53%"} />
+                <ConfigurationCard heading="Difficulty Level" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg={"53%"} />
+                <ConfigurationCard heading="Question Length" setConfig={setConfig} widthMob={"full"} widthMd={"70%"} widthLg={"53%"} />
 
             </div>
         </div>

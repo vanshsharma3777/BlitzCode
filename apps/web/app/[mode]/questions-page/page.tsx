@@ -1,5 +1,5 @@
+import QuestionCard from "../../../components/QuestionCard";
 
-import QuestionCard from "../../components/QuestionCard";
 
 export default function QuestionPage() {
     
