@@ -75,12 +75,12 @@ export class Game {
          startGlobalTimer(this);
     }
 
-    endThisGame(reason: "timer" | "manual" = "timer") {
+    endThisGame(type: "timer" | "manual" = "timer") {
         if (this.globalTimer) {
             clearTimeout(this.globalTimer)
             this.globalTimer = null
         }
-        const results = endGame(this , reason)
+        const results = endGame(this , type)
 
     }
 

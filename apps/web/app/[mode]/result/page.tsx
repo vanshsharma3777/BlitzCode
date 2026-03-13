@@ -27,8 +27,6 @@ export default function Result() {
 
       const displayTime = formatTime(timeTaken);
       setTimeTaken((displayTime))
-      console.log(displayTime); 
-      console.log("rtimetken " , timeTaken)
     }
     else {
       console.log("Items not found in sesion storage")

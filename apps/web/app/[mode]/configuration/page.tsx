@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ConfigurationCard from "../../../components/atoms/ConfiguratinCard";
 import { useParams, useRouter } from "next/navigation";
 import Loader from "../../../components/Loader";
+import { connectSocket } from "../../../lib/websocket";
+import { useSession } from "next-auth/react";
 
 export default function Configuration() {
     const router = useRouter()
     const params = useParams();
-        const mode = params.mode as string;
-
-    console.log(mode);
+    const mode = params.mode as string;
+    const socketRef = useRef<WebSocket | null>(null);
     const [loader, setLoader] = useState(false)
     const [config, setConfig] = useState({
         language: null,
@@ -19,17 +20,13 @@ export default function Configuration() {
         difficulty: null as "easy" | "medium" | "hard" | null,
         questionLength: null as "5" | "10" | "15" | null
     })
+
     useEffect(() => {
-        console.log(config.topic)
-        console.log(config.questionLength)
-        console.log(config.questionType)
-        console.log(config.difficulty)
-        console.log(config.language)
         if (config.topic !== null && config.questionLength !== null && config.questionType !== null && config.difficulty !== null && config.language !== null) {
             setLoader(true)
-            if(mode=== 'multiplayer') router.push(`/multiplayer/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
-                
-            else if(mode === 'singleplayer') router.push(`/singleplayer/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+            if (mode === 'multiplayer') router.push(`/multiplayer/find-match?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
+
+            else if (mode === 'singleplayer') router.push(`/singleplayer/questions-page?topic=${config.topic}&difficulty=${config.difficulty}&language=${config.language}&questionType=${config.questionType}&questionLength=${config.questionLength}`)
 
             setTimeout(() => {
                 setLoader(false)

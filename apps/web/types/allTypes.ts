@@ -57,3 +57,14 @@ export interface Theme {
     bg: string;
     border: string;
 }
+
+export interface CustomSocket extends WebSocket {
+    emailId?: string;
+    payload? : {
+        topic : string,
+        language : string ,
+        questionType : string,
+        questionLength : number ,
+        difficulty: string
+    } 
+}

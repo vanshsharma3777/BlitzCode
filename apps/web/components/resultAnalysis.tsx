@@ -44,7 +44,8 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
         }
     }, [session.status, router])
 
-    useEffect(() => {
+    if(mode === 'singleplayer'){
+        useEffect(() => {
         setLoader(true)
         async function getResponse() {
             console.log("answers :", answers)
@@ -72,6 +73,7 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
         }
         getResponse()
     }, [])
+    }
     useEffect(() => {
         console.log("data :", data)
     }, [data])

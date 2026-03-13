@@ -6,13 +6,12 @@ import type { CustomSocket } from "./types.js";
 
 export class GameManager {
     private games: Game[];
-    private pendingUser: CustomSocket | null;
+    private pendingQueues = new Map<string, CustomSocket[]>();
     private socketToGame = new Map<CustomSocket, Game>;
     private users: CustomSocket[]
 
     constructor() {
         this.games = [];
-        this.pendingUser = null;
         this.users = []
     }
 
@@ -29,13 +28,13 @@ export class GameManager {
                 if (!socket.emailId) {
                     socket.send(JSON.stringify({
                         type: "error",
-                        reason: "Email not found"
+                        data: "Email not found"
                     }));
                     socket.close(1003, "Email Not Found")
                     return
                 }
                 socket.send(JSON.stringify({
-                    type: "AUTH OK",
+                    data: "AUTH OK",
                 }))
                 return
             }
@@ -43,7 +42,7 @@ export class GameManager {
             if (!socket.emailId) {
                 socket.send(JSON.stringify({
                     type: "error",
-                    reason: "Unauthenticated"
+                    data: "Unauthenticated"
                 }));
                 socket.close(1008, "Unauthenticated");
                 return;
@@ -52,74 +51,91 @@ export class GameManager {
                 if (!msg.payload.topic || !msg.payload.questionLength || !msg.payload.questionType || !msg.payload.difficulty || !msg.payload.language) {
                     socket.send(JSON.stringify({
                         type: "Error",
-                        reason: "Error in getting the fields. Try again"
+                        data: "Error in getting the fields. Try again"
                     }))
                     return
                 }
 
                 socket.payload = msg?.payload
-                console.log("herer1")
-                if (!this.pendingUser) {
-                    this.pendingUser = socket;
-                    console.log("User added as pending:", socket.emailId);
+                const key =
+                    `${msg.payload.topic}_${msg.payload.difficulty}_${msg.payload.language}_${msg.payload.questionType}_${msg.payload.questionLength}`;
+
+                console.log("Queue key:", key);
+
+
+                if (!this.pendingQueues.has(key)) {
+                    this.pendingQueues.set(key, []);
+                }
+
+                const queue = this.pendingQueues.get(key)!;
+                if (queue.length === 0) {
+
+                    queue.push(socket);
+
+                    console.log("Player waiting:", socket.emailId);
+
                     return;
                 }
-                if (this.pendingUser === socket) {
-                    return;
+                const opponent = queue.shift()!;
+                console.log("Match found:", opponent.emailId, socket.emailId);
+                const fields = {
+                    topic: msg.payload.topic,
+                    difficulty: msg.payload.difficulty,
+                    language: msg.payload.language,
+                    questionType: msg.payload.questionType,
+                    questionLength: msg.payload.questionLength
+                };
+                const game = new Game([opponent, socket], fields);
+                try {
+                    opponent.send(JSON.stringify({
+                        type: "GAME_START",
+                        opponent: socket.emailId
+                    }));
+
+                    socket.send(JSON.stringify({
+                        type: "GAME_START",
+                        opponent: opponent.emailId
+                    }));
+                    await game.start();
+                    this.games.push(game)
+                    this.socketToGame.set(opponent, game);
+                    this.socketToGame.set(socket, game);
+
+                } catch (err) {
+                    console.error("Game start error:", err);
                 }
-                const isMatch = JSON.stringify(this.pendingUser?.payload) === JSON.stringify(socket.payload)
-
-                if (!isMatch) {
-                    console.log("Payload mismatch. Finding new user.");
-                    return;
-                }
-                else {
-                    const fields = {
-                        difficulty: socket.payload?.difficulty!,
-                        topic: socket.payload?.topic!,
-                        language: socket.payload?.language!,
-                        questionType: socket.payload?.questionType!,
-                        questionLength: socket.payload?.questionLength!,
-                    }
-                    const game = new Game([this.pendingUser, socket], fields)
-                    try {
-                        socket.send(JSON.stringify({ type: "GAME_START" }))
-                        await game.start()
-                        this.games.push(game)
-                        this.socketToGame.set(this.pendingUser, game)
-                        this.socketToGame.set(socket, game)
-                        this.pendingUser = null
-                        console.log("starting game")
-
-
-                    } catch (err) {
-                        console.log("error in gameManager class in starting th game ", err)
-                    }
-
-
-                }
+                return;
             }
             const game = this.socketToGame.get(socket)
-
             if (!game) {
                 socket.send(JSON.stringify({
                     type: "ERROR",
-                    reason: "You are not in an active game"
+                    data: "You are not in an active game"
                 }))
                 return
             }
-
             if (msg.type === NEXT_QUESTION) {
                 console.log("clicked next question")
                 game.handleNextQuestion(socket)
+                return
             }
-
             if (msg.type === OVER_GAME) {
                 console.log("clicked over game")
                 game.endThisGame("manual")
+                return
             }
-
         })
+        socket.on("close", () => {
+            console.log("User disconnected:", socket.emailId);
+            for (const [key, queue] of this.pendingQueues.entries()) {
+                const index = queue.indexOf(socket);
+               if (index !== -1) {
+                    queue.splice(index, 1);
+                }
+                if (queue.length === 0) {
+                    this.pendingQueues.delete(key);
+                }
+            }
+        });
     }
-
 }
