@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { Game } from "./game.js";
-import { EXIT_GAME, INIT_GAME, NEXT_QUESTION, OVER_GAME } from "./message.js";
+import { EXIT_GAME, INIT_GAME, NEXT_QUESTION, OVER_GAME, START_GAME } from "./message.js";
 import type { CustomSocket } from "./types.js";
 
 
@@ -86,20 +86,23 @@ export class GameManager {
                     questionLength: msg.payload.questionLength
                 };
                 const game = new Game([opponent, socket], fields);
+                this.games.push(game)
+                this.socketToGame.set(opponent, game);
+                this.socketToGame.set(socket, game);
+
                 try {
+                    await game.start();
                     opponent.send(JSON.stringify({
-                        type: "GAME_START",
+                        type: START_GAME,
                         opponent: socket.emailId
                     }));
 
                     socket.send(JSON.stringify({
-                        type: "GAME_START",
+                        type: START_GAME,
                         opponent: opponent.emailId
                     }));
-                    await game.start();
-                    this.games.push(game)
-                    this.socketToGame.set(opponent, game);
-                    this.socketToGame.set(socket, game);
+
+
 
                 } catch (err) {
                     console.error("Game start error:", err);
@@ -129,7 +132,7 @@ export class GameManager {
             console.log("User disconnected:", socket.emailId);
             for (const [key, queue] of this.pendingQueues.entries()) {
                 const index = queue.indexOf(socket);
-               if (index !== -1) {
+                if (index !== -1) {
                     queue.splice(index, 1);
                 }
                 if (queue.length === 0) {

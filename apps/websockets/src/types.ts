@@ -13,7 +13,7 @@ export interface CustomSocket extends WebSocket {
         questionType : string,
         questionLength : number ,
         difficulty: string
-    } 
+    },
 }
 
 export interface Options {

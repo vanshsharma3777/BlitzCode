@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ConfigurationCard from "../../../components/atoms/ConfiguratinCard";
 import { useParams, useRouter } from "next/navigation";
 import Loader from "../../../components/Loader";
-import { connectSocket } from "../../../lib/websocket";
-import { useSession } from "next-auth/react";
+
 
 export default function Configuration() {
     const router = useRouter()

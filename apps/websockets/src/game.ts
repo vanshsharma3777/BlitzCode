@@ -45,7 +45,7 @@ export class Game {
             questionType: this.questionType,
             questionLength: this.questionLength
         }
-        this.questions = await questions(this.topic , this.difficulty , this.questionType , this.language ,this.questionLength )
+        this.questions = await questions(this.topic, this.difficulty, this.questionType, this.language, this.questionLength)
         if (!this.questions) {
             console.log("Questions not found")
             this.players.forEach((player) => {
@@ -59,7 +59,15 @@ export class Game {
         }
     }
     async start() {
-       await this.findQuestions()
+            await this.findQuestions();
+
+    await this.findQuestions();
+    console.log("questions after findQuestions:", this.questions);
+
+    if (!this.questions || this.questions.length === 0) {
+        console.log("Questions not found in start()");
+        return;
+    }
         this.gameEndTime = Date.now() + (5 * 60 * 1000)
 
         this.players.forEach((player) => {
@@ -70,9 +78,10 @@ export class Game {
             if (!this.questions) {
                 console.log("Unable to send the questions (game.ts)")
             }
-            sendQuestion(this, player)
+            
         })
-         startGlobalTimer(this);
+
+        startGlobalTimer(this);
     }
 
     endThisGame(type: "timer" | "manual" = "timer") {
@@ -80,41 +89,46 @@ export class Game {
             clearTimeout(this.globalTimer)
             this.globalTimer = null
         }
-        const results = endGame(this , type)
+        const results = endGame(this, type)
 
     }
 
     handleNextQuestion(player: CustomSocket) {
-        console.log("hit handlequestion")
         const emailId = player.emailId
-        if(!emailId){
+        console.log("NEXT_QUESTION from:", emailId);
+        if (!emailId) { 
             console.log("player email id not passed/ found")
             player.send(JSON.stringify({
-                type:"ERROR",
-                payload:{
-                    error:"Email not found / passed"
+                type: "ERROR",
+                payload: {
+                    error: "Email not found / passed"
                 }
             }))
             return
         }
+        if (this.playerProgress.size === 0 || !this.questions) {
+        player.send(JSON.stringify({
+            type: "ERROR",
+            payload: { error: "Game is still initializing" }
+        }));
+        return;
+    }
         const index = this.playerProgress.get(emailId)
-        console.log("index " , index)
-        if (index === undefined){
+        console.log("index ", index)
+        if (index === undefined) {
             player.send(JSON.stringify({
-                type:"ERROR",
-                payload:{
-                    error:"Index undefined"
+                type: "ERROR",
+                payload: {
+                    error: "Index undefined"
                 }
             }))
             return
         }
-        console.log("sending qustion (game)")
-        if (index >= this.questions!.length - 1) {
+        if (index >= this.questions.length ) {
             this.playerFinishTime.set(emailId, Date.now())
             return
         }
-        this.playerProgress.set(emailId, index + 1)
-        console.log("sendques reached")
         sendQuestion(this, player)
+        this.playerProgress.set(emailId, index + 1)
     }
 }

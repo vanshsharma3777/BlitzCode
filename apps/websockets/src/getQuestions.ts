@@ -15,27 +15,23 @@ export async function questions(topic: string, difficulty: string, questionType:
         : []
     console.log("Raw questions count:", Array.isArray(rawQuestions) ? rawQuestions.length : 1);
 
-    const questions = Array.isArray(rawQuestions) ? rawQuestions : [rawQuestions]
     const MIN_POOL_SIZE = 10;
-    if (availableQuestions < MIN_POOL_SIZE) {
-        console.log("genmrating")
-        const ans = await redis.xadd(
-            "questions_generation",
-            '*',
-            {
-                topic,
-                difficulty,
-                questionType,
-                language,
-                needed: String(MIN_POOL_SIZE - availableQuestions),
-            }
-        )
-    }
+
     const questionIds = Array.isArray(rawQuestions)
         ? rawQuestions
         : rawQuestions
             ? [rawQuestions]
             : [];
+
+     {
+      await redis.xadd("questions_generation", "*", {
+        topic,
+        difficulty,
+        questionType,
+        language,
+        needed: String(Math.abs(questionLength <15 ? questionLength : 15 )),
+      });
+    }
 
     let parsedQuestions: any[] = [];
 

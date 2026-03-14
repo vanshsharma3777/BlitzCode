@@ -218,7 +218,7 @@ export default function QuestionCard() {
                 )}
             </div>
             {error && (
-                <div className="w-[85%] bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+                <div className=" bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
                     <span>{error}</span>
 
                     <button

@@ -60,13 +60,12 @@ export default function FindMatch() {
                         language
                     }
                 }));
-
             }
-            if (data.type === "GAME_START") {
+            if (data.type === "start_game") {
                 setFound(true)
                 setPlayerFound(data.opponent)
                 setTimeout(() => {
-                   router.push(`/multiplayer/questions-page?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
+                   router.push(`/multiplayer/match-page?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
                 },2000);
             }
 
