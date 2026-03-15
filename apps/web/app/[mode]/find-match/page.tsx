@@ -65,7 +65,7 @@ export default function FindMatch() {
                 setFound(true)
                 setPlayerFound(data.opponent)
                 setTimeout(() => {
-                   router.push(`/multiplayer/match-page?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
+                   router.replace(`/multiplayer/match-page?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
                 },2000);
             }
 

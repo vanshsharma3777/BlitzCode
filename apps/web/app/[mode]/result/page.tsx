@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react"
 import ResultAnalysis from "../../../components/resultAnalysis"
+import { useParams } from "next/navigation"
 
 export default function Result() {
-
+  const params = useParams()
+  const mode = params.mode
   const [data, setData] = useState<any>(null)
   const [timeTaken , setTimeTaken] = useState<string>('')
 
@@ -32,6 +34,12 @@ export default function Result() {
       console.log("Items not found in sesion storage")
     }
   }, [])
+  
+  if(mode === 'multiplayer'){
+    useEffect(()=>{
+      
+    },[])
+  }
   if (!data) return <div>Loading...</div>
   return (
     <div className="p-6 text-pri min-h-screen  flex justify-center  gap-5" >

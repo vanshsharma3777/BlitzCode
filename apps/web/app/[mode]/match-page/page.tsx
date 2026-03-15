@@ -13,11 +13,11 @@ import { Question, SolvedQuestion } from "../../../types/allTypes"
 import { connectSocket } from "../../../lib/websocket"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import SyntaxHighlighter from "react-syntax-highlighter"
+import { createTime } from "../../../lib/functions/createTime"
 
 type WSQuestionData = {
     question: Question,
     questionNumber: number,
-    remainingTime: number,
     total: number
 }
 export default function MacthPage() {
@@ -35,8 +35,8 @@ export default function MacthPage() {
     const [loader, setLoader] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [questions, setQuestions] = useState<Question[]>([])
-    const [remainingTime, setRemainingTime] = useState(0)
-    const [total, setTotal] = useState(0)
+    const [totalTime, setTotalTime] = useState(0)
+
     const [currentIndex, setCurrentIndex] = useState(0)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
 
@@ -83,9 +83,6 @@ export default function MacthPage() {
             if (parsed?.data) {
                 const wsData: WSQuestionData = parsed.data
 
-                setRemainingTime(wsData.remainingTime)
-                setTotal(wsData.total)
-
                 setQuestions((prev) => {
                     const alreadyExists = prev.some(
                         (q) => q.questionId === wsData.question.questionId
@@ -121,11 +118,33 @@ export default function MacthPage() {
         }
 
         return () => {
+            console.log("socket disconnected")
             socket.close()
         }
     }, [session.data?.user.email, session.status])
 
+    useEffect(() => {
+        const initialTime = createTime(
+            Number(questionLength),
+            difficulty as "easy" | "medium" | "hard"
+        )
+        setTotalTime(initialTime!)
+
+        const interval = setInterval(() => {
+            setTotalTime(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [questions])
+
     function selectOption(questionId: string, optionId: string, questionType: string) {
+        console.log(answers)
         setAnswers(prev =>
             updateAnswers(prev, questionId, optionId, questionType)
         )
@@ -192,7 +211,7 @@ export default function MacthPage() {
                                     </div>
                                     {
                                         <div className="font-medium">
-                                            {formatTime(remainingTime)}
+                                            {formatTime((totalTime))}
                                         </div>
                                     }
                                 </div>
