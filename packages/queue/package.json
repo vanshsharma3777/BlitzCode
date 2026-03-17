@@ -1,0 +1,19 @@
+{
+  "name": "@repo/queue",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "bullmq": "^5.71.0",
+    "ioredis": "^5.10.0"
+  }
+}
