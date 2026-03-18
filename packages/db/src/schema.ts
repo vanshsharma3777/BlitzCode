@@ -9,6 +9,7 @@ import {
   uuid,
   integer,
   jsonb,
+  index,
 } from "drizzle-orm/pg-core"
 import postgres from "postgres"
 import { drizzle } from "drizzle-orm/postgres-js"
@@ -19,14 +20,14 @@ const pool = postgres(connectionString, { max: 1 })
 export const db = drizzle(pool)
 
 export const difficultyEnum = pgEnum("difficulty", ["easy", "medium", "hard"]);
-export const questionTypeEnum = pgEnum("question_type", ["single", "multiple", "bugfix"]);
+export const questionTypeEnum = pgEnum("question_type", ["single correct", "multiple correct", "bugfixer"]);
 export const gameTypeEnum = pgEnum("game_type", ["quiz", "bugfixer", "multiplayer"]);
 export const questionStatus = pgEnum("question_status", ["correct", "incorrect", "notAttempted"]);
 
 export const users = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name"),
-  email: text("email").notNull().unique(), 
+  email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
 
@@ -112,27 +113,35 @@ export const authenticators = pgTable(
 )
 
 export const questions = pgTable("question", {
-  id: uuid("id").defaultRandom().primaryKey(), 
+  questionId: uuid("questionId").defaultRandom().primaryKey(),
   topic: text("topic").notNull(),
   description: text("description").notNull(),
   explanation: text("explanation").notNull(),
   correctOptions: text("correct_options").array().notNull(),
-  difficulty: difficultyEnum("difficulty").notNull(),
+  difficulty: text("difficulty").notNull(),
   language: text("language").notNull(),
-  code: text("code").notNull(),
-  questionType: questionTypeEnum("question_type").notNull(),
+  code: text("code"),
+  questionType: text("question_type").notNull(),
   options: jsonb("options").notNull(),
   timeLimit: integer("time_limit").default(30).notNull(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), 
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-});
+},
+  (table) => ({
+    fetchQuestionIdx : index("questions_fetch_idx").on(
+      table.topic,
+      table.difficulty,
+      table.language,
+      table.questionType,
+    ),
+  }));
 
-export const attempts = pgTable("attempt" , {
-  id:uuid('id').defaultRandom().primaryKey(),
-  status:questionStatus("question_status").notNull(),
-  userId: uuid('userId').notNull().references(()=> users.id , { onDelete:"cascade"}), 
-  score : integer("score").notNull(),
-  totalTime : integer("total_time").notNull(),
+export const attempts = pgTable("attempt", {
+  id: uuid('id').defaultRandom().primaryKey(),
+  status: questionStatus("question_status").notNull(),
+  userId: uuid('userId').notNull().references(() => users.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  totalTime: integer("total_time").notNull(),
   gameType: gameTypeEnum("game_type").notNull(),
   completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
 
@@ -148,17 +157,17 @@ export const multiplayerGame = pgTable("multiplayer_game", {
 
 export const multiplayerAttempts = pgTable("multiplayer_attempts", {
   multiplayerId: uuid("multiplayer_id").notNull().references(() => multiplayerGame.id, { onDelete: "cascade" }),
-  attemptId: uuid("attempt_id").notNull().references(() => attempts.id, { onDelete: "cascade" }), 
+  attemptId: uuid("attempt_id").notNull().references(() => attempts.id, { onDelete: "cascade" }),
 });
 
 export const questionsAttempted = pgTable("question_attempted", {
-  id: uuid("id").defaultRandom().primaryKey(), 
-  userId: uuid("user_id") 
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  questionId: uuid("question_id") 
+  questionId: uuid("question_id")
     .notNull()
-    .references(() => questions.id, { onDelete: "cascade" }),
+    .references(() => questions.questionId, { onDelete: "cascade" }),
   isCorrect: integer("is_correct").notNull(),
   timeTaken: real("time_taken").notNull(),
   attemptedAt: timestamp("attempted_at", { mode: "date" }).defaultNow().notNull(),

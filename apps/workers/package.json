@@ -17,6 +17,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@repo/llm": "workspace:*",
+    "@repo/db": "workspace:*",
     "@repo/queue": "workspace:*",
     "@upstash/redis": "^1.36.1",
     "dotenv": "^17.2.3"
