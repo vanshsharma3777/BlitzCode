@@ -58,5 +58,5 @@ export async function generateQuestionMistral({ topic, difficulty, language, que
 if (!content) {
   throw new Error("Mistral returned an empty or invalid response structure");
 }
-return JSON.stringify(content);
+return content;
 }

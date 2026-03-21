@@ -16,10 +16,11 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@repo/llm": "workspace:*",
     "@repo/db": "workspace:*",
+    "@repo/llm": "workspace:*",
     "@repo/queue": "workspace:*",
     "@upstash/redis": "^1.36.1",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "uuid": "^13.0.0"
   }
 }

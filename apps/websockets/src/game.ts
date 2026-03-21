@@ -3,7 +3,7 @@ import type { CustomSocket } from "./types.js";
 import { generateQuestion } from "./LLM/router.js"
 import { startGlobalTimer } from "./Game Functions/startGlobalTimer.js";
 import { endGame } from "./Game Functions/endGame.js";
-import { questions } from "./getQuestions.js";
+import { ques } from "./getQuestions.js";
 
 export class Game {
     public players: CustomSocket[]
@@ -45,7 +45,7 @@ export class Game {
             questionType: this.questionType,
             questionLength: this.questionLength
         }
-        this.questions = await questions(this.topic, this.difficulty, this.questionType, this.language, this.questionLength)
+        this.questions = await ques(this.topic, this.difficulty, this.questionType, this.language, this.questionLength)
         if (!this.questions) {
             console.log("Questions not found")
             this.players.forEach((player) => {

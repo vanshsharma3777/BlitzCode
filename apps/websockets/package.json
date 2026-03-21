@@ -19,6 +19,7 @@
     "@types/express": "^5.0.6",
     "@types/ws": "^8.18.1",
     "@repo/llm": "workspace:*",
+    "@repo/db": "workspace:*",
     "@repo/queue": "workspace:*",
     "@upstash/redis": "^1.36.2",
     "express": "^5.2.1",

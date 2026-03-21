@@ -82,7 +82,7 @@ export default function QuestionCard() {
 
     async function getResponse() {
         try {
-            const res = await axios.post("/api/get-questions", {
+            const res = await axios.post("/api/questions", {
                 topic, difficulty, language, questionType, questionLength
             },
                 { withCredentials: true }

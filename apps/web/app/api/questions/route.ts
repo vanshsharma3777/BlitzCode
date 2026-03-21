@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../../lib/configs/authOptions";
-import { questionQueue } from "@repo/queue";
+import { questionQueue, statusQueue } from "@repo/queue";
 import { db, questions, users } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 
@@ -23,30 +23,50 @@ export async function POST(request: NextRequest) {
     }
 
     const { topic, difficulty, language, questionLength, questionType } = await request.json();
-    const findQuestions = db.select().from(questions).where(and(
-        eq(topic, topic),
-        eq(language, language),
-        eq(questionLength, questionLength),
-        eq(questionType, questionType),
-        eq(difficulty, difficulty),
-    ))
-    let questionsToSend
-    if ((await findQuestions).length <= 15) {
+    const jobKey = `${topic}-${difficulty}-${language}-${questionType}`;
+    const unusedQuestions = await db.select().from(questions).where(and(
+        eq(questions.topic, topic),
+        eq(questions.language, language),
+        eq(questions.questionType, questionType),
+        eq(questions.difficulty, difficulty),
+        eq(questions.status, "unused")))
+
+    const findQuestions = unusedQuestions.slice(0, questionLength);
+
+    console.log("questionsd ", (findQuestions))
+    let questionsToSend, quesId
+    if (findQuestions.length != 0) {
+        quesId = findQuestions.map((que) => {
+            return que.questionId
+        })
+    }
+    console.log("unsued ques id :", unusedQuestions)
+    if ((unusedQuestions).length <= 15 && questionLength) {
         questionsToSend = await questionQueue.add("generateQuestions", {
             topic,
             difficulty,
             questionLength,
             questionType,
             language
-        })
+        }, {
+            jobId: jobKey
+        }
+    )
         console.log("Questions creation task added in the queue")
     }
-
-    console.log(session)
+    if (findQuestions.length != 0) {
+        await statusQueue.add('statusQueue', { quesId }, {
+            attempts: 3, backoff: {
+                type: "fixed",
+                delay: 3000
+            }
+        })
+        console.log("Questions status changing task added in the queue")
+    }
+    console.log("ques are :", findQuestions)
     return NextResponse.json({
         success: true,
-        questionsToSend,
-        session: session,
+        data: findQuestions,
         msg: "working fine"
     })
 }
