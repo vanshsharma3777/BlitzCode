@@ -18,8 +18,8 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
     "@repo/db": "workspace:*",
-    "@repo/queue": "workspace:*",
     "@repo/llm": "workspace:*",
+    "@repo/queue": "workspace:*",
     "@repo/ui": "*",
     "@types/axios": "^0.14.4",
     "@types/react-syntax-highlighter": "^15.5.13",

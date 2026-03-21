@@ -4,6 +4,7 @@ import { authOptions } from "../../../lib/configs/authOptions";
 import { questionQueue, statusQueue } from "@repo/queue";
 import { db, questions, users } from "@repo/db";
 import { and, eq } from "drizzle-orm";
+import { Question } from "../../../types/allTypes";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
