@@ -5,6 +5,7 @@ import { questionQueue, statusQueue } from "@repo/queue";
 import { db, questions, users } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 import { Question } from "../../../types/allTypes";
+import { redis } from "../../../lib/configs/redis";
 
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const findQuestions = unusedQuestions.slice(0, questionLength);
 
-    console.log("questionsd ", (findQuestions))
+    console.log("questions ", (findQuestions))
     let questionsToSend, quesId
     if (findQuestions.length != 0) {
         quesId = findQuestions.map((que) => {
@@ -43,6 +44,8 @@ export async function POST(request: NextRequest) {
     }
     console.log("unsued ques id :", unusedQuestions)
     if ((unusedQuestions).length <= 15 && questionLength) {
+         console.log("Questions creation task added in the queue")
+         console.log("Hello")
         questionsToSend = await questionQueue.add("generateQuestions", {
             topic,
             difficulty,
@@ -50,10 +53,15 @@ export async function POST(request: NextRequest) {
             questionType,
             language
         }, {
-            jobId: jobKey
-        }
+            jobId: jobKey,
+            attempts: 3 ,
+            backoff:{
+                type:"fixed",
+                delay:3000
+            }
+        },
     )
-        console.log("Questions creation task added in the queue")
+       
     }
     if (findQuestions.length != 0) {
         await statusQueue.add('statusQueue', { quesId }, {
@@ -64,10 +72,22 @@ export async function POST(request: NextRequest) {
         })
         console.log("Questions status changing task added in the queue")
     }
-    console.log("ques are :", findQuestions)
+
+    const red = await redis.set(jobKey , findQuestions)
+    const finalQuestionsToSend = findQuestions.map((ques)=>({
+        questionsId:ques.questionId,
+        description:ques.description,
+        code:ques.code,
+        options:ques.options,
+        questionType : ques.questionType,
+        language:ques.language,
+        topic:ques.topic,
+        difficulty:ques.difficulty,
+        questionLength:questionLength
+    }))
     return NextResponse.json({
         success: true,
-        data: findQuestions,
+        data: finalQuestionsToSend,
         msg: "working fine"
     })
 }

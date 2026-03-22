@@ -92,7 +92,9 @@ export default function QuestionCard() {
                 typeof res.data.data === "string"
                     ? JSON.parse(res.data.data)
                     : res.data.data
-
+            if(res.data.data!=0){
+                setLoader(false)
+            }
             res.data.data.map((q: any) => {
                 if (!q.questionId) {
                     console.log("question if not present of questions , (question-page)")
@@ -115,8 +117,6 @@ export default function QuestionCard() {
             if (e.response?.status === 500) {
                 console.log("Server error (500)", e.response.data)
             }
-        } finally {
-            setLoader(false);
         }
     }
 
