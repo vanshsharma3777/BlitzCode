@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
             questionType ,
             language
         }, {
-            jobId: jobKey,
             attempts: 3 ,
             backoff:{
                 type:"fixed",

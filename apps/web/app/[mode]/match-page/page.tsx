@@ -33,6 +33,7 @@ export default function MacthPage() {
     const topic = searchParams.get("topic")
     const questionLength = searchParams.get("questionLength")
     const [loader, setLoader] = useState(false)
+    const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [error, setError] = useState<string | null>(null)
     const [questions, setQuestions] = useState<Question[]>([])
     const [totalTime, setTotalTime] = useState(0)
@@ -74,6 +75,24 @@ export default function MacthPage() {
             const parsed = JSON.parse(event.data)
             console.log("data on match-page:", parsed)
 
+            if (
+                parsed?.type === "ERROR" &&
+                parsed?.payload?.error === "Game is still initializing"
+            ) {
+                console.log("Retrying in 5 sec...");
+
+                setLoader(true);
+
+                if (retryTimeoutRef.current) {
+                    clearTimeout(retryTimeoutRef.current);
+                }
+
+                retryTimeoutRef.current = setTimeout(() => {
+                    fetchQuestion();
+                }, 5000);
+
+                return;
+            }
             if (parsed?.payload?.error) {
                 setError(parsed.payload.error)
                 setLoader(false)

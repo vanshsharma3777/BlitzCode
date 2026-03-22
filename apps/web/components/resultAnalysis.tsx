@@ -37,7 +37,6 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     const [loader, setLoader] = useState(false)
     const [currentIndex, setCurrentIndex] = useState<number>(0)
     const [showExplanation, setShowExplanation] = useState(false);
-    const [Questions, setQuestions] = useState<Question[]>([])
     const [data, setData] = useState<Response>()
     useEffect(() => {
         console.log("all an", allAnswers)

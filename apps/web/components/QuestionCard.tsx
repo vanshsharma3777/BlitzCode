@@ -59,7 +59,7 @@ export default function QuestionCard() {
             if (data.length < Number(questionLength)) {
             getResponse()
         }
-        }, 5000);
+        }, 10000);
     }, [data])
     console.log("totalTime ", totalTime)
 

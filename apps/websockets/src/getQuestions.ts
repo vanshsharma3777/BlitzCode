@@ -1,4 +1,4 @@
-import { db, questions, users } from "@repo/db";
+import { db, questions } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 import { questionQueue, statusQueue } from "@repo/queue";
 import { v4 as uuid } from "uuid"
@@ -38,7 +38,6 @@ export async function ques(topic: string, difficulty: string, questionType: stri
             questionType,
             language
         }, {
-            jobId: jobKey,
             attempts: 3,
             backoff: {
                 type: "fixed",

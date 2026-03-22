@@ -47,6 +47,7 @@ export class Game {
         }
         console.log("request goes to ques")
         this.questions = await ques(this.topic, this.difficulty, this.questionType, this.language, this.questionLength)
+        console.log("QUESTIONS RECEIVED:", this.questions);
         if (!this.questions) {
             console.log("Questions not found")
             this.players.forEach((player) => {
@@ -59,26 +60,26 @@ export class Game {
             })
         }
     }
+    isReady: boolean = false;
     async start() {
-        await this.findQuestions();
-        console.log("questions after findQuestions:", this.questions);
-
-        if (!this.questions || this.questions.length === 0) {
-            console.log("Questions not found in start()");
-            return;
-        }
-        this.gameEndTime = Date.now() + (5 * 60 * 1000)
 
         this.players.forEach((player) => {
             const emailId = player.emailId!
             this.playerProgress.set(emailId, 0)
             this.playerScores.set(emailId, 0)
             this.playerStartTime.set(emailId, Date.now())
-            if (!this.questions) {
-                console.log("Unable to send the questions (game.ts)")
-            }
+        });
 
-        })
+        await this.findQuestions();
+
+        console.log("questions after findQuestions:", this.questions);
+
+        if (!this.questions || this.questions.length === 0) {
+            console.log("Questions not found in start()");
+            return;
+        }
+        this.isReady = true;
+        this.gameEndTime = Date.now() + (5 * 60 * 1000);
 
         startGlobalTimer(this);
     }
@@ -107,10 +108,16 @@ export class Game {
         }
         console.log("this.playerProgress.size :", this.playerProgress.size)
         console.log("this.ques :", this.questions)
-        if (this.playerProgress.size === 0 || !this.questions) {
+        if (!this.isReady) {
+            this.findQuestions().then(() => {
+                if (this.questions && this.questions.length > 0) {
+                    this.isReady = true;
+                    sendQuestion(this, player);
+                }
+            });
             player.send(JSON.stringify({
                 type: "ERROR",
-                payload: { error: "Game is still initializing kindly retry after 1 minutes" }
+                payload: { error: "Game is still initializing" }
             }));
             return;
         }
@@ -125,7 +132,7 @@ export class Game {
             }))
             return
         }
-        if (index >= this.questions.length) {
+        if (index >= this.questions!.length) {
             this.playerFinishTime.set(emailId, Date.now())
             return
         }
