@@ -44,6 +44,7 @@
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
         "react-syntax-highlighter": "^16.1.1",
+        "uuid": "^13.0.0",
       },
       "devDependencies": {
         "@repo/eslint-config": "*",
@@ -68,6 +69,7 @@
         "@types/ws": "^8.18.1",
         "@upstash/redis": "^1.36.2",
         "express": "^5.2.1",
+        "uuid": "^13.0.0",
         "ws": "^8.19.0",
       },
       "devDependencies": {

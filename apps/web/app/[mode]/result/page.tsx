@@ -44,7 +44,7 @@ export default function Result() {
   return (
     <div className="p-6 text-pri min-h-screen  flex justify-center  gap-5" >
       <div className=" w-[65%]">
-        <div className=" mt-5"><ResultAnalysis matchType={data.questionType} timeTaken = {(timeTaken)} totalTime={data.totalTime} answers={data.answers} questionType={data.questionType} allAnswers={data.allQuestions} /></div>
+        <div className=" mt-5"><ResultAnalysis matchType={data.questionType} timeTaken = {(timeTaken)} totalTime={data.totalTime} answers={data.answers} questionType={data.questionType} allAnswers={data.allQuestions} quizId ={data.quizId}/></div>
       </div>
     </div>
   )

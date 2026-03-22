@@ -27,9 +27,11 @@ export default function QuestionCard() {
     const [error, setError] = useState<string | null>(null)
     const [data, setData] = useState<Question[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
+    const [quizId, setQuizId] = useState("")
     const [totalTime, setTotalTime] = useState(0)
     const [timeToPlay, setTimeToPlay] = useState(0)
     const [loader, setLoader] = useState<boolean>(false)
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
     const currentAnswer = answers.find(
         a => a.questionId === data[currentIndex]?.questionId
@@ -53,9 +55,11 @@ export default function QuestionCard() {
     }, []);
 
     useEffect(() => {
-        if (data.length < Number(questionLength)) {
+        setTimeout(() => {
+            if (data.length < Number(questionLength)) {
             getResponse()
         }
+        }, 5000);
     }, [data])
     console.log("totalTime ", totalTime)
 
@@ -92,6 +96,8 @@ export default function QuestionCard() {
                 typeof res.data.data === "string"
                     ? JSON.parse(res.data.data)
                     : res.data.data
+            const matchId = res.data.quizId;
+            setQuizId(matchId)
             if(res.data.data!=0){
                 setLoader(false)
             }
@@ -133,6 +139,7 @@ export default function QuestionCard() {
     }
 
     async function handleSubmit() {
+        
         const unanswered = data?.filter(
                 (q) => !answers.some((a) => a.questionId === q.questionId)
             )
@@ -149,11 +156,17 @@ export default function QuestionCard() {
             answers,
             totalTime : timeToPlay,
             leftTime : totalTime,
-            allQuestions: data
+            allQuestions: data,
+            quizId
         }
         sessionStorage.setItem("matchData", JSON.stringify(payload))
         try {
-            const res = await axios.post('/api/submit-answers', { answers })
+            if(quizId.length==0){
+                console.log("QuizId not found")
+                return setError("QuizId not found")
+
+            }
+            const res = await axios.post('/api/submit-answers', { answers , quizId})
             if (res.data) {
                 if(mode === 'multiplayer') router.replace('/multiplayer/result')
                 else if(mode === 'singleplayer') router.replace('/singleplayer/result')
@@ -239,6 +252,8 @@ export default function QuestionCard() {
                 selectOption={selectOption}
                 questionLength={Number(questionLength)}
                 setCurrentIndex={setCurrentIndex}
+                setIsSubmitting={setIsSubmitting}
+                isSubmitting = {isSubmitting}
             />
         </div>
     )

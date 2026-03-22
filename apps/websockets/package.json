@@ -16,13 +16,14 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@repo/db": "workspace:*",
+    "@repo/llm": "workspace:*",
+    "@repo/queue": "workspace:*",
     "@types/express": "^5.0.6",
     "@types/ws": "^8.18.1",
-    "@repo/llm": "workspace:*",
-    "@repo/db": "workspace:*",
-    "@repo/queue": "workspace:*",
     "@upstash/redis": "^1.36.2",
     "express": "^5.2.1",
+    "uuid": "^13.0.0",
     "ws": "^8.19.0"
   }
 }

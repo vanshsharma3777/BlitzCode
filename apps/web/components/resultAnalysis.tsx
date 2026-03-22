@@ -19,7 +19,8 @@ type MatchType = {
     allAnswers: Question[]
     questionType: string,
     timeTaken: string,
-    totalTime: number
+    totalTime: number,
+    quizId: string
 }
 type Response = {
     success: boolean,
@@ -27,7 +28,7 @@ type Response = {
     questionIds: string[],
     questions: Question[]
 }
-export default function ResultAnalysis({ matchType, answers, allAnswers, questionType, timeTaken, totalTime }: MatchType) {
+export default function ResultAnalysis({ matchType, answers, allAnswers, questionType, timeTaken, totalTime, quizId }: MatchType) {
     const params = useParams()
     const mode = params.mode as string
     const session = useSession()
@@ -35,6 +36,7 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     const router = useRouter()
     const [loader, setLoader] = useState(false)
     const [currentIndex, setCurrentIndex] = useState<number>(0)
+    const [showExplanation, setShowExplanation] = useState(false);
     const [Questions, setQuestions] = useState<Question[]>([])
     const [data, setData] = useState<Response>()
     useEffect(() => {
@@ -44,41 +46,47 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
         }
     }, [session.status, router])
 
-    if(mode === 'singleplayer'){
+    if (mode === 'singleplayer') {
         useEffect(() => {
-        setLoader(true)
-        async function getResponse() {
-            console.log("answers :", answers)
-            try {
+            setLoader(true)
+            async function getResponse() {
+                console.log("answers :", answers)
+                try {
 
-                const res = await axios.post('/api/submit-answers', { answers })
-                if (res.data) {
-                    setData(res.data.data)
+                    const res = await axios.post('/api/submit-answers', { answers, quizId })
+                    if (res.data) {
+                        setData(res.data.data)
 
-                }
-            } catch (error) {
-                if (axios.isAxiosError(error)) {
-                    if (error.response?.status === 401) {
-                        console.log('Unauthorized')
-                        alert("Unauthorized")
-                        router.push("/signin")
-                    } else if (error.response?.status === 501) {
-                        console.log("Answers length is 0")
-                        alert("Internal server error")
                     }
+                } catch (error) {
+                    if (axios.isAxiosError(error)) {
+                        if (error.response?.status === 401) {
+                            console.log('Unauthorized')
+                            alert("Unauthorized")
+                            router.push("/signin")
+                        } else if (error.response?.status === 501) {
+                            console.log("Answers length is 0")
+                            alert("Internal server error")
+                        }
+                    }
+                } finally {
+                    setLoader(false)
                 }
-            } finally {
-                setLoader(false)
             }
-        }
-        getResponse()
-    }, [])
+            getResponse()
+        }, [])
     }
     useEffect(() => {
         console.log("data :", data)
     }, [data])
 
-
+    useEffect(() => {
+    if (showExplanation) {
+        document.body.style.overflow = "hidden";
+    } else {
+        document.body.style.overflow = "auto";
+    }
+}, [showExplanation]);
     const question = data?.questions?.[currentIndex]
 
     const userAnswer = useMemo(() => {
@@ -87,7 +95,7 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
         );
     }, [answers, question]);
     const correctAnswer = question?.correctOptions ?? []
-    if (loader ||  !data) return <Loader />
+    if (loader || !data) return <Loader />
 
     return (
         <div className="flex justify-center mt-10">
@@ -129,12 +137,12 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                         <HiOutlineBolt className="text-yellow-500  text-5xl" />
                         <div className="flex justify-between w-full">
                             <div className="flex flex-col ml-5">
-                                <div className="text-xl font-semibold">XP Earned: +{(data.score*50)}</div>
+                                <div className="text-xl font-semibold">XP Earned: +{(data.score * 50)}</div>
                                 <div className="text-sec">{data.score} Correct answer(s) x 50 XP each</div>
                             </div>
                             <div className="flex flex-col " >
                                 <div>Total XP: 200</div>
-                                <div className="text-sec"> {1000 - (data.score*50)} XP to level 2</div>
+                                <div className="text-sec"> {1000 - (data.score * 50)} XP to level 2</div>
                             </div>
                         </div>
                     </div>
@@ -204,6 +212,12 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                             </div>
                         )
                     })}
+                    <button
+                        onClick={() => setShowExplanation(true)}
+                        className="mt-4 px-4 py-2 bg-accent text-white rounded-lg hover:scale-105 transition"
+                    >
+                        Show Explanation
+                    </button>
                     <div className="flex flex-wrap gap-x-3 ">
                         {Array.from({ length: Number(allAnswers?.length) }).map((_, i) => (
                             <button
@@ -220,6 +234,31 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                         ))}
 
                     </div>
+                    {showExplanation && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+
+                            {/* Modal Box */}
+                            <div className="bg-card w-[80%] max-w-3xl p-6 rounded-xl shadow-lg relative">
+
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setShowExplanation(false)}
+                                    className="absolute top-3 right-3 text-xl text-sec hover:text-white"
+                                >
+                                    ✕
+                                </button>
+
+                                <div className="text-2xl font-semibold mb-4">
+                                    Explanation
+                                </div>
+
+                                <div className="text-lg text-sec">
+                                    {question?.explanation || "No explanation available"}
+                                </div>
+
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div>

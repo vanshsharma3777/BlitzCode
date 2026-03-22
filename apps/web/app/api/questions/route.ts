@@ -6,7 +6,7 @@ import { db, questions, users } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 import { Question } from "../../../types/allTypes";
 import { redis } from "../../../lib/configs/redis";
-
+import { v4 as uuid } from "uuid"
 export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -43,14 +43,14 @@ export async function POST(request: NextRequest) {
         })
     }
     console.log("unsued ques id :", unusedQuestions)
-    if ((unusedQuestions).length <= 15 && questionLength) {
+    if ((unusedQuestions).length <= questionLength && questionLength) {
          console.log("Questions creation task added in the queue")
          console.log("Hello")
         questionsToSend = await questionQueue.add("generateQuestions", {
             topic,
             difficulty,
             questionLength,
-            questionType,
+            questionType ,
             language
         }, {
             jobId: jobKey,
@@ -72,10 +72,14 @@ export async function POST(request: NextRequest) {
         })
         console.log("Questions status changing task added in the queue")
     }
-
-    const red = await redis.set(jobKey , findQuestions)
+    let quizId
+    if(findQuestions.length!==0){
+         quizId = uuid()
+    const storingToRedis = await redis.set(`quiz:${quizId}` , findQuestions)    
+    console.log("Storing to redis")
+    }
     const finalQuestionsToSend = findQuestions.map((ques)=>({
-        questionsId:ques.questionId,
+        questionId:ques.questionId,
         description:ques.description,
         code:ques.code,
         options:ques.options,
@@ -83,11 +87,12 @@ export async function POST(request: NextRequest) {
         language:ques.language,
         topic:ques.topic,
         difficulty:ques.difficulty,
-        questionLength:questionLength
+        questionLength:questionLength,
     }))
     return NextResponse.json({
         success: true,
         data: finalQuestionsToSend,
+        quizId,
         msg: "working fine"
     })
 }

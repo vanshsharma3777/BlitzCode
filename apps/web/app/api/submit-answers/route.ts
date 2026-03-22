@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
                 success: false
             }, { status: 401 })
         }
-        const { answers } = await request.json()
+        const { answers , quizId} = await request.json()
         if (answers.length === 0) {
             return NextResponse.json({
                 success: true,
@@ -41,28 +41,28 @@ export async function POST(request: NextRequest) {
         }
         
         const questionIds = answers.map((ques: SolvedQuestion) => ques.questionId)
-        const questions:Question[] = await redis.mget((
-            questionIds.map((id: SolvedQuestion) => `question:${id}`)
-        ))
+        const questions:Question[] = await redis.get(`quiz:${quizId}`) as Question[]
         if(questions){
             console.log("your questionsid are :" , questionIds)
+            console.log("your answers are: " , answers)
             console.log("your questions are :" , questions)
         } else{
             console.log("questions not found")
         }
         let scores;
         if(questions){
+            console.log("calling calculate scores")
              scores =  calculateScores(answers , questions )
         }else{
             console.log("calculate function not called")
         }
-
+        
         return NextResponse.json({
             success: true,
             data:{
                 score:scores || 0,
                 questionIds,
-                questions
+                questions   
             } 
         })
     } catch (err) {
