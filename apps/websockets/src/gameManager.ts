@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { Game } from "./game.js";
-import { EXIT_GAME, INIT_GAME, NEXT_QUESTION, OVER_GAME, START_GAME } from "./message.js";
+import { ANSWER, EXIT_GAME, INIT_GAME, NEXT_QUESTION, OVER_GAME, START_GAME } from "./message.js";
 import type { CustomSocket } from "./types.js";
 
 
@@ -23,6 +23,7 @@ export class GameManager {
     private addHandler(socket: CustomSocket) {
         socket.on("message", async (data) => {
             const msg = JSON.parse(data.toString())
+            console.log("msg received :" , msg)
             if (msg.type === "AUTH") {
                 socket.emailId = msg?.meta?.emailId;
                 if (!socket.emailId) {
@@ -122,9 +123,19 @@ export class GameManager {
                 game.handleNextQuestion(socket)
                 return
             }
+            if (msg.type === "ANSWER") {
+                console.log("Answer received");
+                const { questionId, answer } = msg.payload;
+                console.log("quesId ", questionId)
+                console.log("answer ", answer)
+
+                game.handleAnswer(socket, questionId, answer);
+
+                return;
+            }
             if (msg.type === OVER_GAME) {
                 console.log("clicked over game")
-                game.endThisGame("manual")
+                game.endThisGame("manual" , socket)
                 return
             }
         })

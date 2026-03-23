@@ -22,19 +22,19 @@ export const  updateAnswers =(
 
         return prev.map(q =>
           q.questionId === questionId
-            ? { ...q, userAnswer: updated }
+            ? { ...q, userAnswer: [...updated].sort()  }
             : q
         )
       }
-
+          const newAnswer = [...exists.userAnswer, optionId].sort()
       return prev.map(q =>
         q.questionId === questionId
-          ? { ...q, userAnswer: [...q.userAnswer, optionId] }
+          ? { ...q, userAnswer: newAnswer }
           : q
       )
     }
 
-    return [...prev, { questionId, userAnswer: [optionId] }]
+    return [...prev, { questionId, userAnswer: [optionId].sort() }]
   }
 
   if (exists) {

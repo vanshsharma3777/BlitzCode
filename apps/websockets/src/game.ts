@@ -3,7 +3,9 @@ import type { CustomSocket } from "./types.js";
 import { generateQuestion } from "./LLM/router.js"
 import { startGlobalTimer } from "./Game Functions/startGlobalTimer.js";
 import { endGame } from "./Game Functions/endGame.js";
+import { isCorrect } from "./Game Functions/checkScore.js";
 import { ques } from "./getQuestions.js";
+import { createTime } from "./Game Functions/createTime.js";
 
 export class Game {
     public players: CustomSocket[]
@@ -16,10 +18,11 @@ export class Game {
     playerProgress = new Map<string, number>()
     playerScores = new Map<string, number>()
     playerStartTime = new Map<string, number>()
+    playerAnswers = new Map<string, Map<string, any>>()
+    playerWhoEndedGame = new Map<string, string>()
     playerFinishTime = new Map<string, number>()
     gameEndTime = 0
     globalTimer: NodeJS.Timeout | null = null
-
     constructor(
         players: CustomSocket[], fields: {
             topic: string
@@ -79,18 +82,31 @@ export class Game {
             return;
         }
         this.isReady = true;
-        this.gameEndTime = Date.now() + (5 * 60 * 1000);
-
+        const time = createTime(Number(this.questionLength), this.difficulty);
+        this.gameEndTime = Date.now() + 1000 * (time!);
         startGlobalTimer(this);
     }
 
-    endThisGame(type: "timer" | "manual" = "timer") {
+    endThisGame(type: "timer" | "manual" = "timer" , player:CustomSocket) {
         if (this.globalTimer) {
             clearTimeout(this.globalTimer)
             this.globalTimer = null
         }
-        const results = endGame(this, type)
-
+        const emailId = player.emailId
+        this.playerWhoEndedGame.set(emailId! , type)
+        if(this.playerWhoEndedGame.size===2){
+            const results = endGame(this, type)
+            this.playerFinishTime.set( emailId! ,Date.now())
+        }
+        else if(this.playerWhoEndedGame.size===1){
+            this.playerFinishTime.set( emailId! ,Date.now())
+            player.send(JSON.stringify({
+                type: "HOLD",
+                payload: {
+                    error: "Player 2 is still solving"
+                }
+            }))
+        }
     }
 
     handleNextQuestion(player: CustomSocket) {
@@ -112,7 +128,7 @@ export class Game {
             this.findQuestions().then(() => {
                 if (this.questions && this.questions.length > 0) {
                     this.isReady = true;
-                    sendQuestion(this, player);
+                    sendQuestion(this, player, this.gameEndTime);
                 }
             });
             player.send(JSON.stringify({
@@ -132,11 +148,47 @@ export class Game {
             }))
             return
         }
-        if (index >= this.questions!.length) {
-            this.playerFinishTime.set(emailId, Date.now())
-            return
-        }
-        sendQuestion(this, player)
+        
+        sendQuestion(this, player, this.gameEndTime)
         this.playerProgress.set(emailId, index + 1)
     }
+
+    handleAnswer(player: CustomSocket, questionId: string, answer: any) {
+        try{
+            const emailId = player.emailId!;
+        console.log("came in handleans")
+        console.log("this.questions" , this.questions)
+        const question = this.questions?.find(q => q.questionId === questionId);
+        console.log("quiestion is :" , question)
+        console.log("quiestionid is :" , questionId)
+        console.log("answer by user is :" , answer)
+        if (!question) return;
+
+        if (!this.playerAnswers.has(emailId)) {
+            this.playerAnswers.set(emailId, new Map());
+        }
+
+        const userAnswers = this.playerAnswers.get(emailId)!;
+        const prevAnswer = userAnswers.get(questionId);
+
+        console.log("checking question answers")
+        if (prevAnswer !== undefined && isCorrect(question, prevAnswer)) {
+            console.log("score --")
+            const prevScore = this.playerScores.get(emailId) || 0;
+            this.playerScores.set(emailId, prevScore - 1);
+        }
+        userAnswers.set(questionId, answer);
+
+        if (isCorrect(question, answer)) {
+            console.log("answer correct")
+            console.log("score ++ ")
+            const prevScore = this.playerScores.get(emailId) || 0;
+            this.playerScores.set(emailId, prevScore + 1);
+            console.log("this.playerScores" , this.playerScores.get(emailId))
+        }
+     }catch(err){
+            console.log("err :" , err)
+        }
+        }
+        
 }

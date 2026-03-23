@@ -18,6 +18,8 @@ import { createTime } from "../../../lib/functions/createTime"
 type WSQuestionData = {
     question: Question,
     questionNumber: number,
+    remainingTime: number,
+    gameEndTime: number
     total: number
 }
 export default function MacthPage() {
@@ -37,6 +39,7 @@ export default function MacthPage() {
     const [error, setError] = useState<string | null>(null)
     const [questions, setQuestions] = useState<Question[]>([])
     const [totalTime, setTotalTime] = useState(0)
+    const [timer, setTimer] = useState(false)
 
     const [currentIndex, setCurrentIndex] = useState(0)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
@@ -101,7 +104,9 @@ export default function MacthPage() {
 
             if (parsed?.data) {
                 const wsData: WSQuestionData = parsed.data
-
+                if (parsed.type === "start_game") {
+                    setTimer(true)
+                }
                 setQuestions((prev) => {
                     const alreadyExists = prev.some(
                         (q) => q.questionId === wsData.question.questionId
@@ -160,7 +165,28 @@ export default function MacthPage() {
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [questions])
+    }, [timer])
+
+    const handleOptionClick = (questionId: string, userAnswer: string[]) => {
+        console.log("questionId sending ", questionId)
+        console.log("useranswer sending ", userAnswer)
+        socketRef.current?.send(JSON.stringify({
+            type: "ANSWER",
+            payload: {
+                questionId,
+                answer: userAnswer
+            }
+        }));
+
+        if(currentIndex===Number(questionLength)-1){
+            socketRef.current?.send(JSON.stringify({
+            type: "over_game",
+            payload: {
+                endType : "manual",
+            }
+        }));
+        }
+    };
 
     function selectOption(questionId: string, optionId: string, questionType: string) {
         console.log(answers)
@@ -195,6 +221,7 @@ export default function MacthPage() {
     }
 
     const formatTime = (seconds: number) => {
+        console.log("seconds", totalTime);
         const minutes = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${minutes}:${secs.toString().padStart(2, "0")}`
@@ -271,7 +298,9 @@ export default function MacthPage() {
                             <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
                                 {questionType?.toUpperCase()}
                             </div>
-                            <button className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
+                            <button onClick={()=>{
+                                handleOptionClick(currentQuestion.questionId, currentAnswer?.userAnswer!)
+                            }} className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
                                 SUBMIT
                             </button>
                         </div>
@@ -329,7 +358,10 @@ export default function MacthPage() {
 
                                 return (
                                     <button
-                                        onClick={() => goToQuestion(i)}
+                                        onClick={() => {
+                                            goToQuestion(i)
+                                            handleOptionClick(currentQuestion.questionId, currentAnswer?.userAnswer!)
+                                        }}
                                         key={i}
                                         disabled={!isFetched && !isNextFetchable}
                                         className={`text-2xl h-20 w-20 mt-5 rounded-xl border transition-all duration-200
