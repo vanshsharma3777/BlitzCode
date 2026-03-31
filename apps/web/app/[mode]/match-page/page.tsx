@@ -242,12 +242,25 @@ export default function MacthPage() {
         return <Loader />
     }
     return (
+        
         <div className={`min-h-screen w-full flex flex-col justify-center gap-5  items-center  text-pri `}>
             {currentQuestion && (
                 <div className="w-[85%]">
+                    {error && (
+                <div className=" bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+                    <span>{error}</span>
+
+                    <button
+                        onClick={() => setError(null)}
+                        className="ml-4 text-red-700 font-bold"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
                     <div >
                         {loader === false && (
-                            <div className="grid grid-cols-3 mt-16">
+                            <div className="grid grid-cols-3 mt-4">
                                 <div className="bg-card border border-border rounded-xl py-5 px-4 mr-5 flex items-center">
                                     <div className="lg:pr-1 pr-3 ">
                                         <MdOutlineTimer />
@@ -378,18 +391,7 @@ export default function MacthPage() {
                 </div>
 
             )}
-            {error && (
-                <div className="w-[85%] bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
-                    <span>{error}</span>
-
-                    <button
-                        onClick={() => setError(null)}
-                        className="ml-4 text-red-700 font-bold"
-                    >
-                        ✕
-                    </button>
-                </div>
-            )}
+            
 
         </div>
     )
