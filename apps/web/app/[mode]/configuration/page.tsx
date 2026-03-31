@@ -10,7 +10,6 @@ export default function Configuration() {
     const router = useRouter()
     const params = useParams();
     const mode = params.mode as string;
-    const socketRef = useRef<WebSocket | null>(null);
     const [loader, setLoader] = useState(false)
     const [config, setConfig] = useState({
         language: null,
