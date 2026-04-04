@@ -14,6 +14,7 @@ import { connectSocket } from "../../../lib/websocket"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import SyntaxHighlighter from "react-syntax-highlighter"
 import { createTime } from "../../../lib/functions/createTime"
+import { parse } from "path"
 
 type WSQuestionData = {
     question: Question,
@@ -101,7 +102,7 @@ export default function MacthPage() {
                 setLoader(false)
                 return
             }
-
+            
             if (parsed?.data) {
                 const wsData: WSQuestionData = parsed.data
                 if (parsed.type === "start_game") {
@@ -126,6 +127,14 @@ export default function MacthPage() {
                     setCurrentIndex(updated.length - 1)
                     return updated
                 })
+            }
+            if(parsed.type==="over_game"){
+                console.log(parsed)
+                localStorage.setItem("winner" , parsed.winner)
+                localStorage.setItem("payload" , parsed.payload)
+                localStorage.setItem("reason" , parsed.reason)
+                console.log("naviagting to reuslt page")
+                router.replace("/multiplayer/result");
             }
 
             setLoader(false)
