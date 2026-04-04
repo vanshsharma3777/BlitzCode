@@ -48,6 +48,6 @@ export const  updateAnswers =(
         : q
     )
   }
-
+  
   return [...prev, { questionId, userAnswer: [optionId] }]
 }

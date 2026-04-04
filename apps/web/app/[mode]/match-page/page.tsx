@@ -6,7 +6,6 @@ import { MdOutlineTimer } from "react-icons/md"
 import { FaChartLine } from "react-icons/fa"
 import { HiOutlineMail } from "react-icons/hi"
 import { useSession } from "next-auth/react"
-import QuestionDescription from "../../../components/atoms/QuestionDescription"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { updateAnswers } from "../../../lib/functions/selectOptions"
 import { Question, SolvedQuestion } from "../../../types/allTypes"
@@ -14,7 +13,7 @@ import { connectSocket } from "../../../lib/websocket"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import SyntaxHighlighter from "react-syntax-highlighter"
 import { createTime } from "../../../lib/functions/createTime"
-import { parse } from "path"
+
 
 type WSQuestionData = {
     question: Question,
@@ -28,6 +27,9 @@ export default function MacthPage() {
     const params = useParams()
     const mode = params.mode as string
     const socketRef = useRef<WebSocket | null>(null)
+    const answersRef = useRef<SolvedQuestion[]>([])
+    const questionsRef = useRef<Question[]>([])
+    const completeTime = useRef<number>(0)
     const router = useRouter()
     const searchParams = useSearchParams()
     const questionType = searchParams.get("questionType")
@@ -41,10 +43,8 @@ export default function MacthPage() {
     const [questions, setQuestions] = useState<Question[]>([])
     const [totalTime, setTotalTime] = useState(0)
     const [timer, setTimer] = useState(false)
-
     const [currentIndex, setCurrentIndex] = useState(0)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
-
     const currentQuestion = questions[currentIndex]
     useEffect(() => {
         if (session.status === "loading") {
@@ -62,9 +62,15 @@ export default function MacthPage() {
             setLoader(false)
         }
     }, [session.status])
+    useEffect(() => {
+        answersRef.current = answers
+    }, [answers])
 
     useEffect(() => {
-        console.log("to[")
+        questionsRef.current = questions
+    }, [questions])
+
+    useEffect(() => {
         setLoader(true)
 
         const socket = connectSocket()
@@ -102,7 +108,7 @@ export default function MacthPage() {
                 setLoader(false)
                 return
             }
-            
+
             if (parsed?.data) {
                 const wsData: WSQuestionData = parsed.data
                 if (parsed.type === "start_game") {
@@ -124,15 +130,30 @@ export default function MacthPage() {
                     }
 
                     const updated = [...prev, wsData.question]
+                    console.log("updatyed", updated)
                     setCurrentIndex(updated.length - 1)
                     return updated
                 })
+                console.log("question in fn ", questions)
             }
-            if(parsed.type==="over_game"){
+            if (parsed.type === "over_game") {
+                const email= session.data?.user.email
+                const player= parsed.payload.find((p:any)=>{
+                    return p.email===email
+                })
+                const payload = {
+                    winner: parsed.winner,
+                    payload: parsed.payload,
+                    reason: parsed.reason,
+                    totalTime: completeTime.current,
+                    answers: answersRef.current,
+                    allQuestions: questionsRef.current,
+                    questionType,
+                    timeTaken:player.timeTaken,
+                    questionLength
+                }
                 console.log(parsed)
-                localStorage.setItem("winner" , parsed.winner)
-                localStorage.setItem("payload" , parsed.payload)
-                localStorage.setItem("reason" , parsed.reason)
+                sessionStorage.setItem("multiPlayerMatchData", JSON.stringify(payload))
                 console.log("naviagting to reuslt page")
                 router.replace("/multiplayer/result");
             }
@@ -161,6 +182,7 @@ export default function MacthPage() {
             Number(questionLength),
             difficulty as "easy" | "medium" | "hard"
         )
+        completeTime.current = initialTime! 
         setTotalTime(initialTime!)
 
         const interval = setInterval(() => {
@@ -187,13 +209,13 @@ export default function MacthPage() {
             }
         }));
 
-        if(currentIndex===Number(questionLength)-1){
+        if (currentIndex === Number(questionLength) - 1) {
             socketRef.current?.send(JSON.stringify({
-            type: "over_game",
-            payload: {
-                endType : "manual",
-            }
-        }));
+                type: "over_game",
+                payload: {
+                    endType: "manual",
+                }
+            }));
         }
     };
 
@@ -202,6 +224,7 @@ export default function MacthPage() {
         setAnswers(prev =>
             updateAnswers(prev, questionId, optionId, questionType)
         )
+
     }
 
     const fetchQuestion = () => {
@@ -221,7 +244,8 @@ export default function MacthPage() {
                 questionLength,
                 difficulty,
                 questionType,
-                language
+                language,
+
             },
             meta: {
                 emailId: session.data?.user.email
@@ -251,22 +275,22 @@ export default function MacthPage() {
         return <Loader />
     }
     return (
-        
+
         <div className={`min-h-screen w-full flex flex-col justify-center gap-5  items-center  text-pri `}>
             {currentQuestion && (
                 <div className="w-[85%]">
                     {error && (
-                <div className=" bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
-                    <span>{error}</span>
+                        <div className=" bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+                            <span>{error}</span>
 
-                    <button
-                        onClick={() => setError(null)}
-                        className="ml-4 text-red-700 font-bold"
-                    >
-                        ✕
-                    </button>
-                </div>
-            )}
+                            <button
+                                onClick={() => setError(null)}
+                                className="ml-4 text-red-700 font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
                     <div >
                         {loader === false && (
                             <div className="grid grid-cols-3 mt-4">
@@ -320,7 +344,7 @@ export default function MacthPage() {
                             <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
                                 {questionType?.toUpperCase()}
                             </div>
-                            <button onClick={()=>{
+                            <button onClick={() => {
                                 handleOptionClick(currentQuestion.questionId, currentAnswer?.userAnswer!)
                             }} className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
                                 SUBMIT
@@ -400,7 +424,7 @@ export default function MacthPage() {
                 </div>
 
             )}
-            
+
 
         </div>
     )

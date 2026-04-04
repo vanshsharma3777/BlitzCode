@@ -98,6 +98,7 @@ export default function QuestionCard() {
                     : res.data.data
             const matchId = res.data.quizId;
             setQuizId(matchId)
+            console.log(res.data.data)
             if(res.data.data!=0){
                 setLoader(false)
             }
@@ -159,12 +160,11 @@ export default function QuestionCard() {
             allQuestions: data,
             quizId
         }
-        sessionStorage.setItem("matchData", JSON.stringify(payload))
+        sessionStorage.setItem("singlePlayerMatchData", JSON.stringify(payload))
         try {
             if(quizId.length==0){
                 console.log("QuizId not found")
                 return setError("QuizId not found")
-
             }
             const res = await axios.post('/api/submit-answers', { answers , quizId})
             if (res.data) {

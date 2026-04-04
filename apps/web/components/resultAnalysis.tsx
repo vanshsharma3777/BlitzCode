@@ -10,17 +10,25 @@ import { HiCheckCircle, HiXCircle } from "react-icons/hi"
 import axios, { Axios, isAxiosError } from "axios";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { time } from "console";
 import Loader from "./Loader";
-
+type Status = {
+    status: string,
+    winnerEmail?: string,
+    loserEmail?: string,
+    score: string
+    timeTaken:string
+}
 type MatchType = {
     matchType: string,
-    answers: SolvedQuestion[]
-    allAnswers: Question[]
-    questionType: string,
-    timeTaken: string,
+    answers?: SolvedQuestion[]
+    allQuestions?: Question[]
+    questionType?: string,
+    timeTaken?: string,
+    status?: Status
     totalTime: number,
-    quizId: string
+    quizId: string,
+    winnerStatus: Status
+    loserStatus: Status
 }
 type Response = {
     success: boolean,
@@ -28,9 +36,10 @@ type Response = {
     questionIds: string[],
     questions: Question[]
 }
-export default function ResultAnalysis({ matchType, answers, allAnswers, questionType, timeTaken, totalTime, quizId }: MatchType) {
+export default function ResultAnalysis({ matchType, answers, allQuestions, questionType, winnerStatus, loserStatus, timeTaken, totalTime, quizId }: MatchType) {
     const params = useParams()
     const mode = params.mode as string
+    console.log("mode :", mode)
     const session = useSession()
     console.log("time : ", timeTaken)
     const router = useRouter()
@@ -38,13 +47,14 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     const [currentIndex, setCurrentIndex] = useState<number>(0)
     const [showExplanation, setShowExplanation] = useState(false);
     const [data, setData] = useState<Response>()
+    console.log("winer", winnerStatus)
+    console.log("loser", loserStatus)
     useEffect(() => {
-        console.log("all an", allAnswers)
         if (session.status === "unauthenticated") {
             router.replace("/signin")
         }
     }, [session.status, router])
-
+    console.log("status", status)
     if (mode === 'singleplayer') {
         useEffect(() => {
             setLoader(true)
@@ -80,12 +90,12 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
     }, [data])
 
     useEffect(() => {
-    if (showExplanation) {
-        document.body.style.overflow = "hidden";
-    } else {
-        document.body.style.overflow = "auto";
-    }
-}, [showExplanation]);
+        if (showExplanation) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
+    }, [showExplanation]);
     const question = data?.questions?.[currentIndex]
 
     const userAnswer = useMemo(() => {
@@ -94,7 +104,7 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
         );
     }, [answers, question]);
     const correctAnswer = question?.correctOptions ?? []
-    if (loader || !data) return <Loader />
+    if (loader) return <Loader />
 
     return (
         <div className="flex justify-center mt-10">
@@ -103,162 +113,92 @@ export default function ResultAnalysis({ matchType, answers, allAnswers, questio
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center" >
                         <div><HiOutlineTrophy className="text-yellow-500 text-7xl " /></div>
                         <div className="text-4xl font-semibold">Quiz Completed </div>
-                        <div className="text-sec mt-2">Great job! You scored {data.score} out of {data.questionIds.length}</div>
+                        <div className="text-sec mt-2">Great job! You scored {data?.score} out of {data?.questionIds.length}</div>
                     </div>
                 ) : (
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center" >
-                        <div><HiOutlineTrophy className="text-neutral-800 text-7xl " /></div>
-                        <div className="text-4xl font-semibold">Defeat</div>
-                        <div className="text-sec mt-2">ByteCoders won this round!</div>
+                        <div><HiOutlineTrophy className={`text-7xl ${winnerStatus?.winnerEmail === session.data?.user.email ? "text-yellow-500" : "text-neutral-500 "} `} /></div>
+                        <div className="text-4xl font-semibold">
+                            {session.data?.user.email === winnerStatus?.winnerEmail
+                                ? winnerStatus?.status
+                                : loserStatus?.status || "Loading..."}
+                        </div>
+                        <div className="text-sec mt-2">{session.data?.user.email === winnerStatus?.winnerEmail ? "You win this round!" : `You lose this round!`}</div>
                     </div>
                 )}
                 <div className="flex justify-between mt-4">
-                    <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl mr-2">
-                        <div className="text-sec mt-4 text-sm">Your Score</div>
-                        <div className="text-3xl m-1">{data?.score}</div>
-                        <div className="text-sec mb-4">{((data?.score! / data?.questionIds.length!) * 100).toFixed(1)}% correct</div>
-                    </div>
-                    {matchType === 'multiple player' && (
-                        <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ml-2 ">
-                            <div className="text-sec mt-4 text-sm">{session.data?.user.name} </div>
-                            <div className="text-3xl m-1">Won</div>
-                            <div className="text-sec mb-4">5 out of 5</div>
+                    {mode === 'singleplayer' && (
+                        <div className="flex w-full">
+                            <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl mr-2">
+                                <div className="text-sec mt-4 text-sm">Your Score</div>
+                                <div className="text-3xl m-1">{data?.score}</div>
+                                <div className="text-sec mb-4">{((data?.score! / data?.questionIds.length!) * 100).toFixed(1)}% correct</div>
+                            </div>
+                            <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ">
+                                <div className="text-sec mt-4 text-sm">Time Taken</div>
+                                <div className="text-3xl m-1">{String(timeTaken)}</div>
+                                <div className="text-sec mb-4">{totalTime / 60} minutes</div>
+                            </div>
                         </div>
                     )}
-                    <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ml-2">
-                        <div className="text-sec mt-4 text-sm">Time Taken</div>
-                        <div className="text-3xl m-1">{String(timeTaken)}</div>
-                        <div className="text-sec mb-4">{totalTime / 60} minutes</div>
-                    </div>
-                </div>
-                <div className="border-2 border-yellow-500   bg-card rounded-xl py-4 mt-4">
-                    <div className="m-5 flex items-center" >
-                        <HiOutlineBolt className="text-yellow-500  text-5xl" />
-                        <div className="flex justify-between w-full">
-                            <div className="flex flex-col ml-5">
-                                <div className="text-xl font-semibold">XP Earned: +{(data.score * 50)}</div>
-                                <div className="text-sec">{data.score} Correct answer(s) x 50 XP each</div>
-                            </div>
-                            <div className="flex flex-col " >
-                                <div>Total XP: 200</div>
-                                <div className="text-sec"> {1000 - (data.score * 50)} XP to level 2</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="mt-4 text-2xl">Detailed Analysis</div>
-                <div className="border bg-card border-border hover:border-accent rounded-xl py-4 mt-4">
-                    <div className="flex ">
-                        <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
-                            QUESTION NO {currentIndex + 1}
-                        </div>
-                        <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
-                            {questionType?.toUpperCase()}
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="ml-5 mt-5 pr-5 ">
-                    <p className="text-2xl font-medium mb-5">{allAnswers?.[currentIndex]?.description}</p>
-                    <div className="">
-                        {allAnswers?.[currentIndex]?.code?.trim() ? (
-                            <SyntaxHighlighter
-                                language="javascript" style={vscDarkPlus} customStyle={{
-                                    borderRadius: "12px",
-                                    padding: "16px",
-                                    fontSize: "20px",
-                                    marginBottom: "12px",
-                                }}
-                            >
-                                {allAnswers[currentIndex]?.code}
-                            </SyntaxHighlighter>
-                        ) : null}
-                    </div>
-                    {question?.options?.map((opt) => {
-
-                        const isSelected = userAnswer.includes(opt.id)
-                        const isCorrect = correctAnswer.includes(opt.id)
-
-                        return (
-                            <div
-                                key={opt.id}
-                                className={`border flex flex-col w-full rounded-xl py-3 pl-4 mb-2
-                                ${isCorrect ? "border-green-500" : ""}
-                                ${isSelected && !isCorrect ? "border-red-500" : ""}
-                                ${!isSelected && !isCorrect ? "border-border bg-card" : ""}
-                            `}
-                            >
-                                <div className="flex items-center">
-                                    <div className="pr-1">
-                                        <div className="bg-card flex items-center justify-center text-xl text-sec h-10 w-10 rounded-full">
-
-                                            {isCorrect ? (
-                                                <HiCheckCircle className="text-green-500 text-2xl" />
-                                            ) : isSelected ? (
-                                                <HiXCircle className="text-red-500 text-2xl" />
-                                            ) : (
-                                                opt.id
-                                            )}
-
-                                        </div>
-                                    </div>
-
-                                    <div className="pl-1 flex justify-start">
-                                        {opt.text}
-                                    </div>
+                    {mode === 'multiplayer' && (
+                        <div className="flex w-full">
+                            <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl mr-2">
+                                <div className="text-sec mt-4 text-sm">Your Score</div>
+                                <div className="text-3xl m-1">
+                                    {session.data?.user.email === winnerStatus?.winnerEmail
+                                ? winnerStatus?.score
+                                : loserStatus?.score || "Loading..."}
                                 </div>
+                                <div className="text-sec mb-4">{session.data?.user.email===winnerStatus?.winnerEmail ? ((Number(winnerStatus?.score) / allQuestions?.length!) * 100).toFixed(1) : ((Number(loserStatus?.score) / allQuestions?.length!) * 100).toFixed(1)}% correct</div>
                             </div>
-                        )
-                    })}
-                    <button
-                        onClick={() => setShowExplanation(true)}
-                        className="mt-4 px-4 py-2 bg-accent text-white rounded-lg hover:scale-105 transition"
-                    >
-                        Show Explanation
-                    </button>
-                    <div className="flex flex-wrap gap-x-3 ">
-                        {Array.from({ length: Number(allAnswers?.length) }).map((_, i) => (
-                            <button
-                                onClick={() => {
-                                    setCurrentIndex(i)
-                                }}
-                                key={i}
-                                className={`text-2xl h-20 w-20 mt-5 rounded-xl border transition-all duration-200 hover:scale-110
-                                ${currentIndex === i ? "bg-accent border-accent" : "bg-sec border-neutral-700"}
-                                `}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-
-                    </div>
-                    {showExplanation && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-
-                            {/* Modal Box */}
-                            <div className="bg-card w-[80%] max-w-3xl p-6 rounded-xl shadow-lg relative">
-
-                                {/* Close Button */}
-                                <button
-                                    onClick={() => setShowExplanation(false)}
-                                    className="absolute top-3 right-3 text-xl text-sec hover:text-white"
-                                >
-                                    ✕
-                                </button>
-
-                                <div className="text-2xl font-semibold mb-4">
-                                    Explanation
-                                </div>
-
-                                <div className="text-lg text-sec">
-                                    {question?.explanation || "No explanation available"}
-                                </div>
-
+                            <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ">
+                                <div className="text-sec mt-4 text-sm">Time Taken</div>
+                                <div className="text-3xl m-1">{session.data?.user.email === winnerStatus?.winnerEmail ? `${winnerStatus?.timeTaken}` : `${loserStatus.timeTaken}` }</div>
+                                <div className="text-sec mb-4">{totalTime / 60} minutes</div>
+                            </div>
+                            <div className="bg-card border  flex justify-center flex-col items-center w-full border-border rounded-xl ml-2 ">
+                                <div className="text-sec mt-4 text-sm">{session.data?.user.email === winnerStatus?.winnerEmail ? `${winnerStatus?.winnerEmail}` : `Opponent` }</div>
+                                <div className="text-3xl m-1">Won</div>
+                                <div className="text-sec mb-4">{winnerStatus?.winnerEmail===session.data?.user.email ? `${winnerStatus?.score} out of ${allQuestions?.length}` : `${loserStatus.score} out of ${allQuestions?.length}` } </div>
                             </div>
                         </div>
                     )}
                 </div>
+                {matchType === 'singlePlayer' ? (
+                    <div className="border-2 border-yellow-500   bg-card rounded-xl py-4 mt-4">
+                        <div className="m-5 flex items-center" >
+                            <HiOutlineBolt className="text-yellow-500  text-5xl" />
+                            <div className="flex justify-between w-full">
+                                <div className="flex flex-col ml-5">
+                                    <div className="text-xl font-semibold">XP Earned: +{(data!.score * 50)}</div>
+                                    <div className="text-sec">{data!.score} Correct answer(s) x 50 XP each</div>
+                                </div>
+                                <div className="flex flex-col " >
+                                    <div>Total XP: 200</div>
+                                    <div className="text-sec"> {1000 - (data!.score * 50)} XP to level 2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ):(
+                    <div className="border-2 border-yellow-500   bg-card rounded-xl py-4 mt-4">
+                        <div className="m-5 flex items-center" >
+                            <HiOutlineBolt className="text-yellow-500  text-5xl" />
+                            <div className="flex justify-between w-full">
+                                <div className="flex flex-col ml-5">
+                                    <div className="text-xl font-semibold">{session.data?.user.email === winnerStatus?.winnerEmail ? `XP Earned: +${(Number(winnerStatus?.score) * 50)}` :  `XP Earned: +${(Number(loserStatus?.score) * 50)}`}</div>
+                                    <div className="text-sec">{session.data?.user.email=== winnerStatus?.winnerEmail ? `${winnerStatus?.score}` : `${loserStatus?.score}` } Correct answer(s) x 50 XP each</div>
+                                </div>
+                                <div className="flex flex-col " > 
+                                    <div>Total XP: 200</div>
+                                    <div className="text-sec"> {session.data?.user.email=== winnerStatus?.winnerEmail ? `1000 - ${(Number(winnerStatus?.score) * 50)}`: `1000 - ${(Number(loserStatus?.score) * 50)}`} XP to level 2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
 
             </div>
         </div>
