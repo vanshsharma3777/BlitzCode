@@ -5,8 +5,6 @@ import { LuLoader } from "react-icons/lu";
 import { useRouter, useSearchParams } from "next/navigation";
 import { connectSocket } from "../../../lib/websocket";
 import { useSession } from "next-auth/react";
-import { CustomSocket } from "../../../types/allTypes";
-import Loader from "../../../components/Loader";
 
 export default function FindMatch() {
     const router = useRouter()

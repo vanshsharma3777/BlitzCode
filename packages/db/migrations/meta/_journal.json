@@ -99,6 +99,13 @@
       "when": 1773828973233,
       "tag": "0013_grey_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1775381553782,
+      "tag": "0014_chubby_william_stryker",
+      "breakpoints": true
     }
   ]
 }

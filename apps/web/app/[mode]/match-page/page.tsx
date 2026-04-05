@@ -8,20 +8,12 @@ import { HiOutlineMail } from "react-icons/hi"
 import { useSession } from "next-auth/react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { updateAnswers } from "../../../lib/functions/selectOptions"
-import { Question, SolvedQuestion } from "../../../types/allTypes"
+import { Question, SolvedQuestion, WSQuestionData } from "../../../types/allTypes"
 import { connectSocket } from "../../../lib/websocket"
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import SyntaxHighlighter from "react-syntax-highlighter"
 import { createTime } from "../../../lib/functions/createTime"
 
-
-type WSQuestionData = {
-    question: Question,
-    questionNumber: number,
-    remainingTime: number,
-    gameEndTime: number
-    total: number
-}
 export default function MacthPage() {
     const session = useSession()
     const params = useParams()
@@ -150,10 +142,12 @@ export default function MacthPage() {
                     allQuestions: questionsRef.current,
                     questionType,
                     timeTaken:player.timeTaken,
-                    questionLength
+                    questionLength,
                 }
                 console.log(parsed)
+                const pointsUpdated = false;
                 sessionStorage.setItem("multiPlayerMatchData", JSON.stringify(payload))
+                sessionStorage.setItem("pointsUpdated", JSON.stringify(pointsUpdated))
                 console.log("naviagting to reuslt page")
                 router.replace("/multiplayer/result");
             }

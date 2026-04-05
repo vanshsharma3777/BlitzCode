@@ -19,7 +19,7 @@ type InputComponents = {
         questionId: string;
         userAnswer: string[];
     };
-    isSubmitting:boolean,
+
     selectOption: (
         questionId: string,
         optionId: string,
@@ -32,10 +32,10 @@ type InputComponents = {
     setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function QuestionDescription({ show, currentIndex, questionType, handleSubmit, data, currentAnswer,isSubmitting, setIsSubmitting, selectOption, questionLength, setCurrentIndex
+export default function QuestionDescription({ show, currentIndex, questionType, handleSubmit, data, currentAnswer, setIsSubmitting, selectOption, questionLength, setCurrentIndex
 }: InputComponents) {
     return (
-        <div className={`w-[85%] bg-card border border-border  rounded-xl py-8 transform transition-all duration-200 ease-out${show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"} text-pri  rounded-xl`}>
+        <div className={`w-[85%] bg-card border select-none border-border  rounded-xl py-8 transform transition-all duration-200 ease-out${show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"} text-pri  rounded-xl`}>
             <div className="flex ">
                 <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
                     QUESTION NO {currentIndex + 1}
@@ -44,10 +44,8 @@ export default function QuestionDescription({ show, currentIndex, questionType, 
                     {questionType?.toUpperCase()}
                 </div>
                 <button onClick={ () => {
-                    setIsSubmitting(true)
                      handleSubmit()
                 }}
-                disabled={isSubmitting}
                 className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
                     SUBMIT
                 </button>

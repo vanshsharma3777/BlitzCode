@@ -23,7 +23,6 @@ export default function SelectQuestionsDetails() {
         router.replace('/signin')
 
     const handleSubmit = async (e: React.FormEvent) => {
-      console.log(topic.trim().toLowerCase())
          try{
             setError('')
             setLoader(true)

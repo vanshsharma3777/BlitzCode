@@ -15,7 +15,6 @@ export default function ConfigurationCard({ heading, setConfig, widthMob }: Prop
 
     const [selected, setSelected] = useState("")
     function handleField(value: string) {
-        console.log(value)
         setSelected(value)
         if (setConfig) {
             setConfig((prev: any) => {

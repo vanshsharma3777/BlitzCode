@@ -34,6 +34,7 @@ export const users = pgTable("user", {
 
   username: text("username").unique(),
   points: integer("points").default(0).notNull(),
+  pointsUpdated: boolean("points_updated").default(false).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull().$onUpdate(() => new Date()),
 })

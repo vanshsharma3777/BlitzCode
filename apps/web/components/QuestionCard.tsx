@@ -1,6 +1,6 @@
 'use client'
 
-import { Answers, Question, SolvedQuestion } from "../types/allTypes";
+import { Question, SolvedQuestion } from "../types/allTypes";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -36,8 +36,6 @@ export default function QuestionCard() {
     const currentAnswer = answers.find(
         a => a.questionId === data[currentIndex]?.questionId
     )
-
-    console.log("currentAnswer ", answers)
     useEffect(() => {
         if (session.status === "unauthenticated") {
             router.replace("/signin")
@@ -48,7 +46,6 @@ export default function QuestionCard() {
         if (data.length === 0) {
             setLoader(true)
         }
-        console.log("effect qorking")
         if (session.status !== "authenticated") {
             getResponse()
         }
@@ -61,7 +58,6 @@ export default function QuestionCard() {
         }
         }, 10000);
     }, [data])
-    console.log("totalTime ", totalTime)
 
     useEffect(() => {
         const initialTime = createTime(
@@ -91,20 +87,17 @@ export default function QuestionCard() {
             },
                 { withCredentials: true }
             );
-            console.log("response ", res.data)
             const questions =
                 typeof res.data.data === "string"
                     ? JSON.parse(res.data.data)
                     : res.data.data
             const matchId = res.data.quizId;
             setQuizId(matchId)
-            console.log(res.data.data)
             if(res.data.data!=0){
                 setLoader(false)
             }
             res.data.data.map((q: any) => {
                 if (!q.questionId) {
-                    console.log("question if not present of questions , (question-page)")
                     return
                 }
             })
@@ -253,7 +246,6 @@ export default function QuestionCard() {
                 questionLength={Number(questionLength)}
                 setCurrentIndex={setCurrentIndex}
                 setIsSubmitting={setIsSubmitting}
-                isSubmitting = {isSubmitting}
             />
         </div>
     )
