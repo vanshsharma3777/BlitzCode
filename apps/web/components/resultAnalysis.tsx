@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { HiOutlineTrophy } from "react-icons/hi2";
 import { HiOutlineBolt } from "react-icons/hi2";
 import { MatchType, Response } from "../types/allTypes";
@@ -11,6 +11,7 @@ import axios from "axios";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Loader from "./Loader";
+import { HtmlContext } from "next/dist/server/route-modules/pages/vendored/contexts/entrypoints";
 
 
 export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, questionType, winnerStatus, loserStatus, timeTaken, totalTime, quizId }: MatchType) {
@@ -36,6 +37,7 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
                 try {
                     const res = await axios.post('/api/submit-answers', { answers, quizId })
                     if (res.data) {
+                        console.log("data" , res.data.data)
                         setData(res.data.data)
                     }
                 } catch (error) {
@@ -58,8 +60,14 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
     }
     if (mode === 'singleplayer') {
         useEffect(() => {
-
+            if (pointsUpdated) {
+                console.log("this ran")
+                return
+            }
             if (data) {
+                console.log("came here")
+                console.log("piunts", pointsUpdated)
+                sessionStorage.setItem("pointsUpdated", "true")
                 async function getScore() {
                     const email = session.data?.user.email
                     const score = Number(data?.score) * 50
@@ -88,7 +96,7 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
                         const email = session.data?.user.email
                         const score = -25
                         const res = await axios.post('/api/score', { userEmail: email, score })
-                            setPoints(res.data.points)
+                        setPoints(res.data.points)
                     }
                     getScore()
                 }
@@ -97,6 +105,19 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
     }
 
     if (mode === 'multiplayer') {
+        useEffect(() => {
+            async function getPoints() {
+                const email = session.data?.user.email
+                const res = await axios.post('/api/get-points', { userEmail: email })
+                setPoints(res.data.points)
+            }
+            if (session.data?.user.email) {
+                getPoints()
+            }
+
+        }, [session])
+    }
+    if (mode === 'singleplayer') {
         useEffect(() => {
             async function getPoints() {
                 const email = session.data?.user.email
@@ -127,7 +148,7 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
     const correctAnswer = question?.correctOptions ?? []
     if (loader) return <Loader />
     return (
-        <div className="flex justify-center mt-10">
+        <div className="flex justify-center mt-5">
             <div className="w-full  ">
                 {mode === 'singleplayer' ? (
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center" >
@@ -202,7 +223,6 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
                                 </div>
                                 <div className="flex flex-col " >
                                     <div>Total XP: {points}</div>
-                                    <div className="text-sec"> {1500 - (points) } XP to level 2</div>
                                 </div>
                             </div>
                         </div>

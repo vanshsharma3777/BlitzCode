@@ -13,7 +13,8 @@ export default function HomePage() {
     const router = useRouter()
     useEffect(() => {
         console.log(session.status)
-        if (session.status === 'unauthenticated') return setLoader(true)
+        if (session.status === 'unauthenticated') return router.replace("/signin")
+
         async function getDetails() {
             try {
                 const res = await axios.get('/api/username')
@@ -30,7 +31,6 @@ export default function HomePage() {
         }
         getDetails()
     }, [session.status, username])
-    if (session.status === 'unauthenticated' || loader) return router.replace("/signin") 
     if (session.status === 'loading' || loader) return <Loader />
     return (
         <div className="flex items-center justify-center   min-h-screen">

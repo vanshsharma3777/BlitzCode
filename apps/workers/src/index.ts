@@ -65,7 +65,8 @@ const questionGenerationWorker = new Worker(
     {
         connection: {
             url: process.env.REDIS_URL
-        }
+        },
+        concurrency:5
     },
 )
 

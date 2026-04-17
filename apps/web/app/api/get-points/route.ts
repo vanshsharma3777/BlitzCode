@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
                 success: false
             }, { status: 404 })
         }
-        
+            
         const updateScore = await db.select().from(users).where(eq(users.email , userEmail)).limit(1)
         console.log("updated score", updateScore[0])
         return NextResponse.json({

@@ -15,7 +15,7 @@ import QuestionDescription from "./atoms/QuestionDescription";
 export default function QuestionCard() {
     const session = useSession()
     const params = useParams()
-    const mode = params.mode as string 
+    const mode = params.mode as string
     const router = useRouter()
     const searchParams = useSearchParams()
     const questionType = searchParams.get("questionType")
@@ -33,6 +33,7 @@ export default function QuestionCard() {
     const [loader, setLoader] = useState<boolean>(false)
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [answers, setAnswers] = useState<SolvedQuestion[]>([])
+    const [seconds , setSeconds] = useState(0)
     const currentAnswer = answers.find(
         a => a.questionId === data[currentIndex]?.questionId
     )
@@ -51,11 +52,15 @@ export default function QuestionCard() {
         }
     }, []);
 
+    
     useEffect(() => {
         setTimeout(() => {
-            if (data.length < Number(questionLength)) {
-            getResponse()
-        }
+            if(seconds>=25){
+                return 
+            }
+            if (data.length < Number(questionLength)  ) {
+                getResponse()
+            }
         }, 10000);
     }, [data])
 
@@ -93,7 +98,7 @@ export default function QuestionCard() {
                     : res.data.data
             const matchId = res.data.quizId;
             setQuizId(matchId)
-            if(res.data.data!=0){
+            if (res.data.data != 0) {
                 setLoader(false)
             }
             res.data.data.map((q: any) => {
@@ -133,14 +138,14 @@ export default function QuestionCard() {
     }
 
     async function handleSubmit() {
-        
+
         const unanswered = data?.filter(
-                (q) => !answers.some((a) => a.questionId === q.questionId)
-            )
-            if (unanswered && unanswered.length > 0) {
-                setError("Please answer all questions before submitting the quiz.")
-                return 
-            }
+            (q) => !answers.some((a) => a.questionId === q.questionId)
+        )
+        if (unanswered && unanswered.length > 0) {
+            setError("Please answer all questions before submitting the quiz.")
+            return
+        }
         const payload = {
             topic,
             language,
@@ -148,21 +153,23 @@ export default function QuestionCard() {
             questionLength,
             questionType,
             answers,
-            totalTime : timeToPlay,
-            leftTime : totalTime,
+            totalTime: timeToPlay,
+            leftTime: totalTime,
             allQuestions: data,
             quizId
         }
+        const pointsUpdated = false;
         sessionStorage.setItem("singlePlayerMatchData", JSON.stringify(payload))
+        sessionStorage.setItem("pointsUpdated", JSON.stringify(pointsUpdated))
         try {
-            if(quizId.length==0){
+            if (quizId.length == 0) {
                 console.log("QuizId not found")
                 return setError("QuizId not found")
             }
-            const res = await axios.post('/api/submit-answers', { answers , quizId})
+            const res = await axios.post('/api/submit-answers', { answers, quizId })
             if (res.data) {
-                if(mode === 'multiplayer') router.replace('/multiplayer/result')
-                else if(mode === 'singleplayer') router.replace('/singleplayer/result')
+                if (mode === 'multiplayer') router.replace('/multiplayer/result')
+                else if (mode === 'singleplayer') router.replace('/singleplayer/result')
             }
         } catch (err) {
             if (axios.isAxiosError(err)) {

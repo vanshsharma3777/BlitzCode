@@ -16,9 +16,9 @@ export default function Result() {
   const [answers, setAnswers] = useState<SolvedQuestion[]>([])
   const [questions, setQuestions] = useState<Question[]>([])
   const [timeTaken, setTimeTaken] = useState<string>('')
-  const [ pointUpdated , setPointUpdated] = useState<boolean>(false)
-  const [winnerStatus , setWinnerStatus] = useState<Status>()
-  const [loserStatus , setLoserStatus] = useState<Status>()
+  const [pointUpdated, setPointUpdated] = useState<boolean>(false)
+  const [winnerStatus, setWinnerStatus] = useState<Status>()
+  const [loserStatus, setLoserStatus] = useState<Status>()
   function formatTime(seconds: number) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -37,6 +37,9 @@ export default function Result() {
       const timeTaken = totalTime - leftTime;
       const displayTime = formatTime(timeTaken);
       setTimeTaken((displayTime))
+      const pointsData = sessionStorage.getItem("pointsUpdated")
+      const pUpdate = JSON.parse(pointsData!) || false
+      setPointUpdated(pUpdate)
     }
     else {
       console.log("Items not found in sesion storage")
@@ -52,41 +55,41 @@ export default function Result() {
         const timeTaken = sessionStorageData.timeTaken;
         const winnerEmail = sessionStorageData.winner;
         const winner = sessionStorageData.winner;
-        const loserDetail = sessionStorageData.payload.find((p:any)=>{
-          if(winner!==p.email) return p;
+        const loserDetail = sessionStorageData.payload.find((p: any) => {
+          if (winner !== p.email) return p;
         })
-        const winnerDetail = sessionStorageData.payload.find((p:any)=>{
-          if(winner===p.email) return p;
+        const winnerDetail = sessionStorageData.payload.find((p: any) => {
+          if (winner === p.email) return p;
         })
         const pointsData = sessionStorage.getItem("pointsUpdated")
         const pUpdate = JSON.parse(pointsData!) || false
         setPointUpdated(pUpdate)
         const winnerStatus = {
-          winnerEmail:winnerDetail.email,
-          timeTaken : formatTime(Math.ceil(winnerDetail.timeTaken / 1000) - 4),
+          winnerEmail: winnerDetail.email,
+          timeTaken: formatTime(Math.ceil(winnerDetail.timeTaken / 1000) - 4),
           score: winnerDetail.score,
-          status:"Winner"
+          status: "Winner"
         }
         const loserStatus = {
-          loserEmail:loserDetail.email,
-          timeTaken : formatTime(Math.ceil(loserDetail.timeTaken / 1000) - 4),
+          loserEmail: loserDetail.email,
+          timeTaken: formatTime(Math.ceil(loserDetail.timeTaken / 1000) - 4),
           score: loserDetail.score,
-          status:"Defeat"
+          status: "Defeat"
         }
-         setLoserStatus(loserStatus)
-         setWinnerStatus(winnerStatus)
+        setLoserStatus(loserStatus)
+        setWinnerStatus(winnerStatus)
       }
     }, [session.status])
-    
+
   }
-  console.log("params" , mode)
+  console.log("params", mode)
   if (!data) return <div>Loading...</div>
   return (
     <div className="p-6 text-pri min-h-screen  flex justify-center  gap-5" >
       <div className=" w-[65%]">
-        <div><Topbar mode={mode}/></div>
-        <div ><ResultAnalysis pointsUpdated={pointUpdated} timeTaken={(timeTaken)} totalTime={data.totalTime} answers={data.answers} questionType={data.questionType} allQuestions={data.allQuestions} quizId={data.quizId} winnerStatus={winnerStatus!} loserStatus= {loserStatus!} /></div>
-      </div>  
+        <div><Topbar mode={mode} /></div>
+        <div ><ResultAnalysis pointsUpdated={pointUpdated} timeTaken={(timeTaken)} totalTime={data.totalTime} answers={data.answers} questionType={data.questionType} allQuestions={data.allQuestions} quizId={data.quizId} winnerStatus={winnerStatus!} loserStatus={loserStatus!} /></div>
+      </div>
     </div>
   )
 }
