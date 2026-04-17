@@ -13,13 +13,16 @@ interface Input {
 export async function generateQuestion(input:Input ): Promise< string>{ 
     console.log("input is " , input)
     try{
+
         return await generateQuestionGemini(input)
-    }catch(error){
+    }catch(error : any){
         console.warn("gemini failed")
+        console.log(error.message)
         try{    
             return await generateQuestionDeepSeek(input)
-        }catch(error){
+        }catch(error : any){
             console.warn("deepseek failed")
+            console.log(error.message)
         }
     }
     console.log("Gemini and Deepseek failed generating questions from Mistral")
