@@ -73,6 +73,6 @@ export async function ques(topic: string, difficulty: string, questionType: stri
         difficulty: ques.difficulty,
         questionLength: questionLength,
     }))
-    return findQuestions
+    return finalQuestionsToSend
 
 }

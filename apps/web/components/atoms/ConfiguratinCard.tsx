@@ -38,7 +38,7 @@ export default function ConfigurationCard({ heading, setConfig, widthMob }: Prop
                                 {heading}
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <TopicsCard field="C" selected={selected} onClick={() => handleField("C")} />
+                                <TopicsCard field="C" selected={selected} onClick={() => handleField("c")} />
                                 <TopicsCard field="Python" selected={selected} onClick={() => handleField("python")} />
                                 <TopicsCard field="Typescript" selected={selected} onClick={() => handleField("typescript")} />
                                 <TopicsCard field="Java" selected={selected} onClick={() => handleField("java")} />

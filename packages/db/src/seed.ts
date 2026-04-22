@@ -1,13 +1,13 @@
 import { db } from "./index";
-import { questions } from "./schema";
-import data from "./data.json";
+import { questions, type Question } from "./schema";
+import data from "./data2.json";
 
 async function seed() {
   console.log("🌱 Starting database seed...");
 
   try {
     await db.insert(questions).values(
-      data.map((q) => ({
+      data.map((q : any ) => ({
         topic: q.topic,
         description: q.description,
         explanation: q.explanation,

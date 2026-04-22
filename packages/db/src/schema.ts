@@ -16,8 +16,6 @@ import { drizzle } from "drizzle-orm/postgres-js"
 import type { AdapterAccount } from "next-auth/adapters";
 
 const connectionString = process.env.DATABASE_URL!
-console.log(process.env.DATABASE_URL!)
-console.log(connectionString)
 const pool = postgres(connectionString, { max: 1 })
 
 export const db = drizzle(pool)
@@ -142,50 +140,8 @@ export const questions = pgTable("question", {
     ),
   }));
 
-export const attempts = pgTable("attempt", {
-  id: uuid('id').defaultRandom().primaryKey(),
-  status: questionStatus("question_status").notNull(),
-  userId: uuid('userId').notNull().references(() => users.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(),
-  totalTime: integer("total_time").notNull(),
-  gameType: gameTypeEnum("game_type").notNull(),
-  completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
-
-})
-
-export const multiplayerGame = pgTable("multiplayer_game", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  timeTaken: integer("time_taken").notNull(),
-  score: integer("score").notNull(),
-  completedAt: timestamp("completed_at", { mode: "date" }).defaultNow().notNull(),
-});
-
-export const multiplayerAttempts = pgTable("multiplayer_attempts", {
-  multiplayerId: uuid("multiplayer_id").notNull().references(() => multiplayerGame.id, { onDelete: "cascade" }),
-  attemptId: uuid("attempt_id").notNull().references(() => attempts.id, { onDelete: "cascade" }),
-});
-
-export const questionsAttempted = pgTable("question_attempted", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  questionId: uuid("question_id")
-    .notNull()
-    .references(() => questions.questionId, { onDelete: "cascade" }),
-  isCorrect: integer("is_correct").notNull(),
-  timeTaken: real("time_taken").notNull(),
-  attemptedAt: timestamp("attempted_at", { mode: "date" }).defaultNow().notNull(),
-});
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Question = typeof questions.$inferSelect;
 export type NewQuestion = typeof questions.$inferInsert;
-export type QuestionAttempted = typeof questionsAttempted.$inferSelect;
-export type NewQuestionAttempted = typeof questionsAttempted.$inferInsert;
-export type Attempt = typeof attempts.$inferSelect;
-export type NewAttempt = typeof attempts.$inferInsert;
-export type MultiplayerGame = typeof multiplayerGame.$inferSelect;
-export type NewMultiplayerGame = typeof multiplayerGame.$inferInsert;

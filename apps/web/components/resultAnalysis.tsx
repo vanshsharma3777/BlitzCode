@@ -240,12 +240,10 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
                                 </div>
                                 <div className="flex flex-col " >
                                     <div>Total XP: {points}</div>
-                                    <div className="text-sec"> {session.data?.user.email === winnerStatus?.winnerEmail ? `${(1500 - (points))}` : `${1500 - (points)}`} XP to level 2</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 )}
                 {mode === 'multiplayer' && (
                     <div className="border border-border mt-4 mb-4 p-5 rounded-xl bg-card">
