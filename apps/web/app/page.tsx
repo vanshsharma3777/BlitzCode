@@ -32,9 +32,9 @@ export default function LandingPage() {
         </div>
 
         <button onClick={()=>{
-         router.push("/home")
+         router.push("/about")
         }} className="px-8 py-4 bg-accent text-white rounded-xl font-semibold text-lg hover:bg-accent/90 transition-all hover:scale-105 flex items-center gap-2">
-          Start Playing <ArrowRight size={20} />
+          Know About BiltzCode <ArrowRight size={20} />
         </button>
       </section>
 
