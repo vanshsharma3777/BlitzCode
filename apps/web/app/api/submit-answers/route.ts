@@ -23,8 +23,6 @@ export async function POST(request: NextRequest) {
         .where(eq(users.email, email))
         .limit(1)
 
-        console.log('email :' , email)
-        console.log('existing user :' , existingUser)
     try {
         if (existingUser.length == 0) {
             return NextResponse.json({
@@ -42,17 +40,10 @@ export async function POST(request: NextRequest) {
         
         const questionIds = answers.map((ques: SolvedQuestion) => ques.questionId)
         const questions:Question[] = await redis.get(`quiz:${quizId}`) as Question[]
-        if(questions){
-            console.log("your questionsid are :" , questionIds)
-            console.log("your answers are: " , answers)
-            console.log("your questions are :" , questions)
-        } else{
-            console.log("questions not found")
-        }
+        
         let scores;
         if(questions){
-            console.log("calling calculate scores")
-             scores =  calculateScores(answers , questions )
+            scores =  calculateScores(answers , questions )
         }else{
             console.log("calculate function not called")
         }

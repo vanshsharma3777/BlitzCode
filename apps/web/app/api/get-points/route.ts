@@ -19,8 +19,7 @@ export async function POST(request: NextRequest) {
         .from(users)
         .where(eq(users.email, email))
         .limit(1)
-    console.log('email :', email)
-    console.log('existing user :', existingUser)
+
     try {
         if (existingUser.length == 0) {
             return NextResponse.json({
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
         }
             
         const updateScore = await db.select().from(users).where(eq(users.email , userEmail)).limit(1)
-        console.log("updated score", updateScore[0])
         return NextResponse.json({
             success: true,
             points: updateScore[0]?.points,

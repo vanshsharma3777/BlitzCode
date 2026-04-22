@@ -9,7 +9,6 @@ export default async function Username(){
   if(!session?.user){
     redirect('/signin')
   }
-  console.log(session)
   return(
     <div>
       <CreateProfile email={session.user.email!}></CreateProfile>

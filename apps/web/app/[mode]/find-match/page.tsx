@@ -29,8 +29,6 @@ export default function FindMatch() {
         }
 
         socket.onopen = () => {
-            console.log(session.data?.user.email)
-            console.log('gone2')
 
             socket.send(JSON.stringify({
                 type: "AUTH",
@@ -44,10 +42,7 @@ export default function FindMatch() {
 
             const data = JSON.parse(event.data);
 
-            console.log("Server message:", data);
-
             if (data.data === "AUTH OK") {
-                console.log('gone')
                 socket.send(JSON.stringify({
                     type: "init_game",
                     payload: {

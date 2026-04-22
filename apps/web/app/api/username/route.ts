@@ -17,9 +17,7 @@ export  async function POST(request: NextRequest){
 
     const {email , username} = await request.json()
 
-    
-    console.log(username)
-    if(!email || !username){
+        if(!email || !username){
         return NextResponse.json({
             success:false,
             error:"Username not provided",
@@ -32,7 +30,6 @@ export  async function POST(request: NextRequest){
         .from(users)
         .where(eq(users.username , username))
         .limit(1);
-        console.log("exsistingUser", exsistingUser)
     if(exsistingUser.length==0){
        const user = await db.update(users)
                         .set({ username })
@@ -75,7 +72,6 @@ export async function GET() {
             .from(users)
             .where(eq(users.email , session.user.email!))
             .limit(1)
-                console.log(userName)       
                 if(!userName){
                      return NextResponse.json({
                     success:false,

@@ -12,7 +12,6 @@ export default function HomePage() {
     const [username, setUsername] = useState<string>('')
     const router = useRouter()
     useEffect(() => {
-        console.log(session.status)
         if (session.status === 'unauthenticated') return router.replace("/signin")
 
         async function getDetails() {

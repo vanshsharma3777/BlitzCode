@@ -12,6 +12,7 @@ import Loader from "./Loader";
 import { createTime } from "../lib/functions/createTime";
 import { updateAnswers } from "../lib/functions/selectOptions";
 import QuestionDescription from "./atoms/QuestionDescription";
+import QuestionLoader from "./atoms/QuestionLoader";
 export default function QuestionCard() {
     const session = useSession()
     const params = useParams()
@@ -182,7 +183,7 @@ export default function QuestionCard() {
     }
 
     if (loader) {
-        return <Loader />
+        return <QuestionLoader />
     }
     return (
         <div className={`min-h-screen flex flex-col justify-center gap-5  items-center  text-pri `}>

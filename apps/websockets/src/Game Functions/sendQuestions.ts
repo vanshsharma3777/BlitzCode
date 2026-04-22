@@ -33,7 +33,6 @@ export function sendQuestion(game: Game, player: CustomSocket , gameEndTime:numb
                 remainingTime: gameEndTime - Date.now()
             }
         }))
-        console.log("index after sedning data " , index)
     } catch (error) {
         console.log("error in the sendQuestions of sendQuestions ", error)
     }

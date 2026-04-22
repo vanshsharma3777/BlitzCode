@@ -28,9 +28,7 @@ export default function Result() {
   useEffect(() => {
     const singlePlayer = sessionStorage.getItem("singlePlayerMatchData");
     if (singlePlayer) {
-      console.log(singlePlayer)
       const sessionStorageData = JSON.parse(singlePlayer)
-      console.log("sessionStorageData", sessionStorageData)
       setData(sessionStorageData)
       const leftTime = sessionStorageData.leftTime
       const totalTime = sessionStorageData.totalTime
@@ -82,7 +80,6 @@ export default function Result() {
     }, [session.status])
 
   }
-  console.log("params", mode)
   if (!data) return <div>Loading...</div>
   return (
     <div className="p-6 text-pri min-h-screen  flex justify-center  gap-5" >

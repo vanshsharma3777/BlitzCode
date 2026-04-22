@@ -35,17 +35,14 @@ export async function POST(request: NextRequest) {
 
     const findQuestions = unusedQuestions.slice(0, questionLength);
 
-    console.log("questions ", (findQuestions))
     let questionsToSend, quesId
     if (findQuestions.length != 0) {
         quesId = findQuestions.map((que) => {
             return que.questionId
         })
     }
-    console.log("unsued ques id :", unusedQuestions)
     if ((unusedQuestions).length <= questionLength && questionLength) {
          console.log("Questions creation task added in the queue")
-         console.log("Hello")
         questionsToSend = await questionQueue.add("generateQuestions", {
             topic,
             difficulty,

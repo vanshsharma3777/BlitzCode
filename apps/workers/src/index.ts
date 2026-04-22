@@ -40,15 +40,12 @@ const questionGenerationWorker = new Worker(
                 console.log("createQuestions :", createQuestions)
                 if (createQuestions.endsWith("]")) {
                     typeof (createQuestions) == "string" ? parsedQuestions = JSON.parse(createQuestions) : parsedQuestions = createQuestions
-                    console.log("parsed ques :", parsedQuestions);
-                    console.log(typeof (parsedQuestions))
                     const finalQuestions = parsedQuestions.map((q: Question) => ({
                         ...q,
                         questionId: uuid()
                     }))
                     const saveToDB = await db.insert(questions).values(parsedQuestions);
 
-                    console.log("saved to db:", saveToDB);
                 }
                 else{
                     throw error

@@ -37,7 +37,6 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
                 try {
                     const res = await axios.post('/api/submit-answers', { answers, quizId })
                     if (res.data) {
-                        console.log("data" , res.data.data)
                         setData(res.data.data)
                     }
                 } catch (error) {
@@ -61,12 +60,9 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
     if (mode === 'singleplayer') {
         useEffect(() => {
             if (pointsUpdated) {
-                console.log("this ran")
                 return
             }
             if (data) {
-                console.log("came here")
-                console.log("piunts", pointsUpdated)
                 sessionStorage.setItem("pointsUpdated", "true")
                 async function getScore() {
                     const email = session.data?.user.email

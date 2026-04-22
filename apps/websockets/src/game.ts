@@ -48,7 +48,6 @@ export class Game {
             questionType: this.questionType,
             questionLength: this.questionLength
         }
-        console.log("request goes to ques")
         this.questions = await ques(this.topic, this.difficulty, this.questionType, this.language, this.questionLength)
         console.log("QUESTIONS RECEIVED:", this.questions);
         if (!this.questions) {
@@ -74,8 +73,6 @@ export class Game {
         });
 
         await this.findQuestions();
-
-        console.log("questions after findQuestions:", this.questions);
 
         if (!this.questions || this.questions.length === 0) {
             console.log("Questions not found in start()");
@@ -111,7 +108,6 @@ export class Game {
 
     handleNextQuestion(player: CustomSocket) {
         const emailId = player.emailId
-        console.log("NEXT_QUESTION from:", emailId);
         if (!emailId) {
             console.log("player email id not passed/ found")
             player.send(JSON.stringify({
@@ -122,8 +118,7 @@ export class Game {
             }))
             return
         }
-        console.log("this.playerProgress.size :", this.playerProgress.size)
-        console.log("this.ques :", this.questions)
+
         if (!this.isReady) {
             this.findQuestions().then(() => {
                 if (this.questions && this.questions.length > 0) {
@@ -138,7 +133,6 @@ export class Game {
             return;
         }
         const index = this.playerProgress.get(emailId)
-        console.log("index ", index)
         if (index === undefined) {
             player.send(JSON.stringify({
                 type: "ERROR",
@@ -156,12 +150,7 @@ export class Game {
     handleAnswer(player: CustomSocket, questionId: string, answer: any) {
         try{
             const emailId = player.emailId!;
-        console.log("came in handleans")
-        console.log("this.questions" , this.questions)
         const question = this.questions?.find(q => q.questionId === questionId);
-        console.log("quiestion is :" , question)
-        console.log("quiestionid is :" , questionId)
-        console.log("answer by user is :" , answer)
         if (!question) return;
 
         if (!this.playerAnswers.has(emailId)) {
@@ -171,20 +160,16 @@ export class Game {
         const userAnswers = this.playerAnswers.get(emailId)!;
         const prevAnswer = userAnswers.get(questionId);
 
-        console.log("checking question answers")
         if (prevAnswer !== undefined && isCorrect(question, prevAnswer)) {
-            console.log("score --")
             const prevScore = this.playerScores.get(emailId) || 0;
             this.playerScores.set(emailId, prevScore - 1);
         }
         userAnswers.set(questionId, answer);
 
         if (isCorrect(question, answer)) {
-            console.log("answer correct")
-            console.log("score ++ ")
+
             const prevScore = this.playerScores.get(emailId) || 0;
             this.playerScores.set(emailId, prevScore + 1);
-            console.log("this.playerScores" , this.playerScores.get(emailId))
         }
      }catch(err){
             console.log("err :" , err)

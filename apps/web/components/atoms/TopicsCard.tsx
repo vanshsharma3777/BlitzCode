@@ -8,7 +8,6 @@ type Props = {
 
 export default function TopicsCard({ field, selected , onClick  }: Props) {
     const isSelected = selected.toLowerCase().trim() === field.toLowerCase().trim()
-    console.log("option : ", selected.toLowerCase().trim() === field.toLowerCase().trim())
     return (
         <div
             onClick={onClick}

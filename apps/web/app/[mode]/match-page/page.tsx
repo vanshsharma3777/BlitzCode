@@ -69,13 +69,11 @@ export default function MacthPage() {
         socketRef.current = socket
 
         if (socket.readyState === WebSocket.OPEN) {
-            console.log("socket connected")
             fetchQuestion()
         }
 
         socket.onmessage = (event) => {
             const parsed = JSON.parse(event.data)
-            console.log("data on match-page:", parsed)
 
             if (
                 parsed?.type === "ERROR" &&
@@ -122,11 +120,9 @@ export default function MacthPage() {
                     }
 
                     const updated = [...prev, wsData.question]
-                    console.log("updatyed", updated)
                     setCurrentIndex(updated.length - 1)
                     return updated
                 })
-                console.log("question in fn ", questions)
             }
             if (parsed.type === "over_game") {
                 const email= session.data?.user.email
@@ -144,11 +140,9 @@ export default function MacthPage() {
                     timeTaken:player.timeTaken,
                     questionLength,
                 }
-                console.log(parsed)
                 const pointsUpdated = false;
                 sessionStorage.setItem("multiPlayerMatchData", JSON.stringify(payload))
                 sessionStorage.setItem("pointsUpdated", JSON.stringify(pointsUpdated))
-                console.log("naviagting to reuslt page")
                 router.replace("/multiplayer/result");
             }
 
@@ -156,7 +150,6 @@ export default function MacthPage() {
         }
 
         socket.onerror = (err) => {
-            console.log("socket error:", err)
             setError("Socket connection error")
             setLoader(false)
         }
@@ -193,8 +186,6 @@ export default function MacthPage() {
     }, [timer])
 
     const handleOptionClick = (questionId: string, userAnswer: string[]) => {
-        console.log("questionId sending ", questionId)
-        console.log("useranswer sending ", userAnswer)
         socketRef.current?.send(JSON.stringify({
             type: "ANSWER",
             payload: {
@@ -214,7 +205,6 @@ export default function MacthPage() {
     };
 
     function selectOption(questionId: string, optionId: string, questionType: string) {
-        console.log(answers)
         setAnswers(prev =>
             updateAnswers(prev, questionId, optionId, questionType)
         )
@@ -225,7 +215,6 @@ export default function MacthPage() {
         if (!socketRef.current) return
 
         if (socketRef.current.readyState !== WebSocket.OPEN) {
-            console.log("socket not open yet")
             return
         }
 
@@ -248,7 +237,6 @@ export default function MacthPage() {
     }
 
     const formatTime = (seconds: number) => {
-        console.log("seconds", totalTime);
         const minutes = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${minutes}:${secs.toString().padStart(2, "0")}`
