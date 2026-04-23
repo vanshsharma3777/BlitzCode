@@ -4,6 +4,7 @@ export const connectSocket = () => {
   if (socket && socket.readyState === WebSocket.OPEN) {
     return socket;
   }
+  
   const wsUrl =
     process.env.NODE_ENV === "development"
       ? "ws://localhost:8080"

@@ -3,20 +3,17 @@ import { WebSocketServer } from 'ws';
 import { INIT_GAME } from './message.js';
 import { GameManager } from './gameManager.js';
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = Number(process.env.PORT) || 3001;
+
 const gameManager = new GameManager()
-wss.on('connection', (socket)=> {
-    console.log("Connected")
-    gameManager.addUser(socket)
-    console.log(`connected socket ${socket}`)
-
-  socket.on('error', console.error);
-});
-
-
-serve({
-  port: Number(process.env.PORT) || 3001,
+const server = serve({
+  port: PORT,
   fetch(req) {
-    return new Response("Worker is running 🚀");
-  },
+    return new Response("Worker running 🚀");
+  }
+});
+const wss = new WebSocketServer({ port: 8080 });
+wss.on("connection", (socket) => {
+  console.log("Connected");
+  gameManager.addUser(socket);
 });
