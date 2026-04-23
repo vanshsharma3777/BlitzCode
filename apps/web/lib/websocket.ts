@@ -9,6 +9,8 @@ export const connectSocket = () => {
       ? "ws://localhost:8080"
       : process.env.NEXT_PUBLIC_WS_URL!;
   socket = new WebSocket(wsUrl);
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("WS URL:", wsUrl);
 
   socket.onopen = () => {
     console.log("Connected to WS server");
