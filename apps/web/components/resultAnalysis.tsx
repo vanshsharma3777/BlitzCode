@@ -127,7 +127,7 @@ export default function ResultAnalysis({ answers, allQuestions, pointsUpdated, q
 
     return (
         <div className="flex justify-center mt-5 px-4 md:px-0">
-            <div className="w-full max-w-4xl">
+            <div className="w-full ">
                 {mode === 'singleplayer' ? (
                     <div className="py-6 bg-card border border-border rounded-xl mb-5 flex flex-col justify-center items-center text-center" >
                         <div><HiOutlineTrophy className="text-yellow-500 text-6xl md:text-7xl " /></div>

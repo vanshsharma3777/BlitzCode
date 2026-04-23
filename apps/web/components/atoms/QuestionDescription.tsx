@@ -42,7 +42,7 @@ export default function QuestionDescription({ show, currentIndex, questionType, 
                 <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
                     QUESTION NO {currentIndex + 1}
                 </div>
-                <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
+                <div className="hidden sm:flex bg-bg ml-2 px-3 py-3 rounded-xl items-center">
                     {questionType?.toUpperCase()}
                 </div>
                 <div className=" fixed right-5 flex gap-3">
