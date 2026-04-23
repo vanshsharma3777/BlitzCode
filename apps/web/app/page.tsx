@@ -32,9 +32,9 @@ export default function LandingPage() {
         </div>
 
         <button onClick={()=>{
-         router.push("/about")
+         router.push("/home")
         }} className="px-8 py-4 bg-accent text-white rounded-xl font-semibold text-lg hover:bg-accent/90 transition-all hover:scale-105 flex items-center gap-2">
-          Know About BiltzCode <ArrowRight size={20} />
+          Play Now — It's Free  <ArrowRight size={20} />
         </button>
       </section>
 
@@ -156,9 +156,9 @@ export default function LandingPage() {
         <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to test your skills?</h2>
         <p className="text-sec text-xl mb-10">Start solving. Start competing. Start improving.</p>
         <button onClick={()=>{
-         router.push("/home")
+         router.push("/about")
         }} className="px-10 py-5 bg-accent text-white rounded-2xl font-bold text-xl hover:scale-105 transition-all shadow-xl shadow-accent/20">
-          Play Now — It's Free
+          Know About BiltzCode
         </button>
       </section>
 

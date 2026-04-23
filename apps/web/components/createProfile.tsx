@@ -1,10 +1,11 @@
 'use client'
 import axios, { isAxiosError } from "axios"
 import { useSession } from "next-auth/react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Loader from "./Loader"
 import { useRouter } from "next/navigation"
 import ButtonLoader from "./btnLoader"
+import { generateUsername } from "../lib/functions/generateUsername"
 
 export default function CreateProfile({ email }: { email: string }) {
   const usernameRef = useRef<null | HTMLInputElement>(null)
@@ -13,6 +14,13 @@ export default function CreateProfile({ email }: { email: string }) {
   const [btnLoader, setBtnLoader] = useState<boolean>(false);
   const router = useRouter()
   const session = useSession()
+
+  useEffect(()=>{
+    if(session.data?.user.email){
+      const username = generateUsername(session.data?.user.email)
+      console.log(username)
+    }
+  },[session.status])
   if(session.status === "loading"){
     return <div className="flex justify-center items-center min-h-screen"><Loader></Loader></div>
   }
@@ -21,7 +29,7 @@ export default function CreateProfile({ email }: { email: string }) {
       setBtnLoader(true)
       if (status === "unauthenticated") {
              <div className="text-gray-300">Please sign in</div>;
-            return router.push('/signin')
+            return router.push('/')
   }
       const username = usernameRef.current?.value.trim()
       if (!username) {

@@ -23,7 +23,7 @@ export class GameManager {
     private addHandler(socket: CustomSocket) {
         socket.on("message", async (data) => {
             const msg = JSON.parse(data.toString())
-            console.log("msg received :" , msg)
+            console.log("msg received :", msg)
             if (msg.type === "AUTH") {
                 socket.emailId = msg?.meta?.emailId;
                 if (!socket.emailId) {
@@ -69,15 +69,27 @@ export class GameManager {
                 }
 
                 const queue = this.pendingQueues.get(key)!;
-                if (queue.length === 0) {
+                const existingIndex = queue.indexOf(socket);
+                if (existingIndex !== -1) {
+                    queue.splice(existingIndex, 1);
+                }
 
-                    queue.push(socket);
+                const filtered = queue.filter(
+                    user => user.emailId !== socket.emailId
+                );
+                this.pendingQueues.set(key, filtered);
 
-                    console.log("Player waiting:", socket.emailId);
-
+                const updatedQueue = this.pendingQueues.get(key)!;
+                if (updatedQueue.length === 0) {
+                    updatedQueue.push(socket);
                     return;
                 }
-                const opponent = queue.shift()!;
+
+                const opponent = updatedQueue.shift()!;
+                if (opponent === socket) {
+                    updatedQueue.push(socket);
+                    return;
+                }
                 console.log("Match found:", opponent.emailId, socket.emailId);
                 const fields = {
                     topic: msg.payload.topic,
@@ -135,7 +147,7 @@ export class GameManager {
             }
             if (msg.type === OVER_GAME) {
                 console.log("clicked over game")
-                game.endThisGame("manual" , socket)
+                game.endThisGame("manual", socket)
                 return
             }
         })

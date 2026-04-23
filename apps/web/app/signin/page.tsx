@@ -4,11 +4,12 @@ import React, { useState } from 'react'
 import { signIn } from "next-auth/react"
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import ButtonLoader from '../../components/btnLoader';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
   const [ btnLoader , setBtnLoader] = useState<boolean>(false)
   const [ field , setField] = useState<string>("")
-
+  const router = useRouter()
   function navigate(provider:"google" | "github"){
     setBtnLoader(true)
     setField(provider)
@@ -44,7 +45,17 @@ export default function SignIn() {
             Continue with Github
             </>
           }
+          
         </button>
+         <p className='mt-6 text-sm text-sec'>
+            Want to explore first?{" "}
+            <span
+              onClick={() => router.push("/")}
+              className='text-accent cursor-pointer hover:underline'
+            >
+              Go to Landing Page
+            </span>
+          </p>
         </div>
       </div>
     </div>

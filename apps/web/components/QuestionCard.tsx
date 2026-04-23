@@ -42,7 +42,7 @@ export default function QuestionCard() {
         if (session.status === "unauthenticated") {
             router.replace("/signin")
         }
-    }, [session.status, router])
+    }, [session.status])
 
     useEffect(() => {
         if (data.length === 0) {
@@ -53,7 +53,7 @@ export default function QuestionCard() {
         }
     }, []);
 
-    
+     
     useEffect(() => {
         setTimeout(() => {
             if(seconds>=25){

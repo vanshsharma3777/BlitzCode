@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 
 import { FaGithub, FaXTwitter, FaLinkedin } from "react-icons/fa6";
+import { useRouter } from 'next/navigation';
 
 export default function AboutPage() {
+    const router = useRouter()
     return (
         <div className="bg-bg text-pri min-h-screen font-sans selection:bg-accent selection:text-white">
             <section className="flex flex-col items-center justify-center pt-32 pb-20 px-6 text-center">
@@ -26,8 +28,10 @@ export default function AboutPage() {
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-                    The Story Behind <br />
-                    <span className="text-accent">BlitzCode</span>
+                  <span className='text-sec'>The Story Behind</span> <br />
+                    <button onClick={()=>{
+                        router.back()
+                    }}>{"</>"}Blitz<span className="text-accent">Code</span> </button>
                 </h1>
 
                 <p className="text-sec text-xl max-w-3xl mb-10 leading-relaxed mx-auto">
@@ -42,7 +46,9 @@ export default function AboutPage() {
                 <div className="max-w-6xl mx-auto relative z-10">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold mb-4 flex items-center justify-center gap-3">
-                            <span className="text-accent">🚀</span> The BlitzCode Vision
+                            <span className="text-accent">🚀</span><span>
+                                 The Blitz<span className='text-accent'>Code</span> Vision
+                            </span>
                         </h2>
                         <p className="text-sec text-lg max-w-2xl mx-auto">
                             BlitzCode was born out of a simple realization: technical growth stagnates in isolation.

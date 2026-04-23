@@ -34,6 +34,8 @@ type InputComponents = {
 
 export default function QuestionDescription({ show, currentIndex, questionType, handleSubmit, data, currentAnswer, setIsSubmitting, selectOption, questionLength, setCurrentIndex
 }: InputComponents) {
+    console.log("current index" , currentIndex)
+    console.log("current index" , data[currentIndex])
     return (
         <div className={`w-[85%] bg-card border select-none border-border  rounded-xl py-8 transform transition-all duration-200 ease-out${show ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0"} text-pri  rounded-xl`}>
             <div className="flex ">
@@ -43,12 +45,20 @@ export default function QuestionDescription({ show, currentIndex, questionType, 
                 <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
                     {questionType?.toUpperCase()}
                 </div>
-                <button onClick={ () => {
-                     handleSubmit()
-                }}
-                className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
-                    SUBMIT
-                </button>
+                <div className=" fixed right-5 flex gap-3">
+                    <button onClick={() => {
+                        setCurrentIndex((prev) => Math.max(prev - 1, 0));
+                    }}
+                        className="bg-bg  px-5 py-2 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center  transition-all duration-300 font-semibold text-2xl ease-in-out hover:scale-105 ">
+                        {"<"}
+                    </button>
+                    <button onClick={() => {
+                        setCurrentIndex((prev) => Math.min(prev + 1, data.length - 1));
+                    }}
+                        className="bg-bg  px-5 py-2 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center  transition-all duration-300 font-semibold text-2xl ease-in-out hover:scale-105 ">
+                        {">"}
+                    </button>
+                </div>
             </div>
 
             <div className="ml-5 mt-5 pr-5 ">
@@ -97,20 +107,13 @@ export default function QuestionDescription({ show, currentIndex, questionType, 
                         </button>
                     )
                 })}
-                <div className="flex flex-wrap gap-x-3 ">
-                    {Array.from({ length: Number(questionLength) }).map((_, i) => (
-                        <button
-                            onClick={() => {
-                                setCurrentIndex(i)
-                            }}
-                            key={i}
-                            className={`text-2xl h-20 w-20 mt-5 rounded-xl border transition-all duration-200 hover:scale-110
-                                ${currentIndex === i ? "bg-accent border-accent" : "bg-sec border-neutral-700"}
-                                `}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                <div className="flex flex-row-reverse gap-x-3 mt-3 ">
+                    <button onClick={() => {
+                        handleSubmit()
+                    }}
+                        className="bg-bg  px-5 py-2 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center  transition-all duration-300 font-semibold text-2xl ease-in-out hover:scale-105 ">
+                        Submit
+                    </button>
 
                 </div>
             </div>

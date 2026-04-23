@@ -47,7 +47,7 @@ export default function MacthPage() {
         if (session.status === "unauthenticated") {
             setLoader(false)
             setError("User not authenticated")
-            return
+            return router.replace("/signin")
         }
 
         if (session.status === "authenticated") {
@@ -125,9 +125,9 @@ export default function MacthPage() {
                 })
             }
             if (parsed.type === "over_game") {
-                const email= session.data?.user.email
-                const player= parsed.payload.find((p:any)=>{
-                    return p.email===email
+                const email = session.data?.user.email
+                const player = parsed.payload.find((p: any) => {
+                    return p.email === email
                 })
                 const payload = {
                     winner: parsed.winner,
@@ -137,7 +137,7 @@ export default function MacthPage() {
                     answers: answersRef.current,
                     allQuestions: questionsRef.current,
                     questionType,
-                    timeTaken:player.timeTaken,
+                    timeTaken: player.timeTaken,
                     questionLength,
                 }
                 const pointsUpdated = false;
@@ -169,7 +169,7 @@ export default function MacthPage() {
             Number(questionLength),
             difficulty as "easy" | "medium" | "hard"
         )
-        completeTime.current = initialTime! 
+        completeTime.current = initialTime!
         setTotalTime(initialTime!)
 
         const interval = setInterval(() => {
@@ -260,9 +260,9 @@ export default function MacthPage() {
 
         <div className={`min-h-screen w-full flex flex-col justify-center gap-5  items-center  text-pri `}>
             {currentQuestion && (
-                <div className="w-[85%]">
+                <div className="w-full max-w-7xl mx-auto">
                     {error && (
-                        <div className=" bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-xl flex items-center justify-between">
+                        <div className="mt-3  mb-4 bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-xl flex items-center justify-between">
                             <span>{error}</span>
 
                             <button
@@ -275,81 +275,90 @@ export default function MacthPage() {
                     )}
                     <div >
                         {loader === false && (
-                            <div className="grid grid-cols-3 mt-4">
-                                <div className="bg-card border border-border rounded-xl py-5 px-4 mr-5 flex items-center">
-                                    <div className="lg:pr-1 pr-3 ">
-                                        <MdOutlineTimer />
-                                    </div>
-                                    <div className="hidden  sm:inline  pr-3">
-                                        Time Left :
-                                    </div>
-                                    {
-                                        <div className="font-medium">
-                                            {formatTime((totalTime))}
+                            <div className="grid  grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+                                    <MdOutlineTimer className="text-xl text-accent" />
+                                    <div>
+                                        <div className="text-xs text-sec">Time Left</div>
+                                        <div className="font-semibold text-lg">
+                                            {formatTime(totalTime)}
                                         </div>
-                                    }
-                                </div>
-                                <div className="bg-card border border-border rounded-xl py-5 px-4 mr-5 flex items-center">
-                                    <div className="lg:pr-1 pr-3">
-                                        <FaChartLine />
-                                    </div>
-                                    <div className="hidden sm:inline  pr-3">
-                                        Your Progress :
-                                    </div>
-                                    <div className="font-medium">
-                                        {currentIndex + 1} / {questionLength}
                                     </div>
                                 </div>
-                                <div className="bg-card border border-border rounded-xl py-5 px-4  flex  items-center justify-center">
-                                    <div className="pr-2 hidden sm:inline">
-                                        <HiOutlineMail />
+                                <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+                                    <FaChartLine className="text-xl text-accent" />
+
+                                    <div>
+                                        <div className="text-xs text-sec">Progress</div>
+                                        <div className="font-semibold text-lg">
+                                            {currentIndex + 1} / {questionLength}
+                                        </div>
                                     </div>
-                                    <div className="hidden sm:inline font-medium md:truncate">
-                                        {session.data?.user.email}
-                                    </div>
-                                    <div className=" lg:hidden md:hidden h-10 w-10 rounded-full overflow-hidden border border-border">
+                                </div>
+                                <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3 overflow-hidden">
+                                    <div className="h-10 w-10 rounded-full overflow-hidden border border-border shrink-0">
                                         <img
-                                            src={session.data?.user.image || " "}
+                                            src={session.data?.user.image || "profile.png"}
                                             alt="profile"
                                             className="h-full w-full object-cover"
                                         />
+                                    </div>
+
+                                    <div className="truncate w-full">
+                                        <div className="text-xs text-sec">Logged in as</div>
+                                        <div className="font-medium truncate">
+                                            {session.data?.user.email}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <div className="bg-card  mt-4 border border-border  rounded-xl py-8 transform transition-all duration-200 ease-out">
-                        <div className="flex ">
-                            <div className="bg-sec  ml-5 px-3 py-3 rounded-xl flex items-center">
-                                QUESTION NO {currentIndex + 1}
-                            </div>
-                            <div className="bg-bg ml-2 px-3 py-3 rounded-xl flex items-center">
-                                {questionType?.toUpperCase()}
-                            </div>
-                            <button onClick={() => {
-                                handleOptionClick(currentQuestion.questionId, currentAnswer?.userAnswer!)
-                            }} className="bg-bg ml-2 px-3 py-3 rounded-xl border hover:bg-accent border-border hover:border-blue-600 flex items-center fixed right-5 transition-all duration-300 ease-in-out hover:scale-105 ">
-                                SUBMIT
-                            </button>
-                        </div>
+                    <div className="bg-card  mt-4 border border-border  rounded-xl p-4">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+
+              <div className="bg-sec px-4 py-2 rounded-xl text-sm md:text-base">
+                QUESTION {currentIndex + 1}
+              </div>
+
+              <div className="bg-bg px-4 py-2 rounded-xl text-sm md:text-base">
+                {questionType?.toUpperCase()}
+              </div>
+            </div>
+
+            <button
+              onClick={() =>
+                handleOptionClick(
+                  currentQuestion.questionId,
+                  currentAnswer?.userAnswer!
+                )
+              }
+              className="bg-accent px-5 py-2 rounded-xl font-medium hover:scale-105 transition"
+            >
+              SUBMIT
+            </button>
+
+          </div>
                     </div>
-                    <div className="ml-5 mt-5 pr-5 ">
-                        <p className="text-2xl font-medium mb-5">{currentQuestion?.description}</p>
+                    <div className="mt-5">
+                        <p className="text-lg md:text-2xl font-medium mb-5 leading-relaxed">{currentQuestion?.description}</p>
                         <div className="">
-                            {currentQuestion?.code?.trim() ? (
+                            {currentQuestion?.code?.trim() && (
                                 <SyntaxHighlighter
                                     language="javascript" style={vscDarkPlus} customStyle={{
-                                        borderRadius: "12px",
+                                        borderRadius: "14px",
                                         padding: "16px",
-                                        fontSize: "20px",
-                                        marginBottom: "12px",
+                                        fontSize: "16px",
+                                        marginBottom: "16px",
                                     }}
                                 >
                                     {currentQuestion?.code}
                                 </SyntaxHighlighter>
-                            ) : null}
+                            )}
                         </div>
-                        {currentQuestion.options?.map((opt) => {
+                        <div className="space-y-3">
+                            {currentQuestion.options?.map((opt) => {
 
                             const isSelected = currentAnswer?.userAnswer.includes(opt.id)
 
@@ -359,51 +368,73 @@ export default function MacthPage() {
                                     onClick={() =>
                                         selectOption(currentQuestion?.questionId!, opt.id, questionType!)
                                     }
-                                    className={`border flex flex-col w-full rounded-xl py-3 pl-4 mb-2 transition-all duration-200 ease-in-out hover:scale-[1.01]
+                                    className={`border  w-full text-left rounded-xl p-4 transition-all duration-200 ease-in-out hover:scale-[1.01]
                                         ${isSelected
                                             ? "bg-accent border-accent"
                                             : "bg-bg border-border hover:border-accent"
                                         }`}
                                 >
-                                    <div className="flex items-center">
-                                        <div className="pr-1">
-                                            <div className="bg-card flex items-center justify-center text-xl text-sec h-10 w-10 rounded-full">
+                                    <div className="flex gap-3 items-center items-start">
+                                        <div className="bg-card flex items-center justify-center text-xl shirnk-0 text-sec h-10 w-10 rounded-full">
                                                 {opt.id}
                                             </div>
-                                        </div>
 
-                                        <div className="pl-1 flex justify-start">
+                                        <div className="leading-relaxed">
                                             {opt.text}
                                         </div>
                                     </div>
                                 </button>
                             )
                         })}
-                        <div className="flex flex-wrap gap-x-3 ">
-                            {Array.from({ length: Number(questionLength) }).map((_, i) => {
-                                const isFetched = !!questions[i]
-                                const isNextFetchable = i === questions.length
-
-                                return (
-                                    <button
-                                        onClick={() => {
-                                            goToQuestion(i)
-                                            handleOptionClick(currentQuestion.questionId, currentAnswer?.userAnswer!)
-                                        }}
-                                        key={i}
-                                        disabled={!isFetched && !isNextFetchable}
-                                        className={`text-2xl h-20 w-20 mt-5 rounded-xl border transition-all duration-200
-                ${currentIndex === i ? "bg-accent border-accent" : "bg-sec border-neutral-700"}
-                ${!isFetched && !isNextFetchable ? "opacity-50 cursor-not-allowed" : "hover:scale-110"}
-            `}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                )
-                            })}
                         </div>
-                    </div>
-                </div>
+                       <div className="mt-6">
+
+            <div className="text-sm text-sec mb-3">
+              Jump to Question
+            </div>
+
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 mb-5">
+
+              {Array.from({
+                length: Number(questionLength),
+              }).map((_, i) => {
+                const isFetched = !!questions[i];
+                const isNextFetchable =
+                  i === questions.length;
+
+                return (
+                  <button
+                    key={i}
+                    disabled={!isFetched && !isNextFetchable}
+                    onClick={() => {
+                      goToQuestion(i);
+
+                      handleOptionClick(
+                        currentQuestion.questionId,
+                        currentAnswer?.userAnswer!
+                      );
+                    }}
+                    className={`h-14 rounded-xl border font-semibold transition
+                    ${
+                      currentIndex === i
+                        ? "bg-accent border-accent"
+                        : "bg-card border-border"
+                    }
+                    ${
+                      !isFetched && !isNextFetchable
+                        ? "opacity-40 cursor-not-allowed"
+                        : "hover:scale-105"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      </div>
 
             )}
 
