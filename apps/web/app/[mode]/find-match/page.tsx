@@ -85,10 +85,7 @@ export default function FindMatch() {
 
            
         };
-         return () => {
-                if (timeoutRef.current) clearTimeout(timeoutRef.current);
-                socket.close();
-            };
+         
     }, [session.data?.user.email]);
     return (
         <div className="text-pri bg-bg flex justify-center items-center px-4 py-4 min-h-screen">

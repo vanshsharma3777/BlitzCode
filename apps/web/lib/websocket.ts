@@ -5,8 +5,8 @@ export const connectSocket = () => {
     return socket;
   }
   
-  const wsUrl =
-    process.env.NODE_ENV === "development"
+  
+   const wsUrl = process.env.NODE_ENV === "development"
       ? "ws://localhost:8080"
       : process.env.NEXT_PUBLIC_WS_URL!;
   socket = new WebSocket(wsUrl);

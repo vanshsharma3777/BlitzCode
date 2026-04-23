@@ -258,7 +258,7 @@ export default function MacthPage() {
     }
     return (
 
-        <div className={`min-h-screen w-full flex flex-col justify-center gap-5  items-center  text-pri `}>
+        <div className={`min-h-screen w-full flex flex-col justify-center gap-5   items-center  text-pri `}>
             {currentQuestion && (
                 <div className="w-full max-w-7xl mx-auto">
                     {error && (
@@ -275,7 +275,7 @@ export default function MacthPage() {
                     )}
                     <div >
                         {loader === false && (
-                            <div className="grid  grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="grid  grid-cols-1 md:grid-cols-3 mt-5 gap-3">
                                 <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
                                     <MdOutlineTimer className="text-xl text-accent" />
                                     <div>
