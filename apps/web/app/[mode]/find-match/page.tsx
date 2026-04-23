@@ -44,13 +44,13 @@ export default function FindMatch() {
         }, 20000);
     };
     useEffect(() => {
-
-        const socket = connectSocket()
-        socketRef.current = socket;
-
+        
         if (!session.data?.user.email) {
             return
         }
+        const socket = connectSocket()
+        socketRef.current = socket;
+
 
         socket.onopen = () => {
 
@@ -83,12 +83,12 @@ export default function FindMatch() {
                 console.log("User Unauthenticated");
             }
 
-            return () => {
+           
+        };
+         return () => {
                 if (timeoutRef.current) clearTimeout(timeoutRef.current);
                 socket.close();
             };
-        };
-
     }, [session.data?.user.email]);
     return (
         <div className="text-pri bg-bg flex justify-center items-center px-4 py-4 min-h-screen">
