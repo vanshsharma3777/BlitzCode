@@ -22,7 +22,6 @@ export function sendQuestion(game: Game, player: CustomSocket , gameEndTime:numb
             console.log("Last index of questions reached (sendQUestions)")
             return
         }
-        console.log("index first time " , index)
         player.send(JSON.stringify({
             type: NEXT_QUESTION,
             data: {
