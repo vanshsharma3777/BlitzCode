@@ -1,123 +1,120 @@
 'use client'
-import { useState } from "react";
-import TopicsCard from "./TopicsCard";
 
+import { useState } from "react"
+import TopicsCard from "./TopicsCard"
 
 type Props = {
-    heading?: string;
+    heading?: string
     setConfig?: React.Dispatch<React.SetStateAction<any>>
-    widthMob?: string
-    widthMd?: string
-    widthLg?: string
-};
+}
 
-export default function ConfigurationCard({ heading, setConfig, widthMob }: Props) {
+export default function ConfigurationCard({ heading, setConfig }: Props) {
+    const [selected, setSelected] = useState<string>("")
 
-    const [selected, setSelected] = useState("")
     function handleField(value: string) {
-        setSelected(value)
+        // Toggle feature: deselect if already selected
+        const nextValue = selected === value ? "" : value
+        setSelected(nextValue)
+
         if (setConfig) {
             setConfig((prev: any) => {
-                if (heading === "Language") return { ...prev, language: value }
-                if (heading === "Topic") return { ...prev, topic: value }
-                if (heading === "Question Type") return { ...prev, questionType: value }
-                if (heading === "Difficulty Level") return { ...prev, difficulty: value }
-                if (heading === "Question Length") return { ...prev, questionLength: value }
+                const targetKey =
+                    heading === "Language"
+                        ? "language"
+                        : heading === "Topic"
+                        ? "topic"
+                        : heading === "Question Type"
+                        ? "questionType"
+                        : heading === "Difficulty Level"
+                        ? "difficulty"
+                        : heading === "Question Length"
+                        ? "questionLength"
+                        : null
 
-                return prev
+                if (!targetKey) return prev
+
+                return {
+                    ...prev,
+                    [targetKey]: nextValue === "" ? null : nextValue
+                }
             })
         }
     }
+
+    const optionsMap: Record<string, { label: string; value: string }[]> = {
+        Language: [
+            { label: "C", value: "c" },
+            { label: "Python", value: "python" },
+            { label: "TypeScript", value: "typescript" },
+            { label: "Java", value: "java" },
+            { label: "C++", value: "cpp" },
+            { label: "JavaScript", value: "javascript" }
+        ],
+        Topic: [
+            { label: "Basics", value: "Basics" },
+            { label: "Array", value: "Array" },
+            { label: "String", value: "String" },
+            { label: "Linked List", value: "Linked List" },
+            { label: "Tree", value: "Tree" },
+            { label: "Graph", value: "Graph" }
+        ],
+        "Question Type": [
+            { label: "Single Correct", value: "single correct" },
+            { label: "Multiple Correct", value: "multiple correct" },
+            { label: "Bugfixer", value: "bugfixer" }
+        ],
+        "Difficulty Level": [
+            { label: "Easy", value: "easy" },
+            { label: "Medium", value: "medium" },
+            { label: "Hard", value: "hard" }
+        ],
+        "Question Length": [
+            { label: "5 Questions", value: "5" },
+            { label: "10 Questions", value: "10" },
+            { label: "15 Questions", value: "15" }
+        ]
+    }
+
+    const currentOptions = heading ? optionsMap[heading] : undefined
+
     return (
-        <div className={`w-${widthMob} md:w-[70%] lg:w-[53%] bg-card mb-8 rounded-xl p-4 sm:p-5 md:p-6 text-pri border-2 border-border hover:border-neutral-700`}>
-            <div>
-                {heading && <div>
-                    {heading === 'Language' &&
-                        <div >
-                            <div>
+        <div className="w-full bg-[var(--card-bg)] hover:bg-[var(--card-hover)]/40 rounded-2xl p-5 sm:p-6 text-[var(--primary-text)] border border-[var(--borders)] hover:border-[var(--accent)]/50 transition-all duration-300 shadow-xl backdrop-blur-md">
+            {heading && (
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between border-b border-[var(--borders)] pb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+                            <h2 className="text-sm sm:text-base font-bold tracking-tight text-[var(--primary-text)]">
                                 {heading}
-                            </div>
-                            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3 md:gap-4">
-                                <TopicsCard field="C" selected={selected} onClick={() => handleField("c")} />
-                                <TopicsCard field="Python" selected={selected} onClick={() => handleField("python")} />
-                                <TopicsCard field="Typescript" selected={selected} onClick={() => handleField("typescript")} />
-                                <TopicsCard field="Java" selected={selected} onClick={() => handleField("java")} />
-                                <TopicsCard field="Cpp" selected={selected} onClick={() => handleField("cpp")} />
-                                <TopicsCard field="Javascript" selected={selected} onClick={() => handleField("javascript")} />
-                            </div>
+                            </h2>
                         </div>
-                    }
-                    {heading === 'Topic' &&
-                        <div >
-                            <div>
-                                {heading}
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <TopicsCard field="Basics" selected={selected} onClick={() => handleField("Basics")} />
-                                <TopicsCard field="Array" selected={selected} onClick={() => handleField("Array")} />
-                                <TopicsCard field="String" selected={selected} onClick={() => handleField("String")} />
-                                <TopicsCard field="Linked List" selected={selected} onClick={() => handleField("Linked List")} />
-                                <TopicsCard field="Tree" selected={selected} onClick={() => handleField("Tree")} />
-                                <TopicsCard field="Graph" selected={selected} onClick={() => handleField("Graph")} />
-                            </div>
-                        </div>
-                    }
-                    {heading === 'Question Type' &&
-                        <div >
-                            <div>
-                                {heading}
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <TopicsCard field="Single Correct" selected={selected} onClick={() => handleField("single correct")} />
-
-                                <TopicsCard field="Multiple correct" selected={selected} onClick={() => handleField("multiple correct")} />
-
-                                <TopicsCard field="Bugfixer" selected={selected} onClick={() => handleField("bugfixer")} />
-                            </div>
-                        </div>
-                    }
-                    {heading === 'Difficulty Level' &&
-                        <div >
-                            <div>
-                                {heading}
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <TopicsCard field="Easy" selected={selected} onClick={() => handleField("easy")} />
-                                <TopicsCard field="Medium" selected={selected} onClick={() => handleField("medium")} />
-                                <TopicsCard field="Hard" selected={selected} onClick={() => handleField("hard")} />
-                            </div>
-                        </div>
-                    }
-                    {heading === 'Question Length' &&
-                        <div >
-                            <div>
-                                {heading}
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <TopicsCard field="5" selected={selected} onClick={() => handleField("5")} />
-                                <TopicsCard field="10" selected={selected} onClick={() => handleField("10")} />
-                                <TopicsCard field="15" selected={selected} onClick={() => handleField("15")} />
-                            </div>
-                        </div>
-                    }
-                    {heading !== "Language" &&
-                        heading !== "Topic" &&
-                        heading !== "Question Type" &&
-                        heading !== "Difficulty Level" &&
-                        heading !== "Question Length" && (
-                            <div className="">
-                                {heading}
-                            </div>
+                        
+                        {selected ? (
+                            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30 font-semibold capitalize">
+                                {selected}
+                            </span>
+                        ) : (
+                            <span className="text-[11px] font-mono text-[var(--text-muted)] italic">
+                                None selected
+                            </span>
                         )}
+                    </div>
+
+                    {currentOptions && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+                            {currentOptions.map((item) => (
+                                <TopicsCard
+                                    key={item.value}
+                                    field={item.label}
+                                    value={item.value}
+                                    selected={selected}
+                                    onClick={() => handleField(item.value)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
-
-                }
-
-
-
-            </div>
-
+            )}
         </div>
-
     )
 }

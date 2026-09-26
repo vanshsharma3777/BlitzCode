@@ -2,21 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-main: #0D0D0F;
-  --bg-sec:#111113;
-  --primary-text:#FFFFFF;
-  --secondary-text:#A1A1AA;
-  --card-bg: #161618;
-  --text-muted: #71717A;
-  --borders: #26262B;
-  --accent: #5E6AD2;
+@theme {
+  --color-bg-main: var(--bg-main);
+  --color-bg-sec: var(--bg-sec);
+  --color-card-bg: var(--card-bg);
+  --color-card-hover: var(--card-hover);
+  --color-primary-text: var(--primary-text);
+  --color-secondary-text: var(--secondary-text);
+  --color-text-muted: var(--text-muted);
+  --color-borders: var(--borders);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   
+
+  --color-accent-glow: var(--accent-glow);
+  --color-player-you: var(--player-you);
+  --color-player-opponent: var(--player-opponent);
+  --color-success: var(--success);
+  --color-error: var(--error);
+
+  --shadow-glow-accent: 0 0 25px -5px var(--accent-glow);
+  --shadow-card-elevated: 0 10px 30px -10px rgba(0, 0, 0, 0.25);
 }
 
+:root,
+.dark {
+  --bg-main: #0D0D0F;
+  --bg-sec: #121215;
+  --card-bg: #161619;
+  --card-hover: #1D1D22;
+  
+  --primary-text: #F4F4F5;
+  --secondary-text: #A1A1AA;
+  --text-muted: #71717A;
+  
+  --borders: #26262C;
+  --accent: #5E6AD2;
+  --accent-hover: #4F5BC4;
+  --accent-glow: rgba(94, 106, 210, 0.35);
+
+  --player-you: #10B981;       
+  --player-opponent: #F43F5E;  
+  --success: #10B981;
+  --error: #EF4444;
+
+  color-scheme: dark;
+}
+
+.light {
+  --bg-main: #F8F9FA;
+  --bg-sec: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-hover: #F1F3F9;
+  
+  --primary-text: #0F172A;
+  --secondary-text: #475569;
+  --text-muted: #94A3B8;
+  
+  --borders: #E2E8F0;
+  --accent: #5E6AD2;
+  --accent-hover: #4B56C0;
+  --accent-glow: rgba(94, 106, 210, 0.2);
+
+
+  --player-you: #059669;
+  --player-opponent: #E11D48;
+  --success: #059669;
+  --error: #DC2626;
+
+  color-scheme: light;
+}
 body {
   background-color: var(--bg-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--primary-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+.glass-panel {
+  background: rgba(22, 22, 25, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--borders);
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--borders);
+}

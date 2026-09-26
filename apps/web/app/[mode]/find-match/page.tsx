@@ -5,6 +5,8 @@ import { LuLoader } from "react-icons/lu";
 import { useRouter, useSearchParams } from "next/navigation";
 import { connectSocket } from "../../../lib/websocket";
 import { useSession } from "next-auth/react";
+import Navbar from "../../../components/Navbar";
+import { Users, Frown, RotateCcw, ArrowLeft, Swords } from "lucide-react";
 
 export default function FindMatch() {
     const router = useRouter()
@@ -14,7 +16,7 @@ export default function FindMatch() {
     const searchParams = useSearchParams()
     const [found, setFound] = useState(false)
     const [noUserFound, setNoUserFound] = useState(false);
-    const [playerFound, setPlayerFound] = useState(null)
+    const [playerFound, setPlayerFound] = useState<string | null>(null)
     const topic = searchParams.get("topic");
     const language = searchParams.get("language");
     const questionLength = searchParams.get("questionLength");
@@ -43,32 +45,28 @@ export default function FindMatch() {
             setNoUserFound(true);
         }, 20000);
     };
+
     useEffect(() => {
-        
         if (!session.data?.user.email) {
             return
         }
         const socket = connectSocket()
         socketRef.current = socket;
 
-
         socket.onopen = () => {
-
             socket.send(JSON.stringify({
                 type: "AUTH",
                 meta: {
                     emailId: session.data?.user.email
                 }
             }));
-
         };
-        socket.onmessage = (event) => {
 
+        socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
             if (data.data === "AUTH OK") {
                 startSearch();
-
             }
 
             if (data.type === "start_game") {
@@ -76,116 +74,140 @@ export default function FindMatch() {
                 setFound(true)
                 setPlayerFound(data.opponent)
                 router.replace(`/multiplayer/match-page?topic=${topic}&difficulty=${difficulty}&language=${language}&questionType=${questionType}&questionLength=${questionLength}`)
-
             }
 
             if (data === "Unauthenticated") {
                 console.log("User Unauthenticated");
             }
-
-           
         };
-         
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        }
     }, [session.data?.user.email]);
+
     return (
-        <div className="text-pri bg-bg flex justify-center items-center px-4 py-4 min-h-screen">
-            <div className="bg-card w-full max-w-2xl md:w-[53%] rounded-xl border border-border flex flex-col justify-center items-center py-8  px-4 md:px-0 hover:border-accent hover:scale-105 transition-all duration-300 ease-in-out">
-                {!noUserFound ? (
-                    <>
-                        {found ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-icon lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></svg>
-                        ) : (
-                            <LuLoader className="animate-spin text-5xl" />
-                        )}
-                        <div className="mt-3 text-2xl md:text-3xl font-medium text-center">
-                            Finding Your Match...
-                        </div>
-                        <div className="mt-3 text-sm text-sec text-center">
-                            Searching for the players with similar preferences
-                        </div>
-                        <div className="w-full mt-4">
-                            <div className="flex justify-between bg-bg  mx-0 md:mx-6 rounded-xl border border-border p-4 my-4">
-                                <div className="text-sec">Topic :</div>
-                                <div className="">{topic}</div>
+        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--primary-text)] flex flex-col relative overflow-hidden transition-colors duration-300">
+            {/* Ambient Background Glow */}
+            <div 
+                className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[160px] pointer-events-none opacity-25 dark:opacity-20"
+                style={{ background: 'var(--accent)' }}
+            />
+
+            <Navbar />
+
+            <main className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+                <div className="w-full max-w-xl bg-[var(--card-bg)] rounded-3xl border border-[var(--borders)] p-6 sm:p-8 shadow-2xl backdrop-blur-xl transition-all duration-300">
+                    
+                    {!noUserFound ? (
+                        <>
+                            {/* Visual Loader / Found Animation */}
+                            <div className="flex flex-col items-center text-center">
+                                <div className="relative flex items-center justify-center mb-6">
+                                    <div className="absolute inset-0 rounded-full bg-[var(--accent)]/20 blur-xl animate-pulse" />
+                                    
+                                    {found ? (
+                                        <div className="relative p-5 rounded-2xl bg-[var(--accent)]/15 border border-[var(--accent)] text-[var(--accent)] shadow-[0_0_25px_-5px_var(--accent-glow)]">
+                                            <Users className="w-12 h-12 stroke-[2.2]" />
+                                        </div>
+                                    ) : (
+                                        <div className="relative p-5 rounded-2xl bg-[var(--bg-sec)] border border-[var(--borders)] text-[var(--accent)] shadow-lg">
+                                            <LuLoader className="animate-spin w-12 h-12 stroke-[2.2]" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--primary-text)]">
+                                    {found ? "Match Discovered!" : "Finding Your Opponent..."}
+                                </h2>
+                                
+                                <p className="mt-2 text-xs sm:text-sm text-[var(--secondary-text)] max-w-sm">
+                                    Searching for active competitive coders with matching match preferences
+                                </p>
                             </div>
-                            <div className="flex justify-between bg-bg mx-0 md:mx-6 rounded-xl border border-border p-4 my-4">
-                                <div className="text-sec">Difficulty :</div>
-                                <div className="">{difficulty}</div>
+
+                            {/* Match Parameters List */}
+                            <div className="mt-8 space-y-3">
+                                <div className="flex justify-between items-center bg-[var(--bg-sec)]/70 rounded-xl border border-[var(--borders)] p-3.5 px-4 text-xs sm:text-sm font-medium">
+                                    <span className="text-[var(--secondary-text)]">Topic</span>
+                                    <span className="font-mono font-bold text-[var(--accent)] capitalize">{topic || "N/A"}</span>
+                                </div>
+
+                                <div className="flex justify-between items-center bg-[var(--bg-sec)]/70 rounded-xl border border-[var(--borders)] p-3.5 px-4 text-xs sm:text-sm font-medium">
+                                    <span className="text-[var(--secondary-text)]">Difficulty</span>
+                                    <span className="font-mono font-bold text-[var(--accent)] capitalize">{difficulty || "N/A"}</span>
+                                </div>
+
+                                <div className="flex justify-between items-center bg-[var(--bg-sec)]/70 rounded-xl border border-[var(--borders)] p-3.5 px-4 text-xs sm:text-sm font-medium">
+                                    <span className="text-[var(--secondary-text)]">Language</span>
+                                    <span className="font-mono font-bold text-[var(--accent)] capitalize">{language || "N/A"}</span>
+                                </div>
+
+                                <div className="flex justify-between items-center bg-[var(--bg-sec)]/70 rounded-xl border border-[var(--borders)] p-3.5 px-4 text-xs sm:text-sm font-medium">
+                                    <span className="text-[var(--secondary-text)]">Questions</span>
+                                    <span className="font-mono font-bold text-[var(--accent)]">{questionLength || "N/A"}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between bg-bg mx-0 md:mx-6 rounded-xl border border-border p-4 my-4">
-                                <div className="text-sec">Language :</div>
-                                <div className="">{language}</div>
+
+                            {/* Match Found Banner */}
+                            {found && playerFound && (
+                                <div className="mt-6 p-4 rounded-2xl bg-[var(--accent)]/15 border border-[var(--accent)]/40 text-center shadow-[0_0_20px_-5px_var(--accent-glow)] animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="flex items-center justify-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[var(--accent)] mb-1">
+                                        <Swords className="w-4 h-4" />
+                                        Opponent Ready
+                                    </div>
+                                    <div className="text-base sm:text-lg font-bold text-[var(--primary-text)]">
+                                        {playerFound}
+                                    </div>
+                                    <div className="mt-2 text-xs font-mono text-[var(--secondary-text)] animate-pulse">
+                                        Initializing match session...
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        /* Timeout / No Opponent Found View */
+                        <div className="flex flex-col items-center text-center py-4">
+                            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 mb-4">
+                                <Frown className="w-12 h-12 stroke-[2]" />
                             </div>
-                            <div className="flex justify-between bg-bg mx-0 md:mx-6 rounded-xl border border-border p-4 my-4">
-                                <div className="text-sec">Questions :</div>
-                                <div className="">{questionLength}</div>
+
+                            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--primary-text)]">
+                                No Opponent Found
+                            </h2>
+
+                            <p className="mt-2 text-xs sm:text-sm text-[var(--secondary-text)] max-w-sm">
+                                No active players matched your exact configuration. Try adjusting parameters or searching again.
+                            </p>
+
+                            {/* Action Buttons */}
+                            <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full">
+                                <button
+                                    type="button"
+                                    onClick={startSearch}
+                                    className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-[var(--accent)]/25 active:scale-95"
+                                >
+                                    <RotateCcw className="w-4 h-4" />
+                                    <span>Retry Match</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        socketRef.current?.close();
+                                        router.back();
+                                    }}
+                                    className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-[var(--bg-sec)] hover:bg-[var(--card-hover)] text-[var(--primary-text)] border border-[var(--borders)] font-semibold text-sm transition-all duration-200 cursor-pointer active:scale-95"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    <span>Go Back</span>
+                                </button>
                             </div>
                         </div>
-                    </>
-                ) : (
-                    <>
-                        <div className="text-5xl">😕</div>
+                    )}
 
-                        <div className="text-2xl md:mt-3 text-center font-medium">
-                            No User Found
-                        </div>
-
-                        <div className="mt-3 text-sm text-sec text-center">
-                            Try searching again or go back
-                        </div>
-
-                        <div className="hidden md:flex gap-3 mt-5">
-                            <button
-                                onClick={startSearch}
-                                className="px-5 py-3 rounded-xl bg-accent"
-                            >
-                                Retry
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    socketRef.current?.close();
-                                    router.back();
-                                }}
-                                className="px-5 py-3 rounded-xl bg-bg border border-border"
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 flex gap-3 z-50">
-                            <button
-                                onClick={startSearch}
-                                className="flex-1 py-3 rounded-xl bg-accent"
-                            >
-                                Retry
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    socketRef.current?.close();
-                                    router.back();
-                                }}
-                                className="flex-1 py-3 rounded-xl bg-bg border border-border"
-                            >
-                                Go Back
-                            </button>
-                        </div>
-                    </>
-                )}
-
-                {found && (
-
-                    <div className="mt-5 px-2 md:px-0 w-full">
-                        <div className="bg-accent   p-3 text-sec rounded-xl text-center">
-                            Match Found : <span className="text-lg text-pri ml-2">{playerFound}</span>
-                        </div>
-                        <div className="mt-3 text-center rounded-xl bg-bg p-2 ">
-                            Starting Game
-                        </div>
-                    </div>
-
-                )}
-            </div>
+                </div>
+            </main>
         </div>
     )
 }

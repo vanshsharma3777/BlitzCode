@@ -6,7 +6,7 @@ import { useParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Question } from "@repo/db"
 import { SolvedQuestion, Status } from "../../../types/allTypes"
-import Topbar from "../../../components/Topbar"
+
 
 export default function Result() {
   const params = useParams()
@@ -84,7 +84,7 @@ export default function Result() {
   return (
     <div className="p-6 text-pri min-h-screen  flex justify-center  gap-5" >
       <div className=" w-[65%]">
-        <div><Topbar mode={mode} /></div>
+        
         <div ><ResultAnalysis pointsUpdated={pointUpdated} timeTaken={(timeTaken)} totalTime={data.totalTime} answers={data.answers} questionType={data.questionType} allQuestions={data.allQuestions} quizId={data.quizId} winnerStatus={winnerStatus!} loserStatus={loserStatus!} /></div>
       </div>
     </div>
