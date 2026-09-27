@@ -7,11 +7,11 @@ import axios from "axios"
 
 import Navbar from "../../components/Navbar"
 import Loader from "../../components/Loader"
-import ProfileHeader from "../../components/ProfileHeader"
-import StatsOverview from "../../components/StatsOverview"
-import CodingProfilesCard from "../../components/CodingProfilesCard"
-import CareerProgression from "../../components/CareerProgression"
 
+import ProfileHeader from "./components/ProfileHeader"
+import StatsOverview from "./components/StatsOverview"
+import CodingProfilesCard from "./components/CodingProfilesCard"
+import CareerProgression from "./components/CareerProgression"
 
 export default function ProfilePage() {
     const { data: session, status } = useSession()
@@ -76,4 +76,4 @@ export default function ProfilePage() {
             </main>
         </div>
     )
-}
+// }

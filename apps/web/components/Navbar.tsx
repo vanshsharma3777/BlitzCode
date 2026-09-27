@@ -4,11 +4,9 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { Sun, Moon, User, LogOut, Code2, ChevronDown, Info } from 'lucide-react'
-import { useTheme } from './Theme'
 
 export default function Navbar() {
     const { data: session } = useSession()
-    const { theme, toggleTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
@@ -22,7 +20,6 @@ export default function Navbar() {
             <div className="mx-auto max-w-6xl">
                 <div className="relative flex h-[64px] items-center justify-between rounded-2xl border border-[var(--borders)] bg-[var(--card-bg)]/80 px-3 shadow-xl backdrop-blur-xl transition-all duration-300 sm:px-4 overflow-hidden">
                     
-                    {/* Dual-Sided Inward Converging Accent Line Animation */}
                     <div 
                         className="pointer-events-none absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-90 transition-transform duration-1000 ease-out origin-center"
                         style={{
@@ -31,7 +28,6 @@ export default function Navbar() {
                         }}
                     />
 
-                    {/* Brand Logo */}
                     <Link
                         href="/"
                         className="group relative flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-all duration-200"
@@ -50,27 +46,10 @@ export default function Navbar() {
                         </div>
                     </Link>
 
-                    {/* Controls & Nav Options */}
                     <div className="relative flex items-center gap-2 sm:gap-2.5">
                         
-                        {/* Light / Dark Mode Toggle */}
-                        {mounted && (
-                            <button
-                                onClick={toggleTheme}
-                                className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--borders)] bg-[var(--bg-main)]/70 text-[var(--secondary-text)] transition-all duration-300 hover:border-[var(--accent)] hover:bg-[var(--card-hover)] hover:text-[var(--accent)] hover:shadow-[0_0_15px_-3px_var(--accent-glow)] active:scale-95 cursor-pointer"
-                                aria-label="Toggle theme"
-                            >
-                                <span className="transition-transform duration-500 group-hover:rotate-180">
-                                    {theme === 'dark' ? (
-                                        <Sun className="h-[18px] w-[18px] text-amber-400" />
-                                    ) : (
-                                        <Moon className="h-[18px] w-[18px] text-[var(--accent)]" />
-                                    )}
-                                </span>
-                            </button>
-                        )}
+                     
 
-                        {/* About Page Link */}
                         <Link
                             href="/about"
                             className="group flex h-10 items-center gap-2 rounded-xl border border-[var(--borders)] bg-[var(--bg-main)]/70 px-3 text-[var(--primary-text)] transition-all duration-300 hover:border-[var(--accent)] hover:bg-[var(--card-hover)] hover:shadow-[0_0_15px_-3px_var(--accent-glow)] active:scale-95"
@@ -78,8 +57,6 @@ export default function Navbar() {
                             <Info className="h-4 w-4 text-[var(--accent)] transition-transform duration-200 group-hover:scale-110" />
                             <span className="hidden sm:inline text-xs font-semibold">About</span>
                         </Link>
-
-                        {/* Profile Link */}
                         <Link
                             href="/profile"
                             className="group flex h-10 items-center gap-2.5 rounded-xl border border-[var(--borders)] bg-[var(--bg-main)]/70 px-2.5 text-[var(--primary-text)] transition-all duration-300 hover:border-[var(--accent)] hover:bg-[var(--card-hover)] hover:shadow-[0_0_15px_-3px_var(--accent-glow)] active:scale-95 sm:px-3"
@@ -100,7 +77,6 @@ export default function Navbar() {
                             <ChevronDown className="hidden h-3.5 w-3.5 text-[var(--secondary-text)] transition-transform duration-300 group-hover:translate-y-0.5 sm:block" />
                         </Link>
 
-                        {/* Logout Button */}
                         <button
                             onClick={() => signOut({ callbackUrl: '/signin' })}
                             className="group flex h-10 items-center justify-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/5 px-2.5 text-rose-500 transition-all duration-300 hover:border-rose-500/40 hover:bg-rose-500/15 hover:shadow-[0_0_15px_-3px_rgba(244,63,94,0.3)] active:scale-95 cursor-pointer sm:px-3"
