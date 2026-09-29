@@ -47,69 +47,80 @@ export async function GET(
     }
 
 
-    const [userResponse, ratingResponse, submissionsResponse] =
-      await Promise.all([
-        axios.get(`${CODEFORCES_API}/user.info`, {
-          params: {
-            handles: handle,
-          },
-          timeout: 10000,
-        }),
+const [userResponse, ratingResponse, submissionsResponse] =
+  await Promise.all([
+    axios.get(`${CODEFORCES_API}/user.info`, {
+      params: {
+        handles: handle,
+      },
+      timeout: 10000,
+      validateStatus: () => true,
+    }),
 
-        axios.get(`${CODEFORCES_API}/user.rating`, {
-          params: {
-            handle: handle,
-          },
-          timeout: 10000,
-        }),
+    axios.get(`${CODEFORCES_API}/user.rating`, {
+      params: {
+        handle: handle,
+      },
+      timeout: 10000,
+      validateStatus: () => true,
+    }),
 
-        axios.get(`${CODEFORCES_API}/user.status`, {
-          params: {
-            handle: handle,
-            from: 1,
-            count: 1000,
-          },
-          timeout: 10000,
-        }),
-      ]);
+    axios.get(`${CODEFORCES_API}/user.status`, {
+      params: {
+        handle: handle,
+        from: 1,
+        count: 1000,
+      },
+      timeout: 10000,
+      validateStatus: () => true,
+    }),
+  ]);
 
 
+    if (
+  userResponse.status >= 400 ||
+  userResponse.data?.status !== "OK"
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error:
+        userResponse.data?.comment ||
+        "Codeforces user not found",
+    },
+    { status: 404 }
+  );
+}
 
-    if (userResponse.data.status !== "OK") {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            userResponse.data.comment ||
-            "Codeforces user not found",
-        },
-        { status: 404 }
-      );
-    }
+    if (
+  ratingResponse.status >= 400 ||
+  ratingResponse.data?.status !== "OK"
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error:
+        ratingResponse.data?.comment ||
+        "Failed to fetch Codeforces rating",
+    },
+    { status: 502 }
+  );
+}
 
-    if (ratingResponse.data.status !== "OK") {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            ratingResponse.data.comment ||
-            "Failed to fetch Codeforces rating",
-        },
-        { status: 502 }
-      );
-    }
-
-    if (submissionsResponse.data.status !== "OK") {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            submissionsResponse.data.comment ||
-            "Failed to fetch Codeforces submissions",
-        },
-        { status: 502 }
-      );
-    }
+   if (
+  submissionsResponse.status >= 400 ||
+  submissionsResponse.data?.status !== "OK"
+) {
+  return NextResponse.json(
+    {
+      success: false,
+      error:
+        submissionsResponse.data?.comment ||
+        "Failed to fetch Codeforces submissions",
+    },
+    { status: 502 }
+  );
+}
 
     const user = userResponse.data.result[0];
     const ratingHistory = ratingResponse.data.result;

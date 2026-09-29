@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { redis } from "../../../../lib/configs/redis";
 
-const LEETCODE_GRAPHQL_URL = "https://leetcode.com/graphql/";
 
-const CACHE_TTL = 60 * 30; // 30 minutes
+const CACHE_TTL = 60 * 30;
 
 const query = `
   query BlitzCodeLeetCodeProfile(
@@ -132,11 +131,8 @@ export async function GET(
 
         console.log(`Redis MISS: ${cacheKey}`);
 
-        /*
-         * Fetch from LeetCode
-         */
         const response = await axios.post(
-            LEETCODE_GRAPHQL_URL,
+            process.env.LEETCODE_GRAPHQL_URL!,
             {
                 query,
                 variables: {
@@ -154,9 +150,6 @@ export async function GET(
 
         const result = response.data;
 
-        /*
-         * GraphQL errors
-         */
         if (result.errors) {
             console.error(
                 "LeetCode GraphQL Error:",
@@ -165,12 +158,13 @@ export async function GET(
 
             return NextResponse.json(
                 {
-                    success: false,
-                    error: "LeetCode API returned an error",
-                    details: result.errors,
+                success: false,
+                error:
+                    result.errors?.[0]?.message ||
+                    "LeetCode API returned an error",
                 },
                 { status: 502 }
-            );
+  );
         }
 
         const data = result.data;
