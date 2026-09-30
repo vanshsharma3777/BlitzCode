@@ -4,14 +4,13 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import axios from "axios"
+import ProfileHeader from "./ProfileHeader"
+import StatsOverview from "./StatsOverview"
+import CodingProfilesCard from "./CodingProfilesCard"
+import CareerProgression from "./CareerProgression"
+import Navbar from "./Navbar"
+import Loader from "./Loader"
 
-import Navbar from "../../components/Navbar"
-import Loader from "../../components/Loader"
-
-import ProfileHeader from "./components/ProfileHeader"
-import StatsOverview from "./components/StatsOverview"
-import CodingProfilesCard from "./components/CodingProfilesCard"
-import CareerProgression from "./components/CareerProgression"
 
 export default function ProfilePage() {
     const { data: session, status } = useSession()
@@ -76,4 +75,4 @@ export default function ProfilePage() {
             </main>
         </div>
     )
-// }
+ }

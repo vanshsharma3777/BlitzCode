@@ -70,8 +70,8 @@ export default function CodeforcesProfilePage() {
             });
     }, [handle]);
 
-    if (loading) {
-        <Loader/>
+    if (loading )  {
+        return <Loader/>
     }
 
     if (error || !data) {

@@ -10,10 +10,12 @@ import {
   integer,
   jsonb,
   index,
+  bigint,
 } from "drizzle-orm/pg-core"
 import postgres from "postgres"
 import { drizzle } from "drizzle-orm/postgres-js"
 import type { AdapterAccount } from "next-auth/adapters";
+import { sql } from "drizzle-orm";
 
 const connectionString = process.env.DATABASE_URL!
 const pool = postgres(connectionString, { max: 1 })
@@ -140,6 +142,38 @@ export const questions = pgTable("question", {
     ),
   }));
 
+  export const problems = pgTable(
+  "problem",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description").notNull(),
+    difficulty: integer("difficulty"),
+    cfRating: integer("cf_rating"),
+    cfTags: text("cf_tags").array(),
+    timeLimit: jsonb("time_limit"),
+    memoryLimitBytes: bigint("memory_limit_bytes", { mode: "number" }),
+    publicTests: jsonb("public_tests"),
+    split: text("split").notNull(),
+  },
+  (t) => [
+    index("problem_difficulty_idx").on(t.difficulty),
+    index("problem_rating_idx").on(t.cfRating),
+    index("problem_tags_idx").using("gin", t.cfTags),
+    index("problem_search_idx").using(
+      "gin",
+      sql`to_tsvector('english', ${t.name} || ' ' || ${t.description})`
+    ),
+  ]
+)
+
+export const problemTests = pgTable("problem_test", {
+  problemId: uuid("problem_id")
+    .primaryKey()
+    .references(() => problems.id, { onDelete: "cascade" }),
+  privateTests: jsonb("private_tests"),
+  generatedTests: jsonb("generated_tests"),
+})
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

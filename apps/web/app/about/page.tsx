@@ -63,7 +63,6 @@ export default function AboutPage() {
                 </p>
             </section>
 
-            {/* Vision Section */}
             <section className="py-20 px-6 bg-[var(--bg-sec)]/50 border-y border-[var(--borders)] relative overflow-hidden backdrop-blur-md">
                 <div 
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-[140px] pointer-events-none opacity-20"
@@ -73,7 +72,7 @@ export default function AboutPage() {
                 <div className="max-w-6xl mx-auto relative z-10">
                     <div className="text-center mb-16 space-y-3">
                         <h2 className="text-3xl sm:text-4xl font-extrabold flex items-center justify-center gap-3">
-                            <span>🚀</span>
+                            
                             <span>
                                 The Blitz<span className="text-[var(--accent)]">Code</span> Vision
                             </span>
@@ -126,10 +125,9 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Tech Stack Section */}
             <section className="py-20 px-6 max-w-6xl mx-auto">
                 <div className="text-center mb-16 space-y-2">
-                    <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--primary-text)]">🛠️ The Tech Stack</h2>
+                    <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--primary-text)]"> The Tech Stack</h2>
                     <p className="text-[var(--secondary-text)] text-sm sm:text-base max-w-2xl mx-auto">
                         Built with modern, scalable tools to ensure sub-100ms latency and a seamless developer experience.
                     </p>
