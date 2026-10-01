@@ -175,6 +175,23 @@ export const problemTests = pgTable("problem_test", {
   generatedTests: jsonb("generated_tests"),
 })
 
+ 
+export const submissions = pgTable(
+  "submissions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    problemId: uuid("problem_id").notNull().references(() => problems.id),
+    language: text("language").notNull(),
+    timeMs: integer("time_ms").notNull(),
+    memoryKb: integer("memory_kb").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+userId: text("user_id")           
+    .notNull(),                   
+}, (t) => ({
+  userProblemIdx: index("submissions_user_problem_idx").on(t.userId, t.problemId),
+})
+)
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Question = typeof questions.$inferSelect;

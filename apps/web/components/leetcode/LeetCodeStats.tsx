@@ -1,128 +1,115 @@
+import { Flame, Swords, Target } from "lucide-react";
+import { AnimatedNumber, Panel, StatTile } from "../ProfileUI";
+
 interface LeetCodeStatsProps {
-    totalSolved: number;
-    easySolved: number;
-    mediumSolved: number;
-    hardSolved: number;
-    contestRating: number | null;
-    contests: number;
-    maxStreak: number;
-    currentStreak: number;
+  totalSolved: number;
+  easySolved: number;
+  mediumSolved: number;
+  hardSolved: number;
+  contestRating: number | null;
+  contests: number;
+  maxStreak: number;
+  currentStreak: number;
 }
+
+const SEGMENTS = [
+  { key: "Easy", color: "#34d399", dot: "bg-emerald-400" },
+  { key: "Medium", color: "#fbbf24", dot: "bg-amber-400" },
+  { key: "Hard", color: "#fb7185", dot: "bg-rose-400" },
+] as const;
 
 export default function LeetCodeStats({
-    totalSolved,
-    easySolved,
-    mediumSolved,
-    hardSolved,
-    contestRating,
-    contests,
-    maxStreak,
-    currentStreak,
+  totalSolved,
+  easySolved,
+  mediumSolved,
+  hardSolved,
+  contestRating,
+  contests,
+  maxStreak,
+  currentStreak,
 }: LeetCodeStatsProps) {
-    return (
-        <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-5">
-            <StatCard
-                label="TOTAL SOLVED"
-                value={totalSolved}
-                description={`${easySolved} Easy · ${mediumSolved} Medium · ${hardSolved} Hard`}
-                accent="green"
-            />
+  const values = [easySolved, mediumSolved, hardSolved];
+  const r = 52;
+  const C = 2 * Math.PI * r;
+  const gap = totalSolved > 0 ? 6 : 0;
+  let offset = 0;
 
-            <StatCard
-                label="HARD SOLVED"
-                value={hardSolved}
-                description={
-                    totalSolved > 0
-                        ? `${Math.round(
-                              (hardSolved / totalSolved) * 100
-                          )}% of solved`
-                        : "0% of solved"
-                }
-                accent="red"
-            />
+  return (
+    <section className="mt-5 grid gap-4 lg:grid-cols-5">
+      {/* Hero: segmented donut */}
+      <Panel accent="emerald" className="lg:col-span-2">
+        <div className="flex items-center gap-6">
+          <div className="relative h-40 w-40 shrink-0">
+            <svg viewBox="0 0 128 128" className="h-full w-full -rotate-90">
+              <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+              {totalSolved > 0 &&
+                values.map((v, i) => {
+                  const len = Math.max((v / totalSolved) * C - gap, 0);
+                  const el = (
+                    <circle
+                      key={i}
+                      cx="64"
+                      cy="64"
+                      r={r}
+                      fill="none"
+                      stroke={SEGMENTS[i]!.color}
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={`${len} ${C - len}`}
+                      strokeDashoffset={-offset}
+                      style={{ filter: `drop-shadow(0 0 5px ${SEGMENTS[i]!.color}88)`, animation: "pf-draw 1.1s ease-out both" }}
+                    />
+                  );
+                  offset += (v / totalSolved) * C;
+                  return el;
+                })}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-extrabold text-white">
+                <AnimatedNumber value={totalSolved} />
+              </span>
+              <span className="text-xs text-zinc-500">solved</span>
+            </div>
+          </div>
 
-            <StatCard
-                label="CONTEST RATING"
-                value={
-                    contestRating !== null
-                        ? Math.round(contestRating)
-                        : "N/A"
-                }
-                description={
-                    contestRating !== null
-                        ? `${contests} contests`
-                        : "No contest data"
-                }
-                accent="yellow"
-            />
-
-            <StatCard
-                label="MAX STREAK"
-                value={`${maxStreak} days`}
-                description={`Current: ${currentStreak} days`}
-                accent="orange"
-            />
-        </section>
-    );
-}
-
-function StatCard({
-    label,
-    value,
-    description,
-    accent,
-}: {
-    label: string;
-    value: string | number;
-    description: string;
-    accent: "green" | "red" | "yellow" | "orange";
-}) {
-    const accentStyles = {
-        green: {
-            text: "text-emerald-400",
-            glow: "bg-emerald-500/10",
-            border: "hover:border-emerald-500/30",
-            shadow: "hover:shadow-[0_0_20px_rgba(16,185,129,0.12)]",
-        },
-        red: {
-            text: "text-rose-400",
-            glow: "bg-rose-500/10",
-            border: "hover:border-rose-500/30",
-            shadow: "hover:shadow-[0_0_20px_rgba(244,63,94,0.12)]",
-        },
-        yellow: {
-            text: "text-amber-400",
-            glow: "bg-amber-500/10",
-            border: "hover:border-amber-500/30",
-            shadow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.12)]",
-        },
-        orange: {
-            text: "text-orange-400",
-            glow: "bg-orange-500/10",
-            border: "hover:border-orange-500/30",
-            shadow: "hover:shadow-[0_0_20px_rgba(249,115,22,0.12)]",
-        },
-    }[accent];
-
-    return (
-        <div
-            className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/80 p-5 backdrop-blur-xl transition-all duration-300 ${accentStyles.border} ${accentStyles.shadow}`}
-        >
-            <div
-                className={`pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full ${accentStyles.glow} blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300`}
-            />
-
-            <p className="text-[10px] tracking-[0.14em] text-zinc-500 font-semibold">
-                {label}
-            </p>
-
-            <p className="text-2xl font-bold text-zinc-100 mt-3 group-hover:scale-[1.01] transition-transform origin-left">
-                {value}
-            </p>
-
-            <p className={`text-xs mt-2 ${accentStyles.text}`}>
-                {description}
-            </p>
+          <ul className="flex-1 space-y-3">
+            {SEGMENTS.map((s, i) => (
+              <li key={s.key} className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-zinc-400">
+                  <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+                  {s.key}
+                </span>
+                <span className="font-bold text-white">{values[i]}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-    );
+      </Panel>
+
+      {/* Supporting tiles */}
+      <div className="grid gap-4 sm:grid-cols-3 lg:col-span-3">
+        <StatTile
+          icon={Target}
+          label="Hard solved"
+          value={hardSolved}
+          hint={`${totalSolved > 0 ? Math.round((hardSolved / totalSolved) * 100) : 0}% of solved`}
+          accent="rose"
+        />
+        <StatTile
+          icon={Swords}
+          label="Contest rating"
+          value={contestRating !== null ? Math.round(contestRating) : "N/A"}
+          hint={contestRating !== null ? `${contests} contests` : "No contest data"}
+          accent="amber"
+        />
+        <StatTile
+          icon={Flame}
+          label="Max streak"
+          value={maxStreak}
+          hint={`${currentStreak} day current streak`}
+          accent="orange"
+        />
+      </div>
+    </section>
+  );
 }

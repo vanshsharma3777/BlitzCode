@@ -1,8 +1,13 @@
+// apps/web/app/api/problems/[id]/judge/route.ts
 import { NextResponse } from "next/server"
-import { eq } from "drizzle-orm"
-import { db, problems, problemTests } from "@repo/db" // problemTests bhi export hona chahiye
+import { and, eq } from "drizzle-orm"
+import { db, problems, problemTests, submissions } from "@repo/db" // submissions table must be exported from @repo/db
 import { isLanguage } from "../../../../../types/languages"
-import { judge, JudgeUnavailable, parseLimits, TestCase, toCases } from "../../../../../lib/configs/judge"
+import { judge, JudgeUnavailable, parseLimits, toCases } from "../../../../../lib/configs/judge"
+import { TestCase } from "../../../../../types/problem"
+import { histogram } from "../../../../../lib/histogram"
+import { authOptions } from "../../../../../lib/configs/authOptions"
+import { getServerSession } from "next-auth"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -10,7 +15,45 @@ export const maxDuration = 60
 const MAX_CODE = 64 * 1024
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+const COMPARE_SAME_LANGUAGE = true
+const MAX_COMPARE_ROWS = 5000
+
 const fail = (status: number, error: string) => NextResponse.json({ error }, { status })
+
+const truncate = (s: string | undefined, n = 2000) =>
+  !s ? "" : s.length > n ? s.slice(0, n) + "\n... (truncated)" : s
+
+function beats(others: number[], mine: number): number | null {
+  if (others.length === 0) return null
+  return (others.filter((v) => v > mine).length / others.length) * 100
+}
+
+
+async function recordAndCompare(problemId: string, language: string, timeMs: number, memoryKb: number, userId: string) {
+  const where = COMPARE_SAME_LANGUAGE
+    ? and(eq(submissions.problemId, problemId), eq(submissions.language, language))
+    : eq(submissions.problemId, problemId)
+
+  const prev = await db
+    .select({ t: submissions.timeMs, m: submissions.memoryKb })
+    .from(submissions)
+    .where(where)
+    .limit(MAX_COMPARE_ROWS)
+
+  await db.insert(submissions).values({ problemId, language, timeMs, memoryKb, userId })
+
+
+  const prevT = prev.map((p) => p.t)
+  const prevM = prev.map((p) => p.m / 1024)
+  const myMb = memoryKb / 1024
+
+  return {
+    runtimePercentile: beats(prevT, timeMs),
+    runtimeDistribution: histogram(prevT, timeMs),
+    memoryPercentile: beats(prevM, myMb),
+    memoryDistribution: histogram(prevM, myMb),
+  }
+}
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -79,7 +122,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const verdict = failedResult?.verdict ?? "AC"
 
     if (mode === "run") {
-
       return NextResponse.json({
         mode,
         verdict,
@@ -101,21 +143,47 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       })
     }
 
+    const maxTimeMs = Math.max(0, ...results.map((r) => r.timeMs ?? 0))
+    const maxMemoryKb = Math.max(0, ...results.map((r) => r.memoryKb ?? 0))
+    const session = await getServerSession(authOptions)
+
+    const userId = session?.user.id
+
+    let stats: Awaited<ReturnType<typeof recordAndCompare>> | Record<string, never> = {}
+    if (verdict === "AC" && userId) {
+      try {
+        stats = await recordAndCompare(
+          id,
+          language,
+          Math.round(maxTimeMs),
+          Math.round(maxMemoryKb),
+          userId
+        )
+      } catch (e) {
+        console.error("Failed to record submission stats:", e)
+      }
+    }
+    console.log("stats " ,stats)
     return NextResponse.json({
       mode,
       verdict,
       passed,
       total: tests.length,
       failed:
-        failedResult && failedTest
-          ? {
-              index: firstFail + 1,
-              isPublic: failedTest.group === "public",
-              verdict: failedResult.verdict,
-            }
-          : null,
-      maxTimeMs: Math.max(0, ...results.map((r) => r.timeMs ?? 0)),
-      maxMemoryKb: Math.max(0, ...results.map((r) => r.memoryKb ?? 0)),
+  failedResult && failedTest
+    ? {
+        index: firstFail + 1,
+        isPublic: failedTest.group === "public",
+        verdict: failedResult.verdict,
+        input: truncate(failedTest.input),
+        expected: truncate(failedTest.expected),
+        stdout: truncate(failedResult.stdout),
+        stderr: truncate(failedResult.stderr, 500),
+      }
+    : null,
+      maxTimeMs,
+      maxMemoryKb,
+      ...stats,
     })
   } catch (err) {
     if (err instanceof JudgeUnavailable) {

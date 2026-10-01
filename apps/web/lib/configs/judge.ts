@@ -1,15 +1,6 @@
 import { LanguageKey, LANGUAGES } from "../../types/languages";
+import { TestCase, TestResult, Verdict } from "../../types/problem";
 
-export type Verdict = "AC" | "WA" | "TLE" | "RE" | "CE" | "ERR"
-export type TestCase = { input: string; expected: string; group: "public" | "private" | "generated" }
-export type TestResult = {
-  verdict: Verdict
-  stdout: string
-  stderr: string
-  compile: string
-  timeMs: number | null
-  memoryKb: number | null
-}
 
 export class JudgeUnavailable extends Error {}
 
@@ -173,3 +164,5 @@ export async function judge(opts: {
   }
   return results
 }
+
+

@@ -61,10 +61,13 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)] text-[var(--primary-text)] flex flex-col relative overflow-hidden transition-colors duration-300">
+            {/* Background: glows + faint grid */}
             <div
                 className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[160px] pointer-events-none opacity-20 dark:opacity-15"
                 style={{ background: 'var(--accent)' }}
             />
+            <div className="absolute bottom-0 right-0 w-[420px] h-[420px] rounded-full blur-[150px] pointer-events-none opacity-10 bg-purple-500" />
+            <div className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:linear-gradient(to_right,var(--primary-text)_1px,transparent_1px),linear-gradient(to_bottom,var(--primary-text)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />
 
             <Navbar />
 

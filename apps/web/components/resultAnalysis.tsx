@@ -16,7 +16,7 @@ import {
     XCircle, 
     ChevronLeft, 
     ChevronRight, 
-    BookOpen, 
+    BookOpen,   
     X, 
     Clock, 
     Target, 

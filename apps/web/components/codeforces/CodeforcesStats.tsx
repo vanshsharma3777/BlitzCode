@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { CheckCheck, Send, Swords, Target } from "lucide-react";
+import { AnimatedNumber, Panel, StatTile } from "../ProfileUI";
+import { nextTier, tierForRating } from "../../utils/rankCF";
 
 export interface CodeforcesStatsProps {
   acceptedSubmissions: number;
@@ -19,153 +21,55 @@ export default function CodeforcesStats({
   solvedProblems,
   totalSubmissions,
 }: CodeforcesStatsProps) {
-  const acceptanceRate =
-    totalSubmissions > 0
-      ? Math.round((acceptedSubmissions / totalSubmissions) * 100)
-      : 0;
+  const acceptance = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
+  const tier = tierForRating(currentRating);
+  const peak = tierForRating(highestRating);
+  const nxt = nextTier(currentRating);
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mt-5">
-      <StatCard
-        label="PROBLEMS SOLVED"
-        value={solvedProblems.toLocaleString()}
-        description="Unique problems solved"
-        accent="green"
-      />
+    <section className="mt-5 grid gap-4 lg:grid-cols-5">
+      {/* Hero: rating in rank colour with progress to next tier */}
+      <Panel accent="sky" className="lg:col-span-2">
+        <div
+          className="pointer-events-none absolute -bottom-10 -left-10 h-44 w-44 rounded-full opacity-20 blur-3xl"
+          style={{ background: tier.color }}
+        />
+        <p className="text-xs font-medium text-zinc-500">Current rating</p>
+        <p className="mt-2 text-6xl font-extrabold tracking-tight" style={{ color: tier.color, textShadow: `0 0 28px ${tier.color}66` }}>
+          {currentRating ? <AnimatedNumber value={currentRating} /> : "Unrated"}
+        </p>
+        <p className="mt-1 text-sm font-semibold" style={{ color: tier.color }}>{tier.name}</p>
 
-      <StatCard
-        label="ACCEPTED"
-        value={acceptedSubmissions.toLocaleString()}
-        description={`${acceptanceRate}% acceptance rate`}
-        accent="green"
-      />
+        {currentRating > 0 && (
+          <div className="mt-5">
+            <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{ width: `${nxt.pct}%`, background: tier.color, boxShadow: `0 0 12px ${tier.color}88` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-zinc-500">
+              {nxt.name ? `${nxt.gap} points to ${nxt.name}` : "Top tier reached"}
+            </p>
+          </div>
+        )}
 
-      <StatCard
-        label="SUBMISSIONS"
-        value={totalSubmissions.toLocaleString()}
-        description="Total submissions"
-        accent="yellow"
-      />
+        <div className="mt-5 flex items-center justify-between rounded-xl border border-white/[0.07] bg-white/[0.03] px-4 py-3">
+          <span className="text-xs text-zinc-500">Peak rating</span>
+          <span className="text-sm font-bold" style={{ color: peak.color }}>
+            {highestRating || "Unrated"}
+            {highestRating > 0 && <span className="ml-2 text-xs font-medium text-zinc-500">{peak.name}</span>}
+          </span>
+        </div>
+      </Panel>
 
-      <StatCard
-        label="CONTESTS"
-        value={contestsParticipated}
-        description="Contests participated"
-        accent="cyan"
-      />
-
-      <StatCard
-        label="CURRENT RATING"
-        value={currentRating || "Unrated"}
-        description={getRatingRankLabel(currentRating)}
-        accent={getRatingAccent(currentRating)}
-      />
-
-      <StatCard
-        label="HIGHEST RATING"
-        value={highestRating || "Unrated"}
-        description={getRatingRankLabel(highestRating)}
-        accent={getRatingAccent(highestRating)}
-      />
+      {/* Supporting tiles */}
+      <div className="grid grid-cols-2 gap-4 lg:col-span-3">
+        <StatTile icon={Target} label="Problems solved" value={solvedProblems} hint="Unique problems" accent="emerald" />
+        <StatTile icon={CheckCheck} label="Accepted" value={acceptedSubmissions} hint={`${acceptance}% acceptance`} accent="sky" />
+        <StatTile icon={Send} label="Submissions" value={totalSubmissions} hint="All verdicts" accent="amber" />
+        <StatTile icon={Swords} label="Contests" value={contestsParticipated} hint="Rated participations" accent="violet" />
+      </div>
     </section>
   );
-}
-
-/* Individual StatCard Replicating LeetCode Card Architecture */
-function StatCard({
-  label,
-  value,
-  description,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  description: string;
-  accent: "green" | "red" | "yellow" | "orange" | "cyan" | "purple";
-}) {
-  const accentStyles = {
-    green: {
-      text: "text-emerald-400",
-      glow: "bg-emerald-500/10",
-      border: "hover:border-emerald-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(16,185,129,0.12)]",
-    },
-    red: {
-      text: "text-rose-400",
-      glow: "bg-rose-500/10",
-      border: "hover:border-rose-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(244,63,94,0.12)]",
-    },
-    yellow: {
-      text: "text-amber-400",
-      glow: "bg-amber-500/10",
-      border: "hover:border-amber-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(245,158,11,0.12)]",
-    },
-    orange: {
-      text: "text-orange-400",
-      glow: "bg-orange-500/10",
-      border: "hover:border-orange-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(249,115,22,0.12)]",
-    },
-    cyan: {
-      text: "text-cyan-400",
-      glow: "bg-cyan-500/10",
-      border: "hover:border-cyan-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(6,182,212,0.12)]",
-    },
-    purple: {
-      text: "text-purple-400",
-      glow: "bg-purple-500/10",
-      border: "hover:border-purple-500/30",
-      shadow: "hover:shadow-[0_0_20px_rgba(168,85,247,0.12)]",
-    },
-  }[accent];
-
-  return (
-    <div
-      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/80 p-5 backdrop-blur-xl transition-all duration-300 ${accentStyles.border} ${accentStyles.shadow}`}
-    >
-      {/* Top Right Glow Circle */}
-      <div
-        className={`pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full ${accentStyles.glow} blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300`}
-      />
-
-      <p className="text-[10px] tracking-[0.14em] text-zinc-500 font-semibold">
-        {label}
-      </p>
-
-      <p className="text-2xl font-bold text-zinc-100 mt-3 group-hover:scale-[1.01] transition-transform origin-left">
-        {value}
-      </p>
-
-      <p className={`text-xs mt-2 font-medium ${accentStyles.text}`}>
-        {description}
-      </p>
-    </div>
-  );
-}
-
-/* Accent Mapping Helpers */
-function getRatingAccent(
-  rating: number
-): "green" | "red" | "yellow" | "orange" | "cyan" | "purple" {
-  if (rating >= 2100) return "orange";
-  if (rating >= 1900) return "purple";
-  if (rating >= 1600) return "cyan";
-  if (rating >= 1400) return "cyan";
-  if (rating >= 1200) return "green";
-  return "yellow";
-}
-
-function getRatingRankLabel(rating: number): string {
-  if (rating >= 3000) return "Legendary Grandmaster";
-  if (rating >= 2400) return "Grandmaster";
-  if (rating >= 2100) return "Master";
-  if (rating >= 1900) return "Candidate Master";
-  if (rating >= 1600) return "Expert";
-  if (rating >= 1400) return "Specialist";
-  if (rating >= 1200) return "Pupil";
-  if (rating > 0) return "Newbie";
-  return "Unrated";
 }

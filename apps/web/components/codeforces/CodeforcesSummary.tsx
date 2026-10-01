@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { Award, Crown, HeartHandshake } from "lucide-react";
+import { Panel, SectionHead } from "../ProfileUI";
+import { colorForRank } from "../../utils/rankCF";
 
 interface Props {
   rank: string;
@@ -8,78 +10,39 @@ interface Props {
   contribution: number;
 }
 
-export default function CodeforcesSummary({
-  rank,
-  maxRank,
-  contribution,
-}: Props) {
-  const summaryItems = [
-    {
-      label: "Current Rank",
-      value: capitalizeRank(rank),
-     
-    },
-    {
-      label: "Max Rank",
-      value: capitalizeRank(maxRank),
-    },
-    {
-      label: "Contribution",
-      value: contribution > 0 ? `+${contribution}` : contribution,
-      colorClass:
-        contribution > 0
-          ? "text-emerald-400"
-          : contribution < 0
-          ? "text-rose-400"
-          : "text-zinc-400",
-    },
+export default function CodeforcesSummary({ rank, maxRank, contribution }: Props) {
+  const cColor = contribution > 0 ? "#34d399" : contribution < 0 ? "#fb7185" : "#a1a1aa";
+
+  const items = [
+    { icon: Award, label: "Current rank", value: cap(rank), color: colorForRank(rank) },
+    { icon: Crown, label: "Max rank", value: cap(maxRank), color: colorForRank(maxRank) },
+    { icon: HeartHandshake, label: "Contribution", value: contribution > 0 ? `+${contribution}` : String(contribution), color: cColor },
   ];
 
   return (
-    <section className="relative overflow-hidden mt-6 rounded-2xl border border-white/10 bg-[#121212]/80 p-6 backdrop-blur-xl shadow-2xl">
-      {/* Subtle Top Orangish Gradient Border */}
-
-      {/* Soft Ambient Background Glows */}
-      <div className="pointer-events-none absolute -top-12 -left-12 h-44 w-44 rounded-full bg-orange-500/5 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-emerald-500/5 blur-3xl" />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
-          <h2 className="text-xs uppercase tracking-[0.18em] font-bold text-zinc-400">
-            Profile Summary
-          </h2>
-          
-        </div>
-
-        {/* Aligned 3-Column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {summaryItems.map((item) => (
-            <div
-              key={item.label}
-              className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-center transition-all duration-200 hover:border-white/10 hover:bg-white/[0.04]"
-            >
-              <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">
-                {item.label}
-              </p>
-              <p
-                className={`text-xl font-bold font-mono mt-2 transition-transform duration-200 group-hover:scale-105 ${item.colorClass}`}
-              >
-                {item.value || "N/A"}
-              </p>
+    <Panel accent="sky" className="mt-5">
+      <SectionHead icon={Award} title="Profile summary" sub="Rank, peak and community standing" accent="sky" />
+      <div className="grid gap-3 sm:grid-cols-3">
+        {items.map(({ icon: Icon, label, value, color }) => (
+          <div
+            key={label}
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/[0.045]"
+            style={{ ["--c" as string]: color }}
+          >
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-15 blur-2xl transition-opacity group-hover:opacity-30" style={{ background: color }} />
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Icon className="h-4 w-4" style={{ color }} />
+              {label}
             </div>
-          ))}
-        </div>
+            <p className="mt-3 text-xl font-extrabold" style={{ color }}>{value || "N/A"}</p>
+          </div>
+        ))}
       </div>
-    </section>
+    </Panel>
   );
 }
 
-
-function capitalizeRank(rank?: string): string {
-  if (!rank) return "Unrated";
-  return rank
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+function cap(rank?: string) {
+  if (!rank || rank === "N/A") return "Unrated";
+  return rank.split(" ").map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 }

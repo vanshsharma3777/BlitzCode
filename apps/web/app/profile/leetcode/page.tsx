@@ -187,7 +187,7 @@ export default function LeetCodePage() {
                         </p>
                     </div>
 
-                   <CodingHeatmap submissionCalendar={data.stats.calendar.submissionCalendar} />
+                   <CodingHeatmap submissionCalendar={data.stats.calendar.submissionCalendar} accent="emerald" />
                 </section>
 
                 <LeetCodeStats

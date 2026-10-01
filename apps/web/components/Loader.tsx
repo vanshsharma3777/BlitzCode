@@ -1,47 +1,62 @@
 'use client'
 
-import React from 'react';
+import { Code2 } from 'lucide-react'
 
-export default function Loader() {
+interface LoaderProps {
+  text?: string
+}
+
+export default function Loader({ text = 'Loading' }: LoaderProps) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[var(--bg-main)]/80 backdrop-blur-md z-50 transition-colors duration-300 overflow-hidden">
-      
-      <div 
-        className="absolute w-[300px] h-[300px] rounded-full blur-[120px] pointer-events-none opacity-30 dark:opacity-25 animate-pulse"
-        style={{ background: 'var(--accent)' }}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#0d0d0c]/95">
+      {/* ek halka glow */}
+      <div className="pointer-events-none absolute h-64 w-64 rounded-full bg-sky-500/[0.07] blur-[90px]" />
 
-      <div className="relative flex flex-col items-center gap-8 p-10 glass-panel rounded-3xl border border-[var(--borders)] shadow-2xl shadow-black/40">
-        
-        <div className="flex items-center gap-1.5">
-          <span className="font-mono text-2xl text-[var(--accent)] font-semibold tracking-tighter select-none">&lt;/&gt;</span>
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            <span className="text-[var(--primary-text)]">Blitz</span>
-            <span className="text-[var(--accent)]">Code</span>
-          </h1>
+      <div className="relative flex flex-col items-center gap-6">
+        {/* floating logo */}
+        <div className="blitz-float flex h-16 w-16 items-center justify-center rounded-2xl border border-sky-500/30 bg-gradient-to-br from-sky-500/25 to-sky-500/5 shadow-[0_0_28px_-4px_rgba(56,189,248,0.6)]">
+          <Code2 className="h-7 w-7 text-sky-400" />
         </div>
 
-        <div className="relative flex items-center justify-center w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-2 border-[var(--borders)]"></div>
-
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[var(--accent)] animate-spin"></div>
-
-          <div 
-            className="absolute inset-2 rounded-full border-2 border-transparent border-b-[var(--accent)] opacity-80 animate-spin"
-            style={{ animationDirection: 'reverse', animationDuration: '0.85s' }}
-          ></div>
-
-          <div className="w-2.5 h-2.5 bg-[var(--accent)] rounded-full shadow-[0_0_12px_var(--accent)] animate-ping" />
+        {/* brand */}
+        <div className="font-mono text-xl font-extrabold tracking-tight text-white">
+          Blitz<span className="text-sky-400">Code</span>
         </div>
 
-        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--bg-sec)] border border-[var(--borders)] shadow-inner">
-          <span className="w-2 h-2 rounded-full bg-[var(--player-you)] animate-pulse"></span>
-          <span className="text-xs font-mono font-medium text-[var(--secondary-text)] tracking-wide">
-            INITIALIZING SYSTEM...
-          </span>
+        {/* bouncing dots */}
+        <div className="flex items-center gap-2" role="status" aria-label={text}>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="h-2.5 w-2.5 animate-bounce rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.7)]"
+              style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.9s' }}
+            />
+          ))}
         </div>
 
+        {/* shimmer bar */}
+        <div className="h-[3px] w-32 overflow-hidden rounded-full bg-white/[0.07]">
+          <div className="blitz-shimmer h-full w-1/2 rounded-full bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
+        </div>
+
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-500">{text}</p>
       </div>
+
+      <style>{`
+        @keyframes blitz-float {
+          0%, 100% { transform: translateY(0) rotate(-3deg); }
+          50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        @keyframes blitz-shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+        .blitz-float { animation: blitz-float 2.2s ease-in-out infinite; }
+        .blitz-shimmer { animation: blitz-shimmer 1.4s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .blitz-float, .blitz-shimmer { animation: none; }
+        }
+      `}</style>
     </div>
-  );
+  )
 }

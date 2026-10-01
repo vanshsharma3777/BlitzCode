@@ -1,155 +1,105 @@
-// app/problems/page.tsx
 "use client"
 
-import axios from "axios"
 import { useEffect, useState } from "react"
-
-type Problem = {
-  id: string
-  name: string
-  difficulty: number | null
-  cfRating: number | null
-  cfTags: string[] | null
-}
-
-type Response = {
-  items: Problem[]
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-  hasNext: boolean
-  hasPrev: boolean
-}
+import axios from "axios"
+import { AlertTriangle, Layers } from "lucide-react"
+import { FilterState, ProblemsApiResponse } from "../../types/problem"
+import { Pagination } from "../../components/problems/Pagination"
+import { ProblemTable } from "../../components/problems/ProblemTable"
+import { ProblemFilter } from "../../components/problems/ProblemFilter"
+import { Panel } from "../../components/ProfileUI"
 
 export default function ProblemsPage() {
-  const [data, setData] = useState<Response | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [data, setData] = useState<ProblemsApiResponse | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>("")
 
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState("")
-  const [q, setQ] = useState("") 
-  const [tag, setTag] = useState("")
-  const [minRating, setMinRating] = useState("")
-  const [maxRating, setMaxRating] = useState("")
+  const [page, setPage] = useState<number>(1)
+  const [filters, setFilters] = useState<FilterState>({ q: "", tag: "", minRating: "", maxRating: "" })
 
-useEffect(() => {
-  const controller = new AbortController()
+  useEffect(() => {
+    const controller = new AbortController()
 
-  const params: Record<string, string | number> = { page, limit: 20 }
-  if (q) params.q = q
-  if (tag) params.tag = tag
-  if (minRating) params.minRating = minRating
-  if (maxRating) params.maxRating = maxRating
+    const params: Record<string, string | number> = { page, limit: 20 }
+    if (filters.q) params.q = filters.q
+    if (filters.tag) params.tag = filters.tag
+    if (filters.minRating) params.minRating = filters.minRating
+    if (filters.maxRating) params.maxRating = filters.maxRating
 
-  setLoading(true)
-  setError("")
+    setLoading(true)
+    setError("")
 
-  axios.get<Response>("/api/problems", { params, signal: controller.signal })
-    .then((res) => {
-      console.log("data", res.data)
-      setData(res.data)
-    })
-    .catch((e) => {
-      if (axios.isCancel(e)) return 
-      setError(e.response?.data?.error ?? e.message ?? "Failed to load")
-    })
-    .finally(() => setLoading(false))
+    axios
+      .get<ProblemsApiResponse>("/api/problems", { params, signal: controller.signal })
+      .then((res) => {
+        setData(res.data)
+        console.log("data " , res.data)
+      })
+      .catch((e) => {
+        if (axios.isCancel(e)) return
+        setError(e.response?.data?.error ?? e.message ?? "Failed to load problems")
+      })
+      .finally(() => setLoading(false))
 
-  return () => controller.abort() 
-}, [page, q, tag, minRating, maxRating])
+    return () => controller.abort()
+  }, [page, filters])
 
-  const applySearch = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleApplyFilters = (newFilters: FilterState) => {
     setPage(1)
-    setQ(search)
+    setFilters(newFilters)
   }
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <h1>Problems</h1>
-
-      <form onSubmit={applySearch} style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "16px 0" }}>
-        <input
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          value={tag}
-          onChange={(e) => {
-            setPage(1)
-            setTag(e.target.value)
-          }}
-        >
-          <option value="">All tags</option>
-          <option value="graphs">graphs</option>
-          <option value="dp">dp</option>
-          <option value="greedy">greedy</option>
-          <option value="math">math</option>
-          <option value="implementation">implementation</option>
-          <option value="strings">strings</option>
-          <option value="trees">trees</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Min rating"
-          value={minRating}
-          onChange={(e) => {
-            setPage(1)
-            setMinRating(e.target.value)
-          }}
-          style={{ width: 110 }}
-        />
-        <input
-          type="number"
-          placeholder="Max rating"
-          value={maxRating}
-          onChange={(e) => {
-            setPage(1)
-            setMaxRating(e.target.value)
-          }}
-          style={{ width: 110 }}
-        />
-        <button type="submit">Search</button>
-      </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {loading && <p>Loading...</p>}
-
-      {!loading && data?.items.length === 0 && <p>No problems found.</p>}
-
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {data?.items.map((p) => (
-          <li
-            key={p.id}
-            style={{ border: "1px solid #ccc", borderRadius: 8, padding: 12, marginBottom: 8 }}
-          >
-            <a href={`/problems/${p.id}`} style={{ fontWeight: 600 }}>
-              {p.name}
-            </a>
-            <div style={{ fontSize: 13, marginTop: 4 }}>
-              Rating: {p.cfRating ?? "-"} &nbsp;|&nbsp; Tags:{" "}
-              {p.cfTags?.length ? p.cfTags.join(", ") : "-"}
+    <main className="min-h-screen bg-[#0d0d0c] px-4 py-8 text-zinc-200 md:px-8">
+      <div className="mx-auto max-w-[1250px]">
+        <Panel accent="sky" className="mb-5">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-sky-500/30 bg-gradient-to-br from-sky-500/25 to-sky-500/5 shadow-[0_0_22px_-4px_rgba(56,189,248,0.55)]">
+                <Layers className="h-6 w-6 text-sky-400" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-white">Problemset</h1>
+                <p className="mt-1 max-w-xl text-sm text-zinc-400">
+                  Find your next problem by rating and topic. The colour on each row shows its Codeforces tier.
+                </p>
+              </div>
             </div>
-          </li>
-        ))}
-      </ul>
 
-      {data && (
-        <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "center", marginTop: 16 }}>
-          <button disabled={!data.hasPrev || loading} onClick={() => setPage((p) => p - 1)}>
-            Prev
-          </button>
-          <span>
-            Page {data.page} / {data.totalPages || 1} ({data.total} problems)
-          </span>
-          <button disabled={!data.hasNext || loading} onClick={() => setPage((p) => p + 1)}>
-            Next
-          </button>
-        </div>
-      )}
-    </div>
+            {data && (
+              <div className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-center">
+                <p className="text-2xl font-extrabold text-white">{data.total.toLocaleString()}</p>
+                <p className="text-xs text-sky-300">problems</p>
+              </div>
+            )}
+          </div>
+        </Panel>
+
+        <ProblemFilter onApplyFilters={handleApplyFilters} />
+
+        {error && (
+          <div className="mb-5 flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <ProblemTable problems={data?.items ?? []} loading={loading} />
+
+        {data && (
+          <Pagination
+            page={data.page}
+            totalPages={data.totalPages}
+            total={data.total}
+            hasNext={data.hasNext}
+            hasPrev={data.hasPrev}
+            loading={loading}
+            onPageChange={(newPage) => setPage(newPage)}
+          />
+        )}
+
+        <footer className="py-10 text-center text-xs text-zinc-700">Problemset powered by BlitzCode</footer>
+      </div>
+    </main>
   )
 }

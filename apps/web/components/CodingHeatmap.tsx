@@ -1,15 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
+import { Activity } from "lucide-react";
+import { Panel, SectionHead, type Accent } from "./ProfileUI";
 
-// Codeforces Submission interface
 export interface CodeforcesSubmission {
   id?: number;
   creationTimeSeconds: number;
   [key: string]: any;
 }
 
-// Flexible props interface supporting LeetCode string, Codeforces array, or a normalized key-value map
 export interface CodingHeatmapProps {
   /** LeetCode style JSON string: '{"1672531199": 2, ...}' */
   submissionCalendar?: string;
@@ -17,6 +17,10 @@ export interface CodingHeatmapProps {
   recentSubmissions?: CodeforcesSubmission[];
   /** Or directly pass a date-count map: { '2024-05-12': 4 } */
   activityMap?: Record<string, number>;
+  /** Colour theme: emerald for LeetCode, sky for Codeforces */
+  accent?: Extract<Accent, "emerald" | "sky" | "orange">;
+  title?: string;
+  sub?: string;
 }
 
 interface CalendarDay {
@@ -24,7 +28,8 @@ interface CalendarDay {
   date: Date;
   count: number;
   isFuture: boolean;
-  dayOfWeek: number; // 0 = Sun, 6 = Sat
+  isToday: boolean;
+  dayOfWeek: number;
   isEmptySlot?: boolean;
 }
 
@@ -33,339 +38,222 @@ interface MonthGroup {
   weeks: CalendarDay[][];
 }
 
+const PALETTES = {
+  emerald: ["#1d1d1f", "#064e3b", "#059669", "#10b981", "#34d399"],
+  sky: ["#1d1d1f", "#0c4a6e", "#0284c7", "#38bdf8", "#7dd3fc"],
+  orange: ["#1d1d1f", "#7c2d12", "#c2410c", "#f97316", "#fdba74"],
+};
+
+const level = (c: number) => (c <= 0 ? 0 : c < 3 ? 1 : c < 6 ? 2 : c < 10 ? 3 : 4);
+
 export default function CodingHeatmap({
   submissionCalendar,
   recentSubmissions,
   activityMap,
+  accent = "emerald",
+  title = "Coding activity",
+  sub = "Your daily submissions over the last year",
 }: CodingHeatmapProps) {
-  const monthGroups = useMemo(() => {
-    return buildCalendarByMonths({
-      submissionCalendar,
-      recentSubmissions,
-      activityMap,
-    });
-  }, [submissionCalendar, recentSubmissions, activityMap]);
-
-  if (monthGroups.length === 0) {
-    return (
-      <div className="text-sm font-mono text-neutral-500 text-center py-6">
-        No activity data available.
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/80 p-6 backdrop-blur-xl shadow-2xl mt-6">
-      {/* Top Accent Gradient Border */}
-      <div className="pointer-events-none absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-orange-400 to-transparent opacity-80" />
-
-      {/* Ambient Glows */}
-      <div className="pointer-events-none absolute -top-12 -left-12 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-12 -right-12 h-44 w-44 rounded-full bg-emerald-600/10 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-80 rounded-full bg-teal-500/5 blur-2xl" />
-
-      <div className="relative z-10 w-full pb-2 pt-4 flex flex-col items-center">
-        <div className="inline-block max-w-full ">
-          <div className="flex gap-3">
-            {monthGroups.map((group, groupIdx) => (
-              <div key={`${group.label}-${groupIdx}`} className="flex flex-col">
-                {/* Month Label Header */}
-                <div className="text-[10px] font-mono text-neutral-400 font-bold mb-2 text-left pl-0.5 select-none truncate tracking-wider uppercase">
-                  {group.label}
-                </div>
-
-                {/* Month Columns */}
-                <div className="flex gap-[3px]">
-                  {group.weeks.map((week, weekIdx) => (
-                    <div
-                      key={`week-${groupIdx}-${weekIdx}`}
-                      className="flex flex-col gap-[3px] w-[13px] shrink-0"
-                    >
-                      {week.map((day) => (
-                        <HeatCell
-                          key={day.key}
-                          count={day.count}
-                          date={day.date}
-                          isFuture={day.isFuture}
-                          dayOfWeek={day.dayOfWeek}
-                          isEmptySlot={day.isEmptySlot}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Legend Footer */}
-          <div className="flex items-center justify-end gap-2 mt-6 select-none">
-            <span className="text-[10px] font-mono text-neutral-400 font-medium tracking-wider">
-              Less
-            </span>
-
-            <LegendCell level={0} />
-            <LegendCell level={1} />
-            <LegendCell level={2} />
-            <LegendCell level={3} />
-            <LegendCell level={4} />
-
-            <span className="text-[10px] font-mono text-neutral-400 font-medium tracking-wider">
-              More
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+  const monthGroups = useMemo(
+    () => buildCalendarByMonths({ submissionCalendar, recentSubmissions, activityMap }),
+    [submissionCalendar, recentSubmissions, activityMap]
   );
-}
 
-function HeatCell({
-  count,
-  date,
-  isFuture,
-  dayOfWeek,
-  isEmptySlot,
-}: {
-  count: number;
-  date: Date;
-  isFuture: boolean;
-  dayOfWeek: number;
-  isEmptySlot?: boolean;
-}) {
-  if (isEmptySlot || isFuture) {
-    return <div className="w-[13px] h-[13px] rounded-[2px] bg-transparent" />;
-  }
+  const palette = PALETTES[accent];
 
-  let color = "bg-[#1d1d1f] border border-white/5";
-
-  if (count >= 1 && count < 3) {
-    color = "bg-[#064e3b] border border-[#047857]";
-  } else if (count >= 3 && count < 6) {
-    color = "bg-[#059669] border border-[#10b981]";
-  } else if (count >= 6 && count < 10) {
-    color = "bg-[#10b981] border border-[#34d399]";
-  } else if (count >= 10) {
-    color =
-      "bg-[#34d399] border border-[#6ee7b7] shadow-[0_0_10px_rgba(52,211,153,0.45)]";
-  }
-
-  const formattedDate = date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-
-  const submissionText =
-    count === 0
-      ? "No submissions"
-      : count === 1
-      ? "1 submission"
-      : `${count} submissions`;
-
-  const isTopRow = dayOfWeek <= 1;
+  const summary = useMemo(() => {
+    let total = 0, active = 0, best = 0;
+    monthGroups.forEach((g) =>
+      g.weeks.forEach((w) =>
+        w.forEach((d) => {
+          if (d.isEmptySlot || d.isFuture) return;
+          total += d.count;
+          if (d.count > 0) active++;
+          best = Math.max(best, d.count);
+        })
+      )
+    );
+    return { total, active, best };
+  }, [monthGroups]);
 
   return (
-    <div className="relative group w-[13px] h-[13px]">
-      <div
-        className={`
-          w-[13px]
-          h-[13px]
-          rounded-[2px]
-          ${color}
-          cursor-pointer
-          transition-all
-          duration-150
-          ease-out
-          group-hover:scale-125
-          group-hover:z-30
-          group-hover:border-emerald-300
-          group-hover:shadow-[0_0_8px_rgba(52,211,153,0.6)]
-        `}
+    <Panel accent={accent} className="mt-5">
+      <SectionHead
+        icon={Activity}
+        title={title}
+        sub={sub}
+        accent={accent}
+        right={
+          <div className="hidden gap-2 sm:flex">
+            <Chip label="submissions" value={summary.total} color={palette[3]!} />
+            <Chip label="active days" value={summary.active} color={palette[3]!} />
+            <Chip label="best day" value={summary.best} color={palette[3]!} />
+          </div>
+        }
       />
 
-      {/* Tooltip */}
+      {monthGroups.length === 0 ? (
+        <p className="py-6 text-center text-sm text-zinc-500">No activity yet. Submit a solution and your first square will light up.</p>
+      ) : (
+        <>
+          <div className="overflow-x-auto pb-2 pt-1">
+            <div className="mx-auto flex w-max gap-3 px-1 pb-10">
+              {monthGroups.map((group, gi) => (
+                <div key={`${group.label}-${gi}`} className="flex flex-col">
+                  <div className="mb-2 select-none pl-0.5 text-[11px] font-medium text-zinc-500">{group.label}</div>
+                  <div className="flex gap-[3px]">
+                    {group.weeks.map((week, wi) => (
+                      <div key={`w-${gi}-${wi}`} className="flex w-[13px] shrink-0 flex-col gap-[3px]">
+                        {week.map((d) => (
+                          <HeatCell key={d.key} day={d} palette={palette} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-1 flex items-center justify-between gap-3">
+            {/* mobile summary */}
+            <p className="text-xs text-zinc-500 sm:hidden">
+              <span className="font-semibold text-zinc-300">{summary.total}</span> submissions ·{" "}
+              <span className="font-semibold text-zinc-300">{summary.active}</span> active days
+            </p>
+            <div className="ml-auto flex select-none items-center gap-1.5">
+              <span className="mr-1 text-[11px] text-zinc-500">Less</span>
+              {palette.map((c, i) => (
+                <div key={i} className="h-[11px] w-[11px] rounded-[3px]" style={{ background: c, border: "1px solid rgba(255,255,255,0.06)" }} />
+              ))}
+              <span className="ml-1 text-[11px] text-zinc-500">More</span>
+            </div>
+          </div>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+function Chip({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-1.5 text-center">
+      <p className="text-base font-bold leading-none text-white">{value.toLocaleString()}</p>
+      <p className="mt-1 text-[10px]" style={{ color }}>{label}</p>
+    </div>
+  );
+}
+
+function HeatCell({ day, palette }: { day: CalendarDay; palette: string[] }) {
+  if (day.isEmptySlot || day.isFuture) return <div className="h-[13px] w-[13px]" />;
+
+  const lv = level(day.count);
+  const color = palette[lv]!;
+  const label = day.date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const text = day.count === 0 ? "No submissions" : day.count === 1 ? "1 submission" : `${day.count} submissions`;
+  const below = day.dayOfWeek <= 1;
+
+  return (
+    <div className="group relative h-[13px] w-[13px]">
       <div
-        className={`
-          pointer-events-none
-          absolute
-          left-1/2
-          -translate-x-1/2
-          ${isTopRow ? "top-full mt-2" : "bottom-full mb-2"}
-          opacity-0
-          scale-95
-          group-hover:opacity-100
-          group-hover:scale-100
-          transition-all
-          duration-150
-          z-[100]
-        `}
+        className="h-[13px] w-[13px] cursor-pointer rounded-[3px] transition-transform duration-150 ease-out group-hover:z-30 group-hover:scale-[1.35]"
+        style={{
+          background: color,
+          border: `1px solid ${lv === 0 ? "rgba(255,255,255,0.05)" : palette[Math.min(lv + 1, 4)]}`,
+          boxShadow: lv === 4 ? `0 0 10px ${color}88` : day.isToday ? `0 0 0 1.5px #fff` : undefined,
+        }}
+      />
+      <div
+        className={`pointer-events-none absolute left-1/2 z-[100] -translate-x-1/2 scale-95 opacity-0 transition-all duration-150 group-hover:scale-100 group-hover:opacity-100 ${
+          below ? "top-full mt-2" : "bottom-full mb-2"
+        }`}
       >
         <div className="whitespace-nowrap rounded-xl border border-white/10 bg-[#161616]/95 px-3 py-1.5 shadow-2xl backdrop-blur-xl">
-          <p className="text-[11px] font-semibold text-neutral-200 font-sans">
-            {formattedDate}
-          </p>
-          <p
-            className={`text-[10px] font-mono mt-0.5 ${
-              count > 0 ? "text-emerald-400 font-bold" : "text-neutral-500"
-            }`}
-          >
-            {submissionText}
-          </p>
+          <p className="text-[11px] font-semibold text-zinc-200">{label}{day.isToday ? " (today)" : ""}</p>
+          <p className="mt-0.5 text-[11px] font-medium" style={{ color: day.count > 0 ? palette[3] : "#71717a" }}>{text}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function LegendCell({ level }: { level: number }) {
-  const colors = [
-    "bg-[#1d1d1f] border border-white/5",
-    "bg-[#064e3b] border border-[#047857]",
-    "bg-[#059669] border border-[#10b981]",
-    "bg-[#10b981] border border-[#34d399]",
-    "bg-[#34d399] border border-[#6ee7b7]",
-  ];
+/* ---------- Data builder (logic unchanged apart from isToday) ---------- */
 
-  return <div className={`w-[11px] h-[11px] rounded-[2px] ${colors[level]}`} />;
-}
+function buildCalendarByMonths({ submissionCalendar, recentSubmissions, activityMap }: CodingHeatmapProps): MonthGroup[] {
+  const byDate: Record<string, number> = {};
 
-/* ================================================= */
-/* Multi-Source Calendar Normalizer & Builder       */
-/* ================================================= */
+  if (activityMap) Object.assign(byDate, activityMap);
 
-function buildCalendarByMonths({
-  submissionCalendar,
-  recentSubmissions,
-  activityMap,
-}: CodingHeatmapProps): MonthGroup[] {
-  const activityByDate: Record<string, number> = {};
-
-  // Case 1: Pre-formatted date-count map { "2024-05-12": 3 }
-  if (activityMap) {
-    Object.assign(activityByDate, activityMap);
-  }
-
-  // Case 2: LeetCode style JSON string '{"1672531199": 2, ...}'
   if (submissionCalendar) {
     try {
       const parsed: Record<string, number> = JSON.parse(submissionCalendar || "{}");
-      Object.entries(parsed).forEach(([timestamp, count]) => {
-        const date = new Date(Number(timestamp) * 1000);
-        const dateKey = formatDateKey(date);
-        activityByDate[dateKey] = (activityByDate[dateKey] || 0) + Number(count);
+      Object.entries(parsed).forEach(([ts, count]) => {
+        const k = formatDateKey(new Date(Number(ts) * 1000));
+        byDate[k] = (byDate[k] || 0) + Number(count);
       });
     } catch {
-      // JSON parse fallback
+      /* ignore bad JSON */
     }
   }
 
-  // Case 3: Codeforces array of submissions [{ creationTimeSeconds: 1672531199 }, ...]
   if (Array.isArray(recentSubmissions)) {
-    recentSubmissions.forEach((sub) => {
-      if (!sub?.creationTimeSeconds) return;
-      const date = new Date(sub.creationTimeSeconds * 1000);
-      const dateKey = formatDateKey(date);
-      activityByDate[dateKey] = (activityByDate[dateKey] || 0) + 1;
+    recentSubmissions.forEach((s) => {
+      if (!s?.creationTimeSeconds) return;
+      const k = formatDateKey(new Date(s.creationTimeSeconds * 1000));
+      byDate[k] = (byDate[k] || 0) + 1;
     });
   }
 
   const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const todayKey = formatDateKey(today);
 
-  const startDate = new Date(today);
-  startDate.setUTCDate(1);
-  startDate.setUTCMonth(startDate.getUTCMonth() - 11);
+  const start = new Date(today);
+  start.setUTCDate(1);
+  start.setUTCMonth(start.getUTCMonth() - 11);
 
-  const monthGroups: MonthGroup[] = [];
-  let currentMonth = new Date(startDate);
+  const groups: MonthGroup[] = [];
+  const cur = new Date(start);
 
-  while (currentMonth <= today) {
-    const year = currentMonth.getUTCFullYear();
-    const month = currentMonth.getUTCMonth();
-
-    const monthLabel = currentMonth.toLocaleDateString("en-US", {
-      month: "short",
-      timeZone: "UTC",
-    });
-
-    const totalDaysInMonth = new Date(
-      Date.UTC(year, month + 1, 0)
-    ).getUTCDate();
+  while (cur <= today) {
+    const year = cur.getUTCFullYear();
+    const month = cur.getUTCMonth();
+    const label = cur.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
     const weeks: CalendarDay[][] = [];
-    let currentWeek: CalendarDay[] = [];
+    let week: CalendarDay[] = [];
 
-    // Pad first week
-    const firstDayOfWeek = new Date(Date.UTC(year, month, 1)).getUTCDay();
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      currentWeek.push({
-        key: `empty-start-${year}-${month}-${i}`,
-        date: new Date(Date.UTC(year, month, 1)),
-        count: 0,
-        isFuture: false,
-        dayOfWeek: i,
-        isEmptySlot: true,
-      });
+    const first = new Date(Date.UTC(year, month, 1)).getUTCDay();
+    for (let i = 0; i < first; i++) {
+      week.push({ key: `es-${year}-${month}-${i}`, date: new Date(Date.UTC(year, month, 1)), count: 0, isFuture: false, isToday: false, dayOfWeek: i, isEmptySlot: true });
     }
 
-    // Add days
-    for (let day = 1; day <= totalDaysInMonth; day++) {
-      const date = new Date(Date.UTC(year, month, day));
-      const dateKey = formatDateKey(date);
-
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(Date.UTC(year, month, d));
+      const key = formatDateKey(date);
       const isFuture = date > today;
-      const count = isFuture ? 0 : activityByDate[dateKey] || 0;
-      const dayOfWeek = date.getUTCDay();
-
-      currentWeek.push({
-        key: dateKey,
-        date,
-        count,
-        isFuture,
-        dayOfWeek,
-        isEmptySlot: false,
-      });
-
-      if (currentWeek.length === 7) {
-        weeks.push(currentWeek);
-        currentWeek = [];
+      week.push({ key, date, count: isFuture ? 0 : byDate[key] || 0, isFuture, isToday: key === todayKey, dayOfWeek: date.getUTCDay() });
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
       }
     }
 
-    // Pad last week
-    if (currentWeek.length > 0) {
-      while (currentWeek.length < 7) {
-        currentWeek.push({
-          key: `empty-end-${year}-${month}-${currentWeek.length}`,
-          date: new Date(Date.UTC(year, month, totalDaysInMonth)),
-          count: 0,
-          isFuture: false,
-          dayOfWeek: currentWeek.length,
-          isEmptySlot: true,
-        });
+    if (week.length > 0) {
+      while (week.length < 7) {
+        week.push({ key: `ee-${year}-${month}-${week.length}`, date: new Date(Date.UTC(year, month, daysInMonth)), count: 0, isFuture: false, isToday: false, dayOfWeek: week.length, isEmptySlot: true });
       }
-      weeks.push(currentWeek);
+      weeks.push(week);
     }
 
-    monthGroups.push({
-      label: monthLabel,
-      weeks,
-    });
-
-    currentMonth.setUTCMonth(currentMonth.getUTCMonth() + 1);
+    groups.push({ label, weeks });
+    cur.setUTCMonth(cur.getUTCMonth() + 1);
   }
 
-  return monthGroups;
+  return groups;
 }
 
 function formatDateKey(date: Date): string {
-  return (
-    `${date.getUTCFullYear()}-` +
-    `${String(date.getUTCMonth() + 1).padStart(2, "0")}-` +
-    `${String(date.getUTCDate()).padStart(2, "0")}`
-  );
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 }

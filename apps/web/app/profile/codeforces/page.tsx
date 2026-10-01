@@ -166,7 +166,6 @@ export default function CodeforcesProfilePage() {
                 />
 
 
-                {/* Recent Submissions */}
                         <RecentSubmissions codeforcesSubmissions={data.recentSubmissions ?? []} />
             </div>
         </main>
