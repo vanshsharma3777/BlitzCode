@@ -27,15 +27,15 @@ export const connectSocket = () => {
 
     socket = new WebSocket(wsUrl);
 
-    socket.addEventListener = () => {
-        console.log(" Connected to WS server");
-    };
+    socket.addEventListener("open", () => {
+        console.log("✅ Connected to WS server");
+    });
 
-    socket.onerror = (error) => {
-        console.error(" WebSocket error:", error);
-    };
+    socket.addEventListener("error", (error) => {
+        console.error("❌ WebSocket error:", error);
+    });
 
-    socket.onclose = (event) => {
+    socket.addEventListener("close", (event) => {
         console.log("🔴 WS closed:", {
             code: event.code,
             reason: event.reason,
@@ -43,7 +43,7 @@ export const connectSocket = () => {
         });
 
         socket = null;
-    };
+    });
 
     return socket;
 };
@@ -55,8 +55,6 @@ export const sendMessage = (msg: object) => {
     ) {
         socket.send(JSON.stringify(msg));
     } else {
-        console.warn(
-            "⚠️ WebSocket is not open"
-        );
+        console.warn("⚠️ WebSocket is not open");
     }
 };
