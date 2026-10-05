@@ -27,7 +27,7 @@ export const connectSocket = () => {
 
     socket = new WebSocket(wsUrl);
 
-    socket.onopen = () => {
+    socket.addEventListener = () => {
         console.log(" Connected to WS server");
     };
 

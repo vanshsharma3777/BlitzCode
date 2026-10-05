@@ -51,13 +51,27 @@ export default function FindMatch() {
         }
         const socket = connectSocket()
         socketRef.current = socket;
+        const handleSocketOpen = () => {
+            console.log("🔥 FindMatch WebSocket OPEN");
 
-        socket.onopen = () => {
-            socket.send(JSON.stringify({
-                type: "AUTH",
-                meta: { emailId: session.data?.user.email }
-            }));
+            socket.send(
+                JSON.stringify({
+                    type: "AUTH",
+                    meta: {
+                        emailId: session.data?.user.email,
+                    },
+                })
+            );
         };
+        if (socket.readyState === WebSocket.OPEN) {
+            handleSocketOpen();
+        } else {
+            socket.addEventListener(
+                "open",
+                handleSocketOpen,
+                { once: true }
+            );
+        }
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -125,7 +139,7 @@ export default function FindMatch() {
 
                     {!noUserFound ? (
                         <>
-     
+
                             <div className="flex justify-center">
                                 <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] ${found ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' : 'border-violet-500/25 bg-violet-500/10 text-violet-300'}`}>
                                     <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${found ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-violet-400 shadow-[0_0_8px_#a78bfa]'}`} />
@@ -181,7 +195,7 @@ export default function FindMatch() {
                                 </div>
                             )}
 
-                           
+
                             {found && (
                                 <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] p-4 shadow-[0_0_30px_-8px_rgba(52,211,153,0.5)]">
                                     <div className="flex items-center justify-between gap-3">
@@ -256,14 +270,14 @@ export default function FindMatch() {
             </main>
 
             <style>{`
-                @keyframes fm-ring { 0% { transform: scale(0.35); opacity: 0.9; } 100% { transform: scale(1.15); opacity: 0; } }
-                @keyframes fm-sweep { to { transform: rotate(360deg); } }
-                @keyframes fm-dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75%, 100% { content: '...'; } }
-                .fm-ring { animation: fm-ring 2.4s ease-out infinite; }
-                .fm-sweep { animation: fm-sweep 2.2s linear infinite; }
-                .fm-dots::after { content: ''; animation: fm-dots 1.4s steps(1) infinite; }
-                @media (prefers-reduced-motion: reduce) { .fm-ring, .fm-sweep, .fm-dots::after { animation: none; } }
-            `}</style>
+                    @keyframes fm-ring { 0% { transform: scale(0.35); opacity: 0.9; } 100% { transform: scale(1.15); opacity: 0; } }
+                    @keyframes fm-sweep { to { transform: rotate(360deg); } }
+                    @keyframes fm-dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75%, 100% { content: '...'; } }
+                    .fm-ring { animation: fm-ring 2.4s ease-out infinite; }
+                    .fm-sweep { animation: fm-sweep 2.2s linear infinite; }
+                    .fm-dots::after { content: ''; animation: fm-dots 1.4s steps(1) infinite; }
+                    @media (prefers-reduced-motion: reduce) { .fm-ring, .fm-sweep, .fm-dots::after { animation: none; } }
+                `}</style>
         </div>
     )
 }
