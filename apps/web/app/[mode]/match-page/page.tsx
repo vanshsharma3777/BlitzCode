@@ -12,7 +12,6 @@ import SyntaxHighlighter from "react-syntax-highlighter"
 import { createTime } from "../../../lib/functions/createTime"
 import { Timer, TrendingUp, Mail, User, AlertCircle, X, Send, Check, Lock, Swords } from "lucide-react"
 
-// background ke floating code symbols: [text, top, left, size, delay, duration]
 const SYMBOLS: [string, string, string, string, string, string][] = [
     ['</>', '8%', '6%', 'text-5xl', '0s', '9s'],
     ['{ }', '18%', '86%', 'text-6xl', '1.5s', '11s'],

@@ -82,8 +82,6 @@ export default function FindMatch() {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         }
     }, [session.data?.user.email]);
-
-    // sirf UI ke liye: countdown bar
     useEffect(() => {
         if (found || noUserFound) return
         const id = setInterval(() => setElapsed(e => Math.min(e + 1, SEARCH_TIMEOUT_MS / 1000)), 1000)
@@ -105,7 +103,7 @@ export default function FindMatch() {
 
     return (
         <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0d0d0c] text-zinc-200">
-            {/* soft grid */}
+
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0"
@@ -127,7 +125,7 @@ export default function FindMatch() {
 
                     {!noUserFound ? (
                         <>
-                            {/* status pill */}
+     
                             <div className="flex justify-center">
                                 <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] ${found ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' : 'border-violet-500/25 bg-violet-500/10 text-violet-300'}`}>
                                     <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${found ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-violet-400 shadow-[0_0_8px_#a78bfa]'}`} />
@@ -135,7 +133,6 @@ export default function FindMatch() {
                                 </span>
                             </div>
 
-                            {/* radar */}
                             <div className="relative mx-auto mt-6 flex h-44 w-44 items-center justify-center">
                                 {[0, 1, 2].map(i => (
                                     <span
@@ -147,7 +144,6 @@ export default function FindMatch() {
                                 <span className={`absolute inset-6 rounded-full border ${found ? 'border-emerald-400/30' : 'border-violet-400/20'}`} />
                                 <span className={`absolute inset-12 rounded-full border ${found ? 'border-emerald-400/20' : 'border-violet-400/10'}`} />
 
-                                {/* sweep */}
                                 {!found && (
                                     <span
                                         className="fm-sweep absolute inset-0 rounded-full"
@@ -174,7 +170,6 @@ export default function FindMatch() {
                                     : "Scanning for active coders with matching preferences"}
                             </p>
 
-                            {/* timeout bar */}
                             {!found && (
                                 <div className="mx-auto mt-5 max-w-sm">
                                     <div className="h-1 w-full overflow-hidden rounded-full bg-white/[0.07]">
@@ -186,7 +181,7 @@ export default function FindMatch() {
                                 </div>
                             )}
 
-                            {/* VS card */}
+                           
                             {found && (
                                 <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] p-4 shadow-[0_0_30px_-8px_rgba(52,211,153,0.5)]">
                                     <div className="flex items-center justify-between gap-3">
@@ -202,7 +197,6 @@ export default function FindMatch() {
                                 </div>
                             )}
 
-                            {/* params */}
                             <div className="mt-6 grid grid-cols-2 gap-3">
                                 {params.map(({ label, value, icon: Icon }) => (
                                     <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3.5 py-3 transition-colors hover:border-violet-500/30">
@@ -218,7 +212,7 @@ export default function FindMatch() {
                             </div>
                         </>
                     ) : (
-                        /* Timeout / No Opponent Found View */
+
                         <div className="flex flex-col items-center py-4 text-center">
                             <div className="relative">
                                 <div className="absolute inset-0 rounded-2xl bg-rose-500/20 blur-xl" />
