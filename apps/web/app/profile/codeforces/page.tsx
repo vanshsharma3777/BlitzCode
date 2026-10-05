@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import CodeforcesSummary from "../../../components/codeforces/CodeforcesSummary";
 import CodeforcesHeader from "../../../components/codeforces/CodeforcesHeader";
 import CodeforcesStats from "../../../components/codeforces/CodeforcesStats";
-
-import {
-    CFProfile,
-    CFSubmission,
-    RatingChange,
-} from "../../../types/codeForcesTypes";
+import { CFProfile, CFSubmission } from "../../../types/codeForcesTypes";
 import CodingHeatmap from "../../../components/CodingHeatmap";
 import RecentSubmissions from "../../../components/RecentSubmissions";
 import Loader from "../../../components/Loader";
@@ -32,10 +27,9 @@ interface CFData {
     recentSubmissions: CFSubmission[];
 }
 
-export default function CodeforcesProfilePage() {
+function CodeforcesProfileContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-
     const handle = searchParams.get("username");
 
     const [data, setData] = useState<CFData | null>(null);
@@ -59,7 +53,7 @@ export default function CodeforcesProfilePage() {
                 }
 
                 setData(res.data.data);
-                console.log(res.data)
+                console.log(res.data);
             })
             .catch((err) => {
                 console.error("CF profile fetch error:", err);
@@ -70,9 +64,7 @@ export default function CodeforcesProfilePage() {
             });
     }, [handle]);
 
-    if (loading )  {
-        return <Loader/>
-    }
+    if (loading) return <Loader />;
 
     if (error || !data) {
         return (
@@ -101,8 +93,9 @@ export default function CodeforcesProfilePage() {
         );
     }
 
-    if(data.profile.avatar ==="https://userpic.codeforces.org/no-avatar.jpg"){
-        data.profile.avatar = "https://assets.leetcode.com/users/default_avatar.jpg";
+    if (data.profile.avatar === "https://userpic.codeforces.org/no-avatar.jpg") {
+        data.profile.avatar =
+            "https://assets.leetcode.com/users/default_avatar.jpg";
     }
 
     return (
@@ -111,9 +104,6 @@ export default function CodeforcesProfilePage() {
             <div className="pointer-events-none absolute top-1/3 right-10 h-96 w-96 rounded-full bg-emerald-500/5 blur-3xl" />
 
             <div className="max-w-7xl mx-auto space-y-6 relative z-10">
-
-                
-
                 <CodeforcesHeader
                     handle={data.profile.handle}
                     name={`${data.profile.firstName || ""} ${data.profile.lastName || ""}`.trim()}
@@ -130,16 +120,8 @@ export default function CodeforcesProfilePage() {
                     solvedProblems={data.stats.solvedProblems}
                     totalSubmissions={data.stats.totalSubmissions}
                 />
-                <section
-                    className="
-                                  mt-6
-                                  rounded-2xl
-                                  border
-                                  border-white/10
-                                  bg-[#151514]
-                                  p-5
-                                  md:p-6
-                              ">
+
+                <section className="mt-6 rounded-2xl border border-white/10 bg-[#151514] p-5 md:p-6">
                     <div className="mb-6">
                         <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
                             Consistency
@@ -150,24 +132,33 @@ export default function CodeforcesProfilePage() {
                         </h2>
 
                         <p className="text-sm text-zinc-500 mt-1">
-                            Your daily Codeforces submission
-                            activity over the last year.
+                            Your daily Codeforces submission activity over the last year.
                         </p>
                     </div>
-                    <CodingHeatmap recentSubmissions={data.recentSubmissions} />
-                    
+
+                    <CodingHeatmap
+                        recentSubmissions={data.recentSubmissions}
+                    />
                 </section>
-                {/* Profile / Rating Summary */}
+
                 <CodeforcesSummary
-                    
                     rank={data.profile.rank || "N/A"}
                     maxRank={data.profile.maxRank || "N/A"}
                     contribution={data.profile.contribution ?? 0}
                 />
 
-
-                        <RecentSubmissions codeforcesSubmissions={data.recentSubmissions ?? []} />
+                <RecentSubmissions
+                    codeforcesSubmissions={data.recentSubmissions ?? []}
+                />
             </div>
         </main>
+    );
+}
+
+export default function CodeforcesProfilePage() {
+    return (
+        <Suspense fallback={<Loader />}>
+            <CodeforcesProfileContent />
+        </Suspense>
     );
 }

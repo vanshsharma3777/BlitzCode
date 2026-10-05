@@ -1,106 +1,96 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import LeetCodeHeader from "../../../components/leetcode/LeetCodeHeader";
-import LeetCodeSummary from "../../../components/leetcode/LeetCodeSummary";
-import BadgesSection from "../../../components/leetcode/BadgesSection";
-import AboutSection from "../../../components/leetcode/AboutSection";
-import DifficultySplit from "../../../components/leetcode/DifficultSplit";
-import ContestPerformance from "../../../components/leetcode/ContestPerformance";
-import LeetCodeStats from "../../../components/leetcode/LeetCodeStats";
+import { useSearchParams, useRouter } from "next/navigation";
+
+import CodeforcesSummary from "../../../components/codeforces/CodeforcesSummary";
+import CodeforcesHeader from "../../../components/codeforces/CodeforcesHeader";
+import CodeforcesStats from "../../../components/codeforces/CodeforcesStats";
+import {
+    CFProfile,
+    CFSubmission,
+    RatingChange,
+} from "../../../types/codeForcesTypes";
 import CodingHeatmap from "../../../components/CodingHeatmap";
 import RecentSubmissions from "../../../components/RecentSubmissions";
-import { LeetCodeData } from "../../../types/leetCode";
+import Loader from "../../../components/Loader";
 
+interface CFStats {
+    acceptedSubmissions: number;
+    contestsParticipated: number;
+    currentRating: number;
+    highestRating: number;
+    solvedProblems: number;
+    totalSubmissions: number;
+}
 
+interface CFData {
+    profile: CFProfile;
+    stats: CFStats;
+    recentSubmissions: CFSubmission[];
+}
 
-
-export default function LeetCodePage() {
+function CodeforcesProfileContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const handle = searchParams.get("username");
 
-    const username = searchParams.get("username");
-
-    const [data, setData] = useState<LeetCodeData | null>(null);
+    const [data, setData] = useState<CFData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
-        if (!username) {
-            setError("LeetCode username is missing");
+        if (!handle) {
+            setError("Codeforces handle is missing");
             setLoading(false);
             return;
         }
 
-        const fetchProfile = async () => {
-            try {
-                setLoading(true);
-                setError("");
+        setLoading(true);
 
-                const res = await axios.get(
-                    `/api/leetcode/${encodeURIComponent(username)}`
-                );
-                console.log("data", res.data)
-                if (!res.data?.success) {
-                    throw new Error(
-                        res.data?.error ||
-                        "Failed to fetch LeetCode profile"
-                    );
+        axios
+            .get(`/api/codeforces/${encodeURIComponent(handle)}`)
+            .then((res) => {
+                if (!res.data.success) {
+                    throw new Error(res.data.error || "Not found");
                 }
 
                 setData(res.data.data);
-            } catch (err) {
-                console.error(
-                    "Failed to fetch LeetCode profile:",
-                    err
-                );
-
-                setError(
-                    "Could not load this LeetCode profile."
-                );
-            } finally {
+                console.log(res.data);
+            })
+            .catch((err) => {
+                console.error("CF profile fetch error:", err);
+                setError("Could not load Codeforces profile.");
+            })
+            .finally(() => {
                 setLoading(false);
-            }
-        };
+            });
+    }, [handle]);
 
-        fetchProfile();
-    }, [username]);
     if (loading) {
-        return <LoadingScreen />;
+        return <Loader />;
     }
 
     if (error || !data) {
         return (
-            <main className="min-h-screen bg-[#0d0d0c] text-white flex items-center justify-center px-5">
-                <div className="text-center">
-                    <div className="text-4xl mb-4">
-                        ⚠️
-                    </div>
+            <main className="min-h-screen bg-[#0d0d0c] flex items-center justify-center px-4 text-center relative overflow-hidden">
+                <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-72 w-72 rounded-full bg-rose-500/10 blur-3xl" />
 
-                    <h2 className="text-xl font-bold">
-                        Unable to load profile
+                <div className="relative z-10 rounded-2xl border border-white/10 bg-[#121212]/80 p-8 backdrop-blur-xl shadow-2xl max-w-sm w-full">
+                    <div className="text-4xl mb-4">⚠️</div>
+
+                    <h2 className="text-xl font-bold text-white">
+                        Profile Not Found
                     </h2>
 
-                    <p className="text-sm text-zinc-500 mt-2">
-                        {error || "Profile not found"}
+                    <p className="text-xs text-neutral-400 mt-2">
+                        {error || "User does not exist."}
                     </p>
 
                     <button
                         onClick={() => router.back()}
-                        className="
-                            mt-6
-                            px-5
-                            py-2.5
-                            rounded-xl
-                            bg-orange-500
-                            hover:bg-orange-400
-                            transition
-                            text-sm
-                            font-semibold
-                            cursor-pointer
-                        "
+                        className="mt-6 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold transition duration-200 active:scale-95"
                     >
                         Go Back
                     </button>
@@ -109,69 +99,35 @@ export default function LeetCodePage() {
         );
     }
 
-    const solved =
-        data.stats.submissions.acSubmissionNum;
-
-    const totalSolved = getDifficultyCount(
-        solved,
-        "All"
-    );
-
-    const easySolved = getDifficultyCount(
-        solved,
-        "Easy"
-    );
-
-    const mediumSolved = getDifficultyCount(
-        solved,
-        "Medium"
-    );
-
-    const hardSolved = getDifficultyCount(
-        solved,
-        "Hard"
-    );
-    const maxStreak = calculateMaxStreak(
-        data.stats.calendar.submissionCalendar
-    );
+    if (data.profile.avatar === "https://userpic.codeforces.org/no-avatar.jpg") {
+        data.profile.avatar =
+            "https://assets.leetcode.com/users/default_avatar.jpg";
+    }
 
     return (
-        <main className="min-h-screen bg-[#0d0d0c] text-zinc-200 px-4 md:px-8 py-6">
-            <div className="max-w-[1250px] mx-auto">
+        <main className="min-h-screen bg-[#0d0d0c] text-zinc-200 px-4 md:px-8 py-8 relative overflow-hidden">
+            <div className="pointer-events-none absolute top-10 left-1/4 h-96 w-96 rounded-full bg-orange-500/5 blur-3xl" />
+            <div className="pointer-events-none absolute top-1/3 right-10 h-96 w-96 rounded-full bg-emerald-500/5 blur-3xl" />
 
-
-                <LeetCodeHeader
-                    username={data.username}
-                    realName={data.profile.realName}
-                    avatar={data.profile.userAvatar}
-                    country={data.profile.countryName}
+            <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+                <CodeforcesHeader
+                    handle={data.profile.handle}
+                    name={`${data.profile.firstName || ""} ${data.profile.lastName || ""}`.trim()}
+                    country={data.profile.country}
+                    organization={data.profile.organization}
+                    avatar={data.profile.avatar}
                 />
 
-
-
-                <LeetCodeSummary
-                    ranking={data.profile.ranking}
-                    activeDays={
-                        data.stats.calendar.totalActiveDays
-                    }
-                    reputation={data.profile.reputation}
-                    profileViews={
-                        data.profile.postViewCount
-                    }
+                <CodeforcesStats
+                    acceptedSubmissions={data.stats.acceptedSubmissions}
+                    contestsParticipated={data.stats.contestsParticipated}
+                    currentRating={data.stats.currentRating}
+                    highestRating={data.stats.highestRating}
+                    solvedProblems={data.stats.solvedProblems}
+                    totalSubmissions={data.stats.totalSubmissions}
                 />
 
-
-                <section
-                    className="
-                        mt-6
-                        rounded-2xl
-                        border
-                        border-white/10
-                        bg-[#151514]
-                        p-5
-                        md:p-6
-                    "
-                >
+                <section className="mt-6 rounded-2xl border border-white/10 bg-[#151514] p-5 md:p-6">
                     <div className="mb-6">
                         <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
                             Consistency
@@ -182,200 +138,31 @@ export default function LeetCodePage() {
                         </h2>
 
                         <p className="text-sm text-zinc-500 mt-1">
-                            Your daily LeetCode submission
-                            activity over the last year.
+                            Your daily Codeforces submission activity over the last year.
                         </p>
                     </div>
 
-                   <CodingHeatmap submissionCalendar={data.stats.calendar.submissionCalendar} accent="emerald" />
+                    <CodingHeatmap recentSubmissions={data.recentSubmissions} />
                 </section>
 
-                <LeetCodeStats
-                    totalSolved={totalSolved}
-                    easySolved={easySolved}
-                    mediumSolved={mediumSolved}
-                    hardSolved={hardSolved}
-                    contestRating={
-                        data.contest?.rating ?? null
-                    }
-                    contests={
-                        data.contest
-                            ?.attendedContestsCount ?? 0
-                    }
-                    maxStreak={maxStreak}
-                    currentStreak={
-                        data.stats.calendar.streak
-                    }
+                <CodeforcesSummary
+                    rank={data.profile.rank || "N/A"}
+                    maxRank={data.profile.maxRank || "N/A"}
+                    contribution={data.profile.contribution ?? 0}
                 />
 
-                <section className="mt-5">
-                    <DifficultySplit
-                        easy={easySolved}
-                        medium={mediumSolved}
-                        hard={hardSolved}
-                        total={totalSolved}
-                        easySubmissions={
-                            data.stats.submissions.totalSubmissionNum.find(
-                                (item) => item.difficulty === "Easy"
-                            )?.submissions ?? 0
-                        }
-                        mediumSubmissions={
-                            data.stats.submissions.totalSubmissionNum.find(
-                                (item) => item.difficulty === "Medium"
-                            )?.submissions ?? 0
-                        }
-                        hardSubmissions={
-                            data.stats.submissions.totalSubmissionNum.find(
-                                (item) => item.difficulty === "Hard"
-                            )?.submissions ?? 0
-                        }
-                    />
-                </section>
-
-                {data.contest && (
-                    <ContestPerformance
-                        rating={data.contest.rating}
-                        globalRanking={
-                            data.contest.globalRanking
-                        }
-                        contests={
-                            data.contest
-                                .attendedContestsCount
-                        }
-                        topPercentage={
-                            data.contest.topPercentage
-                        }
-                    />
-                )}
-
-                <RecentSubmissions leetcodeSubmissions={data.recentSubmissions} />
-
-                <BadgesSection
-                    badges={data.badges}
+                <RecentSubmissions
+                    codeforcesSubmissions={data.recentSubmissions ?? []}
                 />
-
-
-                <AboutSection
-                    aboutMe={
-                        data.profile.aboutMe
-                    }
-                    school={
-                        data.profile.school
-                    }
-                    company={
-                        data.profile.company
-                    }
-                    location={
-                        data.profile.location
-                    }
-                />
-
-
-
-                <footer className="py-10 text-center text-xs text-zinc-700">
-                    LeetCode analytics powered by BlitzCode
-                </footer>
             </div>
         </main>
     );
 }
 
-function getDifficultyCount(
-    stats: {
-        difficulty: string;
-        count: number;
-        submissions: number;
-    }[],
-    difficulty: string
-) {
+export default function CodeforcesProfilePage() {
     return (
-        stats.find(
-            (item) =>
-                item.difficulty === difficulty
-        )?.count || 0
-    );
-}
-
-function calculateMaxStreak(
-    calendarString: string
-): number {
-    let calendar: Record<string, number> = {};
-
-    try {
-        calendar = JSON.parse(
-            calendarString || "{}"
-        );
-    } catch {
-        return 0;
-    }
-
-    const dates = Object.entries(calendar)
-        .filter(([, count]) => count > 0)
-        .map(([timestamp]) => {
-            const date = new Date(
-                Number(timestamp) * 1000
-            );
-
-            return Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate()
-            );
-        })
-        .sort((a, b) => a - b);
-
-    if (dates.length === 0) {
-        return 0;
-    }
-
-    let max = 1;
-    let current = 1;
-
-    const oneDay =
-        24 * 60 * 60 * 1000;
-
-    for (let i = 1; i < dates.length; i++) {
-        if (
-            dates[i]! - dates[i - 1]! ===
-            oneDay
-        ) {
-            current++;
-
-            max = Math.max(
-                max,
-                current
-            );
-        } else {
-            current = 1;
-        }
-    }
-
-    return max;
-}
-
-
-
-function LoadingScreen() {
-    return (
-        <main className="min-h-screen bg-[#0d0d0c] flex items-center justify-center">
-            <div className="text-center">
-                <div
-                    className="
-                        w-9
-                        h-9
-                        border-2
-                        border-orange-500
-                        border-t-transparent
-                        rounded-full
-                        animate-spin
-                        mx-auto
-                    "
-                />
-
-                <p className="text-sm text-zinc-500 mt-4">
-                    Loading LeetCode data...
-                </p>
-            </div>
-        </main>
+        <Suspense fallback={<Loader />}>
+            <CodeforcesProfileContent />
+        </Suspense>
     );
 }

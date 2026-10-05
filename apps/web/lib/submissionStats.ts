@@ -59,17 +59,18 @@ async function metricStats(
 export async function recordSubmission(input: {
   problemId: string
   language: string
-  verdict: string
+  userId :string
+  timeMs?: number | null
   runtimeMs?: number | null
   memoryKb?: number | null
 }) {
-  await db.insert(submissions).values({
-    problemId: input.problemId,
-    language: input.language,
-    verdict: input.verdict,
-    runtimeMs: input.runtimeMs != null ? Math.round(input.runtimeMs) : null,
-    memoryKb: input.memoryKb != null ? Math.round(input.memoryKb) : null,
-  })
+ await db.insert(submissions).values({
+  userId: input.userId,
+  problemId: input.problemId,
+  language: input.language,
+  timeMs: input.timeMs ?? 0,
+  memoryKb: input.memoryKb ?? 0,
+});
 }
 
 /** Accepted submission ke baad call karo. Ye UI ke JudgeResponse ke optional fields return karta hai. */
