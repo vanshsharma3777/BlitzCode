@@ -33,7 +33,6 @@ export default function ProblemsPage() {
       .get<ProblemsApiResponse>("/api/problems", { params, signal: controller.signal })
       .then((res) => {
         setData(res.data)
-        console.log("data " , res.data)
       })
       .catch((e) => {
         if (axios.isCancel(e)) return

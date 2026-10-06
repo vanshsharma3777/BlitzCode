@@ -70,7 +70,7 @@ export default function FindMatch() {
         socketRef.current = socket
 
         const handleOpen = () => {
-            console.log("🔥 FindMatch WebSocket OPEN")
+            
 
             if (socket.readyState !== WebSocket.OPEN) return
 
@@ -88,8 +88,6 @@ export default function FindMatch() {
             } catch {
                 return
             }
-
-            console.log("📥 WS:", data)
 
             if (data?.data === "AUTH OK") {
                 startSearch()
@@ -111,12 +109,7 @@ export default function FindMatch() {
                 return
             }
 
-            if (
-                data?.type === "error" &&
-                data?.data === "Unauthenticated"
-            ) {
-                console.error("User unauthenticated")
-            }
+           
         }
 
         const handleError = (event: Event) => {

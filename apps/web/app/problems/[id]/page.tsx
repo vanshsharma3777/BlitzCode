@@ -100,7 +100,6 @@ export default function ProblemPage() {
     try {
       const { data } = await axios.post<JudgeResponse>(`/api/problems/${id}/judge`, { language, code, mode }, { timeout: 70_000 })
       setResult(data)
-      console.log("data" , data)
     } catch (e) {
       if (axios.isAxiosError(e)) {
         setError(e.response?.data?.error ?? (e.code === "ECONNABORTED" ? "Request timed out" : e.message))

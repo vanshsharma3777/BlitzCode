@@ -162,7 +162,6 @@ export default function QuestionCard() {
             });
             setShow(true);
         } catch (e: any) {
-            console.log("came in error")
             console.error(e);
             if (e.response?.status === 500) {
                 console.log("Server error (500)", e.response.data)
@@ -208,7 +207,6 @@ export default function QuestionCard() {
         sessionStorage.setItem("pointsUpdated", JSON.stringify(pointsUpdated))
         try {
             if (quizId.length === 0) {
-                console.log("QuizId not found")
                 return setError("QuizId not found")
             }
             const res = await axios.post('/api/submit-answers', { answers, quizId })

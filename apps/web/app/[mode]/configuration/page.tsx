@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Loader from '../../../components/Loader'
 import Navbar from '../../../components/Navbar'
 import { useSession } from 'next-auth/react'
-import { Sliders } from 'lucide-react'
+import { ArrowLeft, Sliders } from 'lucide-react'
 import { ACCENT } from '../../../lib/configs/thems'
 import { Accent } from '../../../components/ProfileUI'
 
@@ -56,13 +56,19 @@ export default function Configuration() {
       return () => clearTimeout(timeout)
     }
   }, [config, mode, router])
+  const handleBack = () => {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
+  }
+}
 
   if (loader || status === 'loading') return <Loader />
   if (status === 'unauthenticated') return null
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#0d0d0c] text-zinc-200">
-      {/* soft grid */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -73,7 +79,6 @@ export default function Configuration() {
           WebkitMaskImage: 'radial-gradient(ellipse 65% 55% at 50% 30%, black 20%, transparent 100%)',
         }}
       />
-      {/* soft glow */}
       <div
         className={`pointer-events-none absolute left-1/2 top-[18%] h-[380px] w-[380px] -translate-x-1/2 rounded-full blur-[160px] ${t.glowBg}`}
       />
@@ -82,7 +87,16 @@ export default function Configuration() {
 
       <main className="relative z-10 flex-1 px-4 py-8 md:px-8 md:py-12">
         <div className="mx-auto flex max-w-6xl flex-col items-center">
-          {/* mode pill */}
+           <div className="mb-4 w-full max-w-5xl">
+    <button
+      onClick={handleBack}
+      aria-label="Go back to previous page"
+      className="group inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+    >
+      <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+      Back
+    </button>
+  </div>
           <div className={`mb-5 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-mono text-xs font-medium uppercase tracking-wider backdrop-blur ${t.pill}`}>
             <Sliders className="h-3.5 w-3.5" />
             <span>{mode || 'Match'} setup</span>
@@ -96,7 +110,6 @@ export default function Configuration() {
             Select your parameters below. Tap an active choice again to deselect it.
           </p>
 
-          {/* progress */}
           <div className="mb-8 w-full max-w-5xl ">
             <div className="mb-2 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-500">
               <span>Progress</span>
@@ -116,7 +129,6 @@ export default function Configuration() {
             </div>
           </div>
 
-          {/* cards */}
           <div className="flex w-full max-w-5xl flex-col gap-5">
             {STEPS.map((heading, i) => (
               <ConfigurationCard

@@ -9,7 +9,6 @@ export const calculateScores = (
         questions.map(q => [q.questionId, q])
     );
     for (const ans of answers) {
-        console.log("came here")
         const ques = questionMap.get(ans.questionId);
         if (!ques) continue;
         if (ques.questionType === "single correct" || ques.questionType === "bugfixer") {

@@ -39,9 +39,6 @@ export default function Result() {
       const pUpdate = JSON.parse(pointsData!) || false
       setPointUpdated(pUpdate)
     }
-    else {
-      console.log("Items not found in sesion storage")
-    }
   }, [])
 
   if (mode === 'multiplayer') {

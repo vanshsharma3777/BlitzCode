@@ -16,8 +16,6 @@ export const connectSocket = () => {
             ? "ws://localhost:8080"
             : process.env.NEXT_PUBLIC_WS_URL;
 
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("WS URL:", wsUrl);
 
     if (!wsUrl) {
         throw new Error(
@@ -28,19 +26,13 @@ export const connectSocket = () => {
     socket = new WebSocket(wsUrl);
 
     socket.addEventListener("open", () => {
-        console.log("✅ Connected to WS server");
     });
 
     socket.addEventListener("error", (error) => {
-        console.error("❌ WebSocket error:", error);
     });
 
     socket.addEventListener("close", (event) => {
-        console.log("🔴 WS closed:", {
-            code: event.code,
-            reason: event.reason,
-            wasClean: event.wasClean,
-        });
+        
 
         socket = null;
     });

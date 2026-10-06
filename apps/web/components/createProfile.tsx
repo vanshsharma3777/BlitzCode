@@ -18,7 +18,6 @@ export default function CreateProfile({ email }: { email: string }) {
   useEffect(()=>{
     if(session.data?.user.email){
       const username = generateUsername(session.data?.user.email)
-      console.log(username)
     }
   },[session.status])
   if(session.status === "loading"){

@@ -11,6 +11,7 @@ import ProfileHeader from "../../components/ProfileHeader"
 import StatsOverview from "../../components/StatsOverview"
 import CodingProfilesCard from "../../components/CodingProfilesCard"
 import CareerProgression from "../../components/CareerProgression"
+import { ArrowLeft } from "lucide-react"
 
 
 export default function ProfilePage() {
@@ -50,6 +51,14 @@ export default function ProfilePage() {
     if (status === "loading") return <Loader />
     if (status === "unauthenticated") return null
 
+    const handleBack = () => {
+        if (typeof window !== "undefined" && window.history.length > 1) {
+            router.back()
+        } else {
+            router.push("/")
+        }
+    }
+
     const getRank = (xp: number) => {
         if (xp >= 1000) return { title: "Grandmaster Coder", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/30" }
         if (xp >= 500) return { title: "Senior Developer", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/30" }
@@ -61,7 +70,6 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[var(--bg-main)] text-[var(--primary-text)] flex flex-col relative overflow-hidden transition-colors duration-300">
-            {/* Background: glows + faint grid */}
             <div
                 className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[160px] pointer-events-none opacity-20 dark:opacity-15"
                 style={{ background: 'var(--accent)' }}
@@ -72,6 +80,14 @@ export default function ProfilePage() {
             <Navbar />
 
             <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8 md:py-12 relative z-10 space-y-6">
+                <button
+                    onClick={handleBack}
+                    className="group inline-flex items-center gap-2 text-sm font-medium text-[var(--primary-text)]/70 hover:text-[var(--primary-text)] transition-colors"
+                    aria-label="Go back to previous page"
+                >
+                    <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                    Back
+                </button>
                 <ProfileHeader session={session} currentRank={currentRank} />
                 <StatsOverview points={points} loadingPoints={loadingPoints} currentRankTitle={currentRank.title} />
                 <CodingProfilesCard userEmail={session?.user?.email} />

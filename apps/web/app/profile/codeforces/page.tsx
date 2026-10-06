@@ -11,6 +11,7 @@ import { CFProfile, CFSubmission } from "../../../types/codeForcesTypes";
 import CodingHeatmap from "../../../components/CodingHeatmap";
 import RecentSubmissions from "../../../components/RecentSubmissions";
 import Loader from "../../../components/Loader";
+import { ArrowLeft } from "lucide-react";
 
 interface CFStats {
     acceptedSubmissions: number;
@@ -53,7 +54,6 @@ function CodeforcesProfileContent() {
                 }
 
                 setData(res.data.data);
-                console.log(res.data);
             })
             .catch((err) => {
                 console.error("CF profile fetch error:", err);
@@ -63,6 +63,14 @@ function CodeforcesProfileContent() {
                 setLoading(false);
             });
     }, [handle]);
+
+    const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+        router.back();
+    } else {
+        router.push("/profile");
+    }
+};
 
     if (loading) return <Loader />;
 
@@ -104,6 +112,14 @@ function CodeforcesProfileContent() {
             <div className="pointer-events-none absolute top-1/3 right-10 h-96 w-96 rounded-full bg-emerald-500/5 blur-3xl" />
 
             <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+                 <button
+        onClick={handleBack}
+        aria-label="Go back to previous page"
+        className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+    >
+        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+        Back
+    </button>
                 <CodeforcesHeader
                     handle={data.profile.handle}
                     name={`${data.profile.firstName || ""} ${data.profile.lastName || ""}`.trim()}
