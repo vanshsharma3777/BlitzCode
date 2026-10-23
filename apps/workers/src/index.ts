@@ -96,7 +96,7 @@ const questionStatusChangerWorker = new Worker(
 
 
 serve({
-  port: Number(process.env.PORT) || 3001,
+  port: Number(process.env.PORT) || 3002,
   fetch(req) {
     return new Response("Worker is running 🚀");
   },
